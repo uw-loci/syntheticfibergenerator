@@ -1,0 +1,103 @@
+% spellchecker: disable
+
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+% \usepackage{amssymb}
+% \usepackage{mathtools}
+% \usepackage{color}
+\usepackage{enumitem}
+% \usepackage{makecell}
+% \usepackage{hyperref}
+
+\setlist{parsep=0em, itemsep=0.5em}
+% \setlength{\parskip}{0em}
+% \setlength\parindent{0pt}
+
+% \renewcommand{\theenumi}{\alph{enumi}}
+
+\title{Fiber Generator Controlled Parameters}
+\author{Matthew Dutson}
+
+% spellchecker: enable
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+    
+\section*{Definitions}
+
+
+\subsection*{Fiber Count}
+
+The is is the integer number $m$ of fibers in the image.
+
+
+\subsection*{Mean Fiber Length}
+
+The path of a fiber is defined by a tuple $P = (\vec{p}_1, \vec{p}_2, \ldots, \vec{p}_n)$. The fiber length $l_f$ is given by
+\begin{equation*}
+    l_s = \sum_{i = 1}^{n - 1} |\vec{p}_{i + 1} - \vec{p}_i|.
+\end{equation*}
+If we assume that all segments have equal length $l_s$, then the fiber length is simply
+\begin{equation*}
+    l_f = (n - 1) \cdot l_s.
+\end{equation*}
+
+
+\subsection*{Mean Fiber Width}
+
+The varying width is given by a tuple $W$ with $n - 1$ elements. $w_j$ gives the width of the fiber between points $\vec{p}_j$ and $\vec{p}_{j + 1}$. Because all segments have the same length, the average for a fiber is
+\begin{equation*}
+    \bar{w} = \frac{1}{n - 1} \sum_{j = 1}^{n - 1} w_j
+\end{equation*}
+The image-wide average is the average over fibers weighted by the length of each fiber. Let there be $m$ fibers, each with width tuple $W_i$ and number of segments $n_i$.
+\begin{equation*}
+    \bar{w}_\text{tot} = 
+        \frac{1}{\sum_{i = 1}^m n_i} 
+        \sum_{i = 1}^m \sum_{j = 1}^{n_i - 1} w_{i,j}
+\end{equation*}
+This is equivalent to taking the fiber-independent mean of segment widths.
+
+
+\subsection*{Mean Fiber Angle}
+
+The angle of the $i^\text{th}$ fiber is simply the angle between its endpoints, $\vec{p}_{i,1}$ and $\vec{p}_{i,n}$.
+\begin{equation*}
+    \theta_i = \cos^{-1} \left(\frac{(\vec{p}_{i,n} - \vec{p}_{i,1})_x}{|\vec{p}_{i,n} - \vec{p}_{i,1}|}\right)
+\end{equation*}
+A normalized ``mean vector'' is found by multiplying all fiber angles by 2 and taking the normalized, length-weighted mean of the resultant direction vectors.
+\begin{equation*}
+    \bar{\theta} = \frac{1}{2} \cdot \text{arg} \left(
+    \frac{1}{\sum_{i = 1}^m n_i} 
+    \sum_{i = 1}^m n_i \cdot e^{2 i \cdot \theta_i} \right)
+\end{equation*}
+
+
+\subsection*{Overall Fiber Alignment}
+
+The alignment $A$ is the magnitude of the ``mean vector'' from the previous part.
+\begin{equation*}
+    A = \text{mag} \left(
+    \frac{1}{\sum_{i = 1}^m n_i} 
+    \sum_{i = 1}^m n_i \cdot e^{2 i \cdot \theta_i} \right)
+\end{equation*}
+
+
+\subsection*{Mean Fiber Straightness}
+    
+
+\section*{Output}
+
+For each generated fiber, the following details will be recorded as output:
+\begin{itemize}
+    \item The tuple $P = (\vec{p}_1, \vec{p}_2, \ldots, \vec{p}_n)$ of points which define the path of the fiber.
+    \item The tuple $W = (\vec{w}_i, \vec{w}_2, \ldots, \vec{w}_{n - 1})$ of widths.
+\end{itemize}
+Other details (local density, individual fiber angle, etc.) from these tuples.
+
+\end{document}
