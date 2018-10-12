@@ -39,13 +39,13 @@ The is is the integer number $m$ of fibers in the image.
 
 \subsection*{Mean Fiber Length}
 
-The path of a fiber is defined by a tuple $P = (\vec{p}_1, \vec{p}_2, \ldots, \vec{p}_n)$. The fiber length $l_f$ is given by
+The path of a fiber is defined by a tuple $P = (\vec{p}_1, \vec{p}_2, \ldots, \vec{p}_n)$. The fiber length $l$ is given by
 \begin{equation*}
-    l_s = \sum_{i = 1}^{n - 1} |\vec{p}_{i + 1} - \vec{p}_i|.
+    l = \sum_{i = 1}^{n - 1} |\vec{p}_{i + 1} - \vec{p}_i|.
 \end{equation*}
 If we assume that all segments have equal length $l_s$, then the fiber length is simply
 \begin{equation*}
-    l_f = (n - 1) \cdot l_s.
+    l = (n - 1) \cdot l_s.
 \end{equation*}
 
 
@@ -89,7 +89,21 @@ The alignment $A$ is the magnitude of the ``mean vector'' from the previous part
 
 
 \subsection*{Mean Fiber Straightness}
-    
+
+The straightness of an individual fiber is the ratio of its length to the distance between its endpoints. Let $l_i$ be the length of the $i^\text{th}$ fiber and assume it contains $n$ points. Then the straightness $s_i$ is
+\begin{equation*}
+s_i = \frac{|\vec{p}_n - \vec{p}_1|}{l_i}.
+\end{equation*}
+The image-wide mean is weighted by fiber length.
+\begin{equation*}
+\bar{s} = 
+    \frac{1}{\sum_{i = 1}^m n_i}
+    \sum_{i = 1}^m n_i \cdot s_i
+\end{equation*}
+
+
+\section*{Parameter Generation}
+
 
 \section*{Output}
 
