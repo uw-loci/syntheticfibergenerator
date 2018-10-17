@@ -2,11 +2,8 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 
 class FiberCollectionParams
@@ -20,24 +17,22 @@ class FiberCollectionParams
 }
 
 
-class FiberCollection implements Iterable<Fiber>, Serializable
+class FiberCollection implements Iterable<Fiber>
 {
     private FiberCollectionParams params;
-    // TODO: Do we need to use a LinkedList here?
-    private LinkedList<Fiber> fibers;
+    private ArrayList<Fiber> fibers;
 
 
     FiberCollection(FiberCollectionParams params)
     {
         this.params = params;
-        this.fibers = new LinkedList<>();
+        this.fibers = new ArrayList<>(this.params.nFibers);
     }
 
     void generate()
     {
         // TODO: We may want to generate integer lengths instead of double lengths (currently we're just casting them)
-        ArrayList<Double> evenWeights = new ArrayList<>(Collections.nCopies(params.nFibers, 1.0));
-        ArrayList<Double> lengths = RandomUtility.getRandomList(params.meanLength, 1.0, Double.POSITIVE_INFINITY, evenWeights);
+        ArrayList<Double> lengths = RandomUtility.getRandomList(params.meanLength, 1.0, Double.POSITIVE_INFINITY, params.nFibers);
         ArrayList<Double> straightnesses = RandomUtility.getRandomList(params.meanStraightness, 0.0, 1.0, lengths);
 
         for (int i = 0; i < params.nFibers; i++)
@@ -46,10 +41,10 @@ class FiberCollection implements Iterable<Fiber>, Serializable
             fiberParams.length = (int) lengths.get(i).doubleValue();
             fiberParams.segmentLength = params.segmentLength;
             fiberParams.straightness = straightnesses.get(i);
-            double endDistance = lengths.get(i) * straightnesses.get(i);
 
             fiberParams.start = RandomUtility.getRandomPoint(0.0, params.imageWidth, 0.0, params.imageHeight);
             Vector2D direction = RandomUtility.getRandomDirection();
+            double endDistance = fiberParams.length * fiberParams.segmentLength * fiberParams.straightness;
             double xEnd = fiberParams.start.getX() + direction.getX() * endDistance;
             double yEnd = fiberParams.start.getY() + direction.getY() * endDistance;
             fiberParams.end = new Vector2D(xEnd, yEnd);

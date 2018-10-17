@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -25,6 +26,12 @@ class RandomUtility
         double x = getRandomDouble(minX, maxX);
         double y = getRandomDouble(minY, maxY);
         return new Vector2D(x, y);
+    }
+
+    static ArrayList<Double> getRandomList(double desiredMean, double minPossible, double maxPossible, int nValues)
+    {
+        ArrayList<Double> evenWeights = new ArrayList<>(Collections.nCopies(nValues, 1.0));
+        return getRandomList(desiredMean, minPossible, maxPossible, evenWeights);
     }
 
     static ArrayList<Double> getRandomList(double desiredMean, double minPossible, double maxPossible, ArrayList<Double> weights)
@@ -55,8 +62,7 @@ class RandomUtility
         }
 
         // Correct values so the have exactly the desired mean
-        // TODO: This should usually only take two passes, but may take more
-        // TODO: Possibly allow for this to be switched off
+        // TODO: This should usually only take two passes, but may take more - possibly allow it to be switched off
         boolean redo = true;
         while (redo)
         {

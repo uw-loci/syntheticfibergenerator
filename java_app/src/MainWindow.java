@@ -140,7 +140,7 @@ public class MainWindow extends JFrame
     {
         fieldNImage.setText("10");
         fieldNFiber.setText("50");
-        fieldMeanLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 2));
+        fieldMeanLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
         fieldSegmentLength.setText("5.0");
         fieldMeanStraightness.setText("0.8");
         fieldImageWidth.setText(Integer.toString(IMAGE_PANEL_SIZE));
@@ -154,7 +154,7 @@ public class MainWindow extends JFrame
         double yScale = (double) IMAGE_PANEL_SIZE / image.getHeight();
         double scale = Math.min(xScale, yScale);
         transform.scale(scale, scale);
-        AffineTransformOp scaleOp = new AffineTransformOp(transform, AffineTransformOp.TYPE_BILINEAR);
+        AffineTransformOp scaleOp = new AffineTransformOp(transform, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
         BufferedImage scaled = scaleOp.filter(image, null);
 
         Icon icon = new ImageIcon(scaled);

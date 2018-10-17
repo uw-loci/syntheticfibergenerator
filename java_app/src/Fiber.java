@@ -103,57 +103,66 @@ class Fiber implements Iterable<Segment>
             throw new IllegalArgumentException("Path distance must be at least endpoint distance");
         }
 
+        // "Progress" is the projection of the unit step vector onto the vector pointing toward the
+        // end of the chain
         ArrayList<Vector2D> chain = new ArrayList<>(nSteps + 1);
         chain.add(start);
+        double meanProgress = (start.distance(end) - stepSize) / (stepSize * (nSteps - 1));
+        ArrayList<Double> progressValues = RandomUtility.getRandomList(meanProgress, -1.0, 1.0, nSteps - 1);
 
         Vector2D current = start;
-        for (int i = 0; i < nSteps - 1; i++)
+        for (double progress : progressValues)
         {
-            // "Progress" is the projection of the unit step vector onto the vector pointing toward
-            // the end of the chain
-            double maxDistance = (nSteps - i) * stepSize;
-            double endDistance = current.distance(end);
-            double minProgress = (endDistance - maxDistance) / stepSize;
-
-            double progress;
-            if (i == nSteps - 2)
-            {
-                progress = endDistance / stepSize - 1.0;
-                // TODO: this is a temporary fix
-                progress = progress > 1 ? 1 : progress;
-            }
-            else
-            {
-                // TODO: Modify this to allow for random generation of progress values
-//                double min = Math.max(-1.0, minProgress);
-//                min = min > 1.0 ? 1.0 : min;
-//                double meanProgress = start.distance(end) / (stepSize * nSteps);
-//                double range = Math.min(1.0 - meanProgress, meanProgress - min);
-//                progress = min + rng.nextDouble() * (2.0 * range);
-                progress = start.distance(end) / (stepSize * nSteps);
-            }
-
-            Vector2D forward = end.subtract(current).normalize();
-            Vector2D perpendicular = new Vector2D(-forward.getY(), forward.getX()).normalize();
-
-            Vector2D stepForward = forward.scalarMultiply(progress * stepSize);
-            double notProgress = Math.sqrt(1.0 - progress * progress);
-            Vector2D stepPerpendicular = perpendicular.scalarMultiply(notProgress * stepSize);
-
-            Vector2D step;
-            if (RandomUtility.rng.nextBoolean())
-            {
-                step = stepForward.add(stepPerpendicular);
-            }
-            else
-            {
-                step = stepForward.add(stepPerpendicular.negate());
-            }
-            current = current.add(step);
+            double distanceAfter = end.distance(current) - progress * stepSize;
+            Vector2D[] possiblePoints = circleIntersection(current, end, stepSize, distanceAfter);
+            current = RandomUtility.rng.nextBoolean() ? possiblePoints[0] : possiblePoints[1];
             chain.add(current);
         }
-
         chain.add(end);
         return chain;
+    }
+
+    static private double Sq(double val)
+    {
+        return val * val;
+    }
+
+    // Assumes the circles have two intersection points (this is currently up to the caller to ensure)
+    static private Vector2D[] circleIntersection(Vector2D center1, Vector2D center2, double radius1, double radius2)
+    {
+        // Find the equation of a line passing between the intersection points
+        double x1 = center1.getX();
+        double y1 = center1.getY();
+        double x2 = center2.getX();
+        double y2 = center2.getY();
+        double c1 = Sq(radius1) - Sq(x1) - Sq(y1);
+        double c2 = Sq(radius2) - Sq(x2) - Sq(y2);
+        double b = 0.5 * (c2 - c1) / (y1 - y2);
+        double a = (x2 - x1) / (y1 - y2);
+
+        // TODO: When the two points are nearly vertical the y=ax+b form does poorly. Switch to x=ay+b in this case (or maybe use a spherical parametrization)
+        // Solve the quadratic for the two intersection points
+        double d = b - y1;
+        double aQ = Sq(a) + 1;
+        double bQ = 2 * a * d - 2 * x1;
+        double cQ = Sq(x1) + Sq(d) - Sq(radius1);
+        double[] solutions = quadraticSolve(aQ, bQ, cQ);
+        Vector2D[] output = {
+                new Vector2D(solutions[0], a * solutions[0] + b),
+                new Vector2D(solutions[1], a * solutions[1] + b)};
+        return output;
+    }
+
+    // Assumes two real solutions exist
+    static private double[] quadraticSolve(double a, double b, double c)
+    {
+        double b4ac = Math.sqrt(Sq(b) - 4 * a * c);
+        if (Sq(b ) - 4 * a * c < 0)
+        {
+            System.out.println("Bad");
+            throw new IllegalArgumentException("Out of range");
+        }
+        double[] output = {(-b + b4ac) / (2 * a), (-b - b4ac) / (2 * a)};
+        return output;
     }
 }
