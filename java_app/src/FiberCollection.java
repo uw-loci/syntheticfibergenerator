@@ -12,6 +12,8 @@ class FiberCollectionParams
     int meanLength;
     double segmentLength;
     double meanStraightness;
+    double alignment;
+    double meanAngle;
     int imageWidth;
     int imageHeight;
 }
@@ -31,7 +33,7 @@ class FiberCollection implements Iterable<Fiber>
 
     void generate()
     {
-        // TODO: We may want to generate integer lengths instead of double lengths (currently we're just casting them)
+        // TODO: May want to generate integer lengths instead of double lengths (currently just casting them)
         ArrayList<Double> lengths = RandomUtility.getRandomList(params.meanLength, 1.0, Double.POSITIVE_INFINITY, params.nFibers);
         ArrayList<Double> straightnesses = RandomUtility.getRandomList(params.meanStraightness, 0.0, 1.0, lengths);
 
@@ -42,6 +44,7 @@ class FiberCollection implements Iterable<Fiber>
             fiberParams.segmentLength = params.segmentLength;
             fiberParams.straightness = straightnesses.get(i);
 
+            // TODO: Problem with this calculation here
             fiberParams.start = RandomUtility.getRandomPoint(0.0, params.imageWidth, 0.0, params.imageHeight);
             Vector2D direction = RandomUtility.getRandomDirection();
             double endDistance = fiberParams.length * fiberParams.segmentLength * fiberParams.straightness;
