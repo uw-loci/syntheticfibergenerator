@@ -31,6 +31,7 @@ class FiberCollection implements Iterable<Fiber>
         this.fibers = new ArrayList<>(this.params.nFibers);
     }
 
+
     void generate()
     {
         // TODO: May want to generate integer lengths instead of double lengths (currently just casting them)
@@ -58,6 +59,7 @@ class FiberCollection implements Iterable<Fiber>
         }
     }
 
+
     BufferedImage drawFibers()
     {
         BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_RGB);
@@ -72,17 +74,19 @@ class FiberCollection implements Iterable<Fiber>
         return image;
     }
 
+
     public Iterator<Fiber> iterator()
     {
         return fibers.iterator();
     }
+
 
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append("[");
-        for (Iterator<Fiber> iter = fibers.iterator(); iter.hasNext();)
+        for (Iterator<Fiber> iter = fibers.iterator(); iter.hasNext(); )
         {
             builder.append(iter.next().toString());
             if (iter.hasNext())

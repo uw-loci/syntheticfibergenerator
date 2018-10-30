@@ -136,6 +136,7 @@ public class MainWindow extends JFrame
         });
     }
 
+
     private void setDefaults()
     {
         fieldNImage.setText("10");
@@ -146,6 +147,7 @@ public class MainWindow extends JFrame
         fieldImageWidth.setText(Integer.toString(IMAGE_PANEL_SIZE));
         fieldImageHeight.setText(Integer.toString(IMAGE_PANEL_SIZE));
     }
+
 
     private void displayImage(BufferedImage image)
     {
@@ -162,6 +164,7 @@ public class MainWindow extends JFrame
         labelImage.setIcon(icon);
         pack();
     }
+
 
     public static void main(String[] args)
     {

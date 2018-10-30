@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
@@ -19,6 +18,7 @@ class Segment
 {
     Vector2D start;
     Vector2D end;
+
 
     Segment(Vector2D start, Vector2D end)
     {
@@ -46,10 +46,12 @@ class Fiber implements Iterable<Segment>
             }
         }
 
+
         public Segment next()
         {
             return hasNext() ? new Segment(start.next(), end.next()) : null;
         }
+
 
         public boolean hasNext()
         {
@@ -68,22 +70,25 @@ class Fiber implements Iterable<Segment>
         this.points = new ArrayList<>();
     }
 
+
     public Iterator<Segment> iterator()
     {
         return new SegmentIterator(points);
     }
+
 
     void generate()
     {
         points = RandomUtility.getRandomChain(params.start, params.end, params.length, params.segmentLength);
     }
 
+
     @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
         builder.append(String.format("%n{ \"points\" : [%n"));
-        for (Iterator<Vector2D> iter = points.iterator(); iter.hasNext();)
+        for (Iterator<Vector2D> iter = points.iterator(); iter.hasNext(); )
         {
             Vector2D point = iter.next();
             builder.append(String.format("{ \"x\" : %.4f, ", point.getX()));
@@ -96,6 +101,4 @@ class Fiber implements Iterable<Segment>
         builder.append(String.format("%n] }"));
         return builder.toString();
     }
-
-
 }

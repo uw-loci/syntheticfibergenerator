@@ -19,6 +19,7 @@ class IOUtility
         }
     }
 
+
     static double tryParseDouble(String text) throws NumberFormatException
     {
         try
@@ -31,6 +32,7 @@ class IOUtility
         }
     }
 
+
     static void verifyValue(int value, int min, int max) throws IllegalArgumentException
     {
         if (value < min || value > max)
@@ -39,6 +41,7 @@ class IOUtility
         }
     }
 
+
     static void verifyValue(double value, double min, double max) throws IllegalArgumentException
     {
         if (value < min || value > max)
@@ -46,6 +49,7 @@ class IOUtility
             throw new IllegalArgumentException("Invalid argument: " + value + " is not between " + min + " and " + max);
         }
     }
+
 
     static void saveImage(BufferedImage image, String name) throws IOException
     {
@@ -59,6 +63,7 @@ class IOUtility
             throw new IOException("Unable to write to image file " + name);
         }
     }
+
 
     static void saveData(FiberCollection fibers, String name) throws IOException
     {
