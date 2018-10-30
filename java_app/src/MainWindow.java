@@ -34,6 +34,14 @@ public class MainWindow extends JFrame
     private JTextField fieldMeanStraightness;
     private JTextField fieldImageWidth;
     private JTextField fieldImageHeight;
+    private JTextField fieldMinLength;
+    private JTextField fieldMaxLength;
+    private JLabel labelMinLength;
+    private JLabel labelMaxLength;
+    private JTextField fieldMinStraightness;
+    private JTextField fieldMaxStraightness;
+    private JLabel labelMinStraightness;
+    private JLabel labelMaxStraightness;
 
     private ArrayList<BufferedImage> imageStack;
     private int currentImage;
@@ -65,16 +73,24 @@ public class MainWindow extends JFrame
                 nImages = IOUtility.tryParseInt(fieldNImage.getText());
                 params.nFibers = IOUtility.tryParseInt(fieldNFiber.getText());
                 params.meanLength = IOUtility.tryParseInt(fieldMeanLength.getText());
+                params.minLength = IOUtility.tryParseInt(fieldMinLength.getText());
+                params.maxLength = IOUtility.tryParseInt(fieldMaxLength.getText());
                 params.segmentLength = IOUtility.tryParseDouble(fieldSegmentLength.getText());
                 params.meanStraightness = IOUtility.tryParseDouble(fieldMeanStraightness.getText());
+                params.minStraightness = IOUtility.tryParseDouble(fieldMinStraightness.getText());
+                params.maxStraightness = IOUtility.tryParseDouble(fieldMaxStraightness.getText());
                 params.imageWidth = IOUtility.tryParseInt(fieldImageWidth.getText());
                 params.imageHeight = IOUtility.tryParseInt(fieldImageHeight.getText());
 
                 IOUtility.verifyValue(nImages, 1, Integer.MAX_VALUE);
                 IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
-                IOUtility.verifyValue(params.meanLength, 1, Integer.MAX_VALUE);
+                IOUtility.verifyValue(params.minLength, 1, Integer.MAX_VALUE);
+                IOUtility.verifyValue(params.maxLength, params.minLength, Integer.MAX_VALUE);
+                IOUtility.verifyValue(params.meanLength, params.minLength, params.maxLength);
                 IOUtility.verifyValue(params.segmentLength, 0.0, Double.POSITIVE_INFINITY);
-                IOUtility.verifyValue(params.meanStraightness, 0.0, 1.0);
+                IOUtility.verifyValue(params.minStraightness, 0.0, 1.0);
+                IOUtility.verifyValue(params.maxStraightness, params.minStraightness, 1.0);
+                IOUtility.verifyValue(params.meanStraightness, params.minStraightness, params.maxStraightness);
                 if (params.meanStraightness == 0.0)
                 {
                     throw new IllegalArgumentException("Mean straightness must be nonzero");
@@ -142,8 +158,12 @@ public class MainWindow extends JFrame
         fieldNImage.setText("10");
         fieldNFiber.setText("50");
         fieldMeanLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
+        fieldMinLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 20));
+        fieldMaxLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 5));
         fieldSegmentLength.setText("5.0");
         fieldMeanStraightness.setText("0.8");
+        fieldMinStraightness.setText("0.7");
+        fieldMaxStraightness.setText("1.0");
         fieldImageWidth.setText(Integer.toString(IMAGE_PANEL_SIZE));
         fieldImageHeight.setText(Integer.toString(IMAGE_PANEL_SIZE));
     }
