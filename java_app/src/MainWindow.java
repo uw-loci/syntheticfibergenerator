@@ -42,6 +42,12 @@ public class MainWindow extends JFrame
     private JTextField fieldMaxStraightness;
     private JLabel labelMinStraightness;
     private JLabel labelMaxStraightness;
+    private JTextField fieldAlignment;
+    private JTextField fieldMeanAngle;
+    private JLabel labelAlignment;
+    private JLabel labelMeanAngle;
+    private JTextField fieldEdgeBuffer;
+    private JLabel labelEdgeBuffer;
 
     private ArrayList<BufferedImage> imageStack;
     private int currentImage;
@@ -79,8 +85,11 @@ public class MainWindow extends JFrame
                 params.meanStraightness = IOUtility.tryParseDouble(fieldMeanStraightness.getText());
                 params.minStraightness = IOUtility.tryParseDouble(fieldMinStraightness.getText());
                 params.maxStraightness = IOUtility.tryParseDouble(fieldMaxStraightness.getText());
+                params.alignment = IOUtility.tryParseDouble(fieldAlignment.getText());
+                params.meanAngle = IOUtility.tryParseDouble(fieldMeanAngle.getText());
                 params.imageWidth = IOUtility.tryParseInt(fieldImageWidth.getText());
                 params.imageHeight = IOUtility.tryParseInt(fieldImageHeight.getText());
+                params.edgeBuffer = IOUtility.tryParseInt(fieldEdgeBuffer.getText());
 
                 IOUtility.verifyValue(nImages, 1, Integer.MAX_VALUE);
                 IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
@@ -95,8 +104,10 @@ public class MainWindow extends JFrame
                 {
                     throw new IllegalArgumentException("Mean straightness must be nonzero");
                 }
+                IOUtility.verifyValue(params.alignment, 0.000001, 1.0);
                 IOUtility.verifyValue(params.imageWidth, 1, Integer.MAX_VALUE);
                 IOUtility.verifyValue(params.imageHeight, 1, Integer.MAX_VALUE);
+                IOUtility.verifyValue(params.edgeBuffer, 0, Math.min(params.imageWidth / 2, params.imageHeight / 2));
             }
             catch (IllegalArgumentException exception)
             {
@@ -157,15 +168,18 @@ public class MainWindow extends JFrame
     {
         fieldNImage.setText("10");
         fieldNFiber.setText("50");
-        fieldMeanLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
-        fieldMinLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 20));
-        fieldMaxLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 5));
-        fieldSegmentLength.setText("5.0");
+        fieldMeanLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 20));
+        fieldMinLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 40));
+        fieldMaxLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
+        fieldSegmentLength.setText("10.0");
         fieldMeanStraightness.setText("0.8");
         fieldMinStraightness.setText("0.7");
         fieldMaxStraightness.setText("1.0");
+        fieldAlignment.setText("0.5");
+        fieldMeanAngle.setText("3.14159");
         fieldImageWidth.setText(Integer.toString(IMAGE_PANEL_SIZE));
         fieldImageHeight.setText(Integer.toString(IMAGE_PANEL_SIZE));
+        fieldEdgeBuffer.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
     }
 
 

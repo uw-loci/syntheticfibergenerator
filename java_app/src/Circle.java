@@ -6,7 +6,7 @@ public class Circle
     /* Sometimes we'll have two circles that should be touching but are actually some very small
      * distance apart because of floating-point limitations. In this case we can try widening both
      * by some small amount. */
-    private static final double buff = 1e-10;
+    private static final double BUFF = 1e-10;
 
     Vector2D center;
     double radius;
@@ -21,7 +21,7 @@ public class Circle
 
     private boolean contains(Vector2D point)
     {
-        return sq(point.getX() - center.getX()) + sq(point.getY() - center.getY()) <= sq(radius + buff);
+        return sq(point.getX() - center.getX()) + sq(point.getY() - center.getY()) <= sq(radius + BUFF);
     }
 
 
@@ -55,8 +55,8 @@ public class Circle
         double space = d - circle1.radius - circle2.radius;
         if (space > 0)
         {
-            circle1.radius += buff;
-            circle2.radius += buff;
+            circle1.radius += BUFF;
+            circle2.radius += BUFF;
             space = d - circle1.radius - circle2.radius;
         }
 
@@ -73,7 +73,7 @@ public class Circle
         Vector2D intersect1 = circle1.center.add(rotateVector(new Vector2D(a, h), axis));
         Vector2D intersect2 = circle1.center.add(rotateVector(new Vector2D(a, -h), axis));
 
-        return RandomUtility.rng.nextBoolean() ? intersect1 : intersect2;
+        return RandomUtility.RNG.nextBoolean() ? intersect1 : intersect2;
     }
 
 

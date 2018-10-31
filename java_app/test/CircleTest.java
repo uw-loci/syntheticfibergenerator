@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class CircleTest
 {
     @Test
-    void circleCircleIntersect()
+    void testCircleCircleIntersect()
     {
         Circle circle1 = new Circle(new Vector2D(0.0, 0.0), 10.0);
         Circle circle2 = new Circle(new Vector2D(0.0, 14.0), 8.0);
@@ -20,7 +20,7 @@ public class CircleTest
     }
 
     @Test
-    void diskCircleIntersect()
+    void testDiskCircleIntersect()
     {
         Circle disk = new Circle(new Vector2D(0.0, 0.0), 10.0);
         Circle circle = new Circle(new Vector2D(0.0, 14.0), 8.0);
@@ -30,7 +30,7 @@ public class CircleTest
     }
 
     @Test
-    void diskDiskIntersect()
+    void testDiskDiskIntersect()
     {
         fail("Not implemented");
     }

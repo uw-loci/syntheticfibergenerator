@@ -7,17 +7,17 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 class RandomUtility
 {
-    final static Random rng = new Random();
+    final static Random RNG = new Random();
 
     /* If we generate random values too close to the upper or lower bounds it can cause problems
      * with limits of floating-point arithmetic; narrow the bounds by this amount so the user
      * doesn't have to worry about this. */
-    private static final double buff = 1e-10;
+    private static final double BUFF = 1e-10;
 
 
     static double getRandomDouble(double min, double max)
     {
-        return min + rng.nextDouble() * (max - min);
+        return min + RNG.nextDouble() * (max - min);
     }
 
 
@@ -36,14 +36,14 @@ class RandomUtility
         }
         else
         {
-            return min + rng.nextInt(max - min);
+            return min + RNG.nextInt(max - min);
         }
     }
 
 
     static Vector2D getRandomDirection()
     {
-        double theta = rng.nextDouble() * 2.0 * Math.PI;
+        double theta = RNG.nextDouble() * 2.0 * Math.PI;
         return new Vector2D(Math.cos(theta), Math.sin(theta));
     }
 
@@ -65,9 +65,9 @@ class RandomUtility
 
     static ArrayList<Double> getRandomList(double mT, double xMin, double xMax, ArrayList<Double> weights)
     {
-        // See comment with the definition of the constant "buff"
-        xMin += buff;
-        xMax -= buff;
+        // See comment with the definition of the constant "BUFF"
+        xMin += BUFF;
+        xMax -= BUFF;
         mT = Math.min(xMax, mT);
         mT = Math.max(xMin, mT);
 

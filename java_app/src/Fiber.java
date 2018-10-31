@@ -60,7 +60,7 @@ class Fiber implements Iterable<Segment>
     }
 
 
-    private FiberParams params;
+    FiberParams params;
     private ArrayList<Vector2D> points;
 
 

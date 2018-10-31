@@ -9,15 +9,15 @@ class RandomUtilityTest
 {
 
     @Test
-    void getValidRandom()
+    void testGetValidRandom()
     {
         fail("Not implemented");
     }
 
     @Test
-    void getRandomList()
+    void testGetRandomList()
     {
-        RandomUtility.rng.setSeed(1);
+        RandomUtility.RNG.setSeed(1);
         ArrayList<Double> values = RandomUtility.getRandomList(0.8, 0.0, 1.0, 100);
         double mean = 0.0;
         double delta = 0.001;
