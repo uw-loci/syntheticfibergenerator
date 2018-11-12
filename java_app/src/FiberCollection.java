@@ -122,16 +122,20 @@ class FiberCollection implements Iterable<Fiber>
 
     BufferedImage drawFibers()
     {
-        BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
-//        graphics.setColor(new Color((float) 1.0, (float) 1.0, (float) 1.0, (float) 0.6));
+        AlphaComposite composite = AlphaComposite.getInstance(AlphaComposite.DST_OVER, (float) 0.7);
+        graphics.setComposite(composite);
         for (Fiber fiber : fibers)
         {
+            BufferedImage fiberImage = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D fiberGraphics = fiberImage.createGraphics();
             for (Segment segment : fiber)
             {
-                graphics.setStroke(new BasicStroke((int) segment.width));
-                graphics.drawLine((int) segment.start.getX(), (int) segment.start.getY(), (int) segment.end.getX(), (int) segment.end.getY());
+                fiberGraphics.setStroke(new BasicStroke((int) segment.width));
+                fiberGraphics.drawLine((int) segment.start.getX(), (int) segment.start.getY(), (int) segment.end.getX(), (int) segment.end.getY());
             }
+            graphics.drawImage(fiberImage, 0, 0, image.getWidth(), image.getHeight(), null);
         }
         return image;
     }
