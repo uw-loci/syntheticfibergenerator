@@ -48,6 +48,14 @@ public class MainWindow extends JFrame
     private JLabel labelMeanAngle;
     private JTextField fieldEdgeBuffer;
     private JLabel labelEdgeBuffer;
+    private JTextField fieldMinWidth;
+    private JTextField fieldMaxWidth;
+    private JTextField fieldMeanWidth;
+    private JLabel labelMinWidth;
+    private JLabel labelMaxWidth;
+    private JLabel labelMeanWidth;
+    private JTextField fieldWidthVariability;
+    private JLabel labelWidthVariability;
 
     private ArrayList<BufferedImage> imageStack;
     private int currentImage;
@@ -90,6 +98,10 @@ public class MainWindow extends JFrame
                 params.imageWidth = IOUtility.tryParseInt(fieldImageWidth.getText());
                 params.imageHeight = IOUtility.tryParseInt(fieldImageHeight.getText());
                 params.edgeBuffer = IOUtility.tryParseInt(fieldEdgeBuffer.getText());
+                params.meanWidth = IOUtility.tryParseDouble(fieldMeanWidth.getText());
+                params.minWidth = IOUtility.tryParseDouble(fieldMinWidth.getText());
+                params.maxWidth = IOUtility.tryParseDouble(fieldMaxWidth.getText());
+                params.widthVariation = IOUtility.tryParseDouble(fieldWidthVariability.getText());
 
                 IOUtility.verifyValue(nImages, 1, Integer.MAX_VALUE);
                 IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
@@ -108,6 +120,10 @@ public class MainWindow extends JFrame
                 IOUtility.verifyValue(params.imageWidth, 1, Integer.MAX_VALUE);
                 IOUtility.verifyValue(params.imageHeight, 1, Integer.MAX_VALUE);
                 IOUtility.verifyValue(params.edgeBuffer, 0, Math.min(params.imageWidth / 2, params.imageHeight / 2));
+                IOUtility.verifyValue(params.minWidth, 1.0, Double.POSITIVE_INFINITY);
+                IOUtility.verifyValue(params.maxWidth, params.minWidth, Double.POSITIVE_INFINITY);
+                IOUtility.verifyValue(params.meanWidth, params.minWidth, params.maxWidth);
+                IOUtility.verifyValue(params.widthVariation, 0.0, Double.POSITIVE_INFINITY);
             }
             catch (IllegalArgumentException exception)
             {
@@ -180,6 +196,10 @@ public class MainWindow extends JFrame
         fieldImageWidth.setText(Integer.toString(IMAGE_PANEL_SIZE));
         fieldImageHeight.setText(Integer.toString(IMAGE_PANEL_SIZE));
         fieldEdgeBuffer.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
+        fieldMeanWidth.setText("4.0");
+        fieldMinWidth.setText("1.0");
+        fieldMaxWidth.setText("7.0");
+        fieldWidthVariability.setText("1.0");
     }
 
 

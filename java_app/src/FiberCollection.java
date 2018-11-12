@@ -1,6 +1,6 @@
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -21,6 +21,10 @@ class FiberCollectionParams
     int imageWidth;
     int imageHeight;
     int edgeBuffer;
+    double meanWidth;
+    double minWidth;
+    double maxWidth;
+    double widthVariation;
 }
 
 
@@ -28,6 +32,7 @@ class FiberCollection implements Iterable<Fiber>
 {
     private FiberCollectionParams params;
     private ArrayList<Fiber> fibers;
+
 
     FiberCollection(FiberCollectionParams params)
     {
@@ -89,6 +94,7 @@ class FiberCollection implements Iterable<Fiber>
     {
         ArrayList<Double> lengths = RandomUtility.getRandomList(params.meanLength, params.minLength, params.maxLength, params.nFibers);
         ArrayList<Double> straightnesses = RandomUtility.getRandomList(params.meanStraightness, params.minStraightness, params.maxStraightness, params.nFibers);
+        ArrayList<Double> startingWidths = RandomUtility.getRandomList(params.meanWidth, params.minWidth, params.maxWidth, params.nFibers);
         ArrayList<Vector2D> directions = generateDirections();
 
         for (int i = 0; i < params.nFibers; i++)
@@ -99,6 +105,8 @@ class FiberCollection implements Iterable<Fiber>
             fiberParams.length = (int) lengths.get(i).doubleValue();
             fiberParams.segmentLength = params.segmentLength;
             fiberParams.straightness = straightnesses.get(i);
+            fiberParams.startingWidth = startingWidths.get(i);
+            fiberParams.widthVariation = params.widthVariation;
 
             Vector2D direction = directions.get(i);
             double endDistance = fiberParams.length * fiberParams.segmentLength * fiberParams.straightness;
@@ -116,10 +124,12 @@ class FiberCollection implements Iterable<Fiber>
     {
         BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
+//        graphics.setColor(new Color((float) 1.0, (float) 1.0, (float) 1.0, (float) 0.6));
         for (Fiber fiber : fibers)
         {
             for (Segment segment : fiber)
             {
+                graphics.setStroke(new BasicStroke((int) segment.width));
                 graphics.drawLine((int) segment.start.getX(), (int) segment.start.getY(), (int) segment.end.getX(), (int) segment.end.getY());
             }
         }
@@ -146,7 +156,7 @@ class FiberCollection implements Iterable<Fiber>
                 builder.append(",");
             }
         }
-        builder.append(String.format("%n]"));
+        builder.append("\n]");
         return builder.toString();
     }
 }

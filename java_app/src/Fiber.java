@@ -8,6 +8,8 @@ class FiberParams
 {
     int length;
     double straightness;
+    double startingWidth;
+    double widthVariation;
     double segmentLength;
     Vector2D start;
     Vector2D end;
@@ -18,12 +20,14 @@ class Segment
 {
     Vector2D start;
     Vector2D end;
+    double width;
 
 
-    Segment(Vector2D start, Vector2D end)
+    Segment(Vector2D start, Vector2D end, double width)
     {
         this.start = start;
         this.end = end;
+        this.width = width;
     }
 }
 
@@ -34,6 +38,7 @@ class Fiber implements Iterable<Segment>
     {
         private Iterator<Vector2D> start;
         private Iterator<Vector2D> end;
+        private Iterator<Double> width;
 
 
         private SegmentIterator(ArrayList<Vector2D> points)
@@ -44,12 +49,13 @@ class Fiber implements Iterable<Segment>
             {
                 end.next();
             }
+            width = widths.iterator();
         }
 
 
         public Segment next()
         {
-            return hasNext() ? new Segment(start.next(), end.next()) : null;
+            return hasNext() ? new Segment(start.next(), end.next(), width.next()) : null;
         }
 
 
@@ -62,12 +68,14 @@ class Fiber implements Iterable<Segment>
 
     FiberParams params;
     private ArrayList<Vector2D> points;
+    private ArrayList<Double> widths;
 
 
     Fiber(FiberParams params)
     {
         this.params = params;
         this.points = new ArrayList<>();
+        this.widths = new ArrayList<>();
     }
 
 
@@ -80,6 +88,19 @@ class Fiber implements Iterable<Segment>
     void generate()
     {
         points = RandomUtility.getRandomChain(params.start, params.end, params.length, params.segmentLength);
+
+        double width = params.startingWidth;
+        for (int i = 0; i < params.length; i++)
+        {
+            widths.add(width);
+            double diff;
+            do
+            {
+                diff = RandomUtility.RNG.nextGaussian() * params.widthVariation;
+            }
+            while (width + diff < 0.0);
+            width += diff;
+        }
     }
 
 
@@ -87,7 +108,7 @@ class Fiber implements Iterable<Segment>
     public String toString()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(String.format("%n{ \"points\" : [%n"));
+        builder.append("\n{ \"points\" : [\n");
         for (Iterator<Vector2D> iter = points.iterator(); iter.hasNext(); )
         {
             Vector2D point = iter.next();
@@ -95,10 +116,19 @@ class Fiber implements Iterable<Segment>
             builder.append(String.format("\"y\" : %.4f }", point.getY()));
             if (iter.hasNext())
             {
-                builder.append(String.format(",%n"));
+                builder.append(",\n");
             }
         }
-        builder.append(String.format("%n] }"));
+        builder.append(" ],\n\"widths\" : [\n");
+        for (Iterator<Double> iter = widths.iterator(); iter.hasNext(); )
+        {
+            builder.append(String.format("%.4f", iter.next()));
+            if (iter.hasNext())
+            {
+                builder.append(",\n");
+            }
+        }
+        builder.append(" ] }");
         return builder.toString();
     }
 }
