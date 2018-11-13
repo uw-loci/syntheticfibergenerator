@@ -183,10 +183,10 @@ public class MainWindow extends JFrame
     private void setDefaults()
     {
         fieldNImage.setText("10");
-        fieldNFiber.setText("50");
-        fieldMeanLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 20));
-        fieldMinLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 40));
-        fieldMaxLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
+        fieldNFiber.setText("15");
+        fieldMeanLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 30));
+        fieldMinLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 60));
+        fieldMaxLength.setText(Integer.toString(IMAGE_PANEL_SIZE / 20));
         fieldSegmentLength.setText("10.0");
         fieldMeanStraightness.setText("0.8");
         fieldMinStraightness.setText("0.7");
@@ -196,10 +196,10 @@ public class MainWindow extends JFrame
         fieldImageWidth.setText(Integer.toString(IMAGE_PANEL_SIZE));
         fieldImageHeight.setText(Integer.toString(IMAGE_PANEL_SIZE));
         fieldEdgeBuffer.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
-        fieldMeanWidth.setText("4.0");
-        fieldMinWidth.setText("1.0");
-        fieldMaxWidth.setText("7.0");
-        fieldWidthVariability.setText("1.0");
+        fieldMeanWidth.setText("3.0");
+        fieldMinWidth.setText("2.0");
+        fieldMaxWidth.setText("4.0");
+        fieldWidthVariability.setText("0.5");
     }
 
 

@@ -139,7 +139,8 @@ class RandomUtility
             return;
         }
 
-        int iBridge = getRandomInt(iStart + 1, iEnd);
+        // Note: Using the midpoint as the bridge gives more interesting paths
+        int iBridge = (iStart + iEnd) / 2;
         Circle circle1 = new Circle(points.get(iStart), stepSize * (iBridge - iStart));
         Circle circle2 = new Circle(points.get(iEnd), stepSize * (iEnd - iBridge));
         Vector2D bridge;

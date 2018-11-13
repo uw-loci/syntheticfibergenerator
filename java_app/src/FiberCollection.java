@@ -30,6 +30,9 @@ class FiberCollectionParams
 
 class FiberCollection implements Iterable<Fiber>
 {
+    private static final float COMPOSITE_ALPHA = 0.6F;
+    private static final int FADE_STEPS = 3;
+
     private FiberCollectionParams params;
     private ArrayList<Fiber> fibers;
 
@@ -120,22 +123,37 @@ class FiberCollection implements Iterable<Fiber>
     }
 
 
+    private void drawLine(Graphics2D graphics, Segment segment, float alpha, int width)
+    {
+        graphics.setStroke(new BasicStroke(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        graphics.setColor(new Color(1.0F, 1.0F, 1.0F, alpha));
+        graphics.drawLine((int) segment.start.getX(), (int) segment.start.getY(), (int) segment.end.getX(), (int) segment.end.getY());
+    }
+
+
     BufferedImage drawFibers()
     {
         BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = image.createGraphics();
-        AlphaComposite composite = AlphaComposite.getInstance(AlphaComposite.DST_OVER, (float) 0.7);
-        graphics.setComposite(composite);
+        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, COMPOSITE_ALPHA));
+
         for (Fiber fiber : fibers)
         {
-            BufferedImage fiberImage = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D fiberGraphics = fiberImage.createGraphics();
-            for (Segment segment : fiber)
+            BufferedImage layerImage = new BufferedImage(image.getWidth(), image.getHeight(), image.getType());
+            Graphics2D layerGraphics = layerImage.createGraphics();
+            layerGraphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+
+            double slope = 1.0 / (FADE_STEPS + 1.0);
+            for (int i = FADE_STEPS; i >= 0; i--)
             {
-                fiberGraphics.setStroke(new BasicStroke((int) segment.width));
-                fiberGraphics.drawLine((int) segment.start.getX(), (int) segment.start.getY(), (int) segment.end.getX(), (int) segment.end.getY());
+                float alpha = (float) (1.0 - i * slope);
+                for (Segment segment : fiber)
+                {
+                    drawLine(layerGraphics, segment, alpha, (int) segment.width + i);
+                }
             }
-            graphics.drawImage(fiberImage, 0, 0, image.getWidth(), image.getHeight(), null);
+
+            graphics.drawImage(layerImage, 0, 0, image.getWidth(), image.getHeight(), null);
         }
         return image;
     }
