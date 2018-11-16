@@ -7,6 +7,7 @@ import java.io.*;
 import java.io.IOException;
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Random;
 
 
 public class MainWindow extends JFrame
@@ -56,6 +57,8 @@ public class MainWindow extends JFrame
     private JLabel labelMeanWidth;
     private JTextField fieldWidthVariability;
     private JLabel labelWidthVariability;
+    private JCheckBox checkBoxSetSeed;
+    private JTextField fieldSeed;
 
     private ArrayList<BufferedImage> imageStack;
     private int currentImage;
@@ -69,7 +72,6 @@ public class MainWindow extends JFrame
     {
         super("Fiber Generator");
         imageStack = new ArrayList<>();
-
         setContentPane(panelMain);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
@@ -84,6 +86,16 @@ public class MainWindow extends JFrame
             FiberCollectionParams params = new FiberCollectionParams();
             try
             {
+                if (checkBoxSetSeed.isSelected())
+                {
+                    int seed = IOUtility.tryParseInt(fieldSeed.getText());
+                    RandomUtility.RNG = new Random((long) seed);
+                }
+                else
+                {
+                    RandomUtility.RNG = new Random();
+                }
+
                 nImages = IOUtility.tryParseInt(fieldNImage.getText());
                 params.nFibers = IOUtility.tryParseInt(fieldNFiber.getText());
                 params.meanLength = IOUtility.tryParseInt(fieldMeanLength.getText());
@@ -136,6 +148,8 @@ public class MainWindow extends JFrame
             {
                 FiberCollection fiberCollection = new FiberCollection(params);
                 fiberCollection.generate();
+                fiberCollection.bubbleSmooth();
+                fiberCollection.splineSmooth();
                 BufferedImage image = fiberCollection.drawFibers();
                 imageStack.add(image);
                 try
@@ -200,6 +214,8 @@ public class MainWindow extends JFrame
         fieldMinWidth.setText("2.0");
         fieldMaxWidth.setText("4.0");
         fieldWidthVariability.setText("0.5");
+        checkBoxSetSeed.setSelected(true);
+        fieldSeed.setText("1");
     }
 
 

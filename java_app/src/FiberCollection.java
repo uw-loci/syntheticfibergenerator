@@ -131,6 +131,24 @@ class FiberCollection implements Iterable<Fiber>
     }
 
 
+    void splineSmooth()
+    {
+        for (Fiber fiber : fibers)
+        {
+            fiber.splineSmooth();
+        }
+    }
+
+
+    void bubbleSmooth()
+    {
+        for (Fiber fiber : fibers)
+        {
+            fiber.swapSmooth();
+        }
+    }
+
+
     BufferedImage drawFibers()
     {
         BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);

@@ -7,7 +7,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 class RandomUtility
 {
-    final static Random RNG = new Random();
+    static Random RNG;
 
     /* If we generate random values too close to the upper or lower bounds it can cause problems
      * with limits of floating-point arithmetic; narrow the bounds by this amount so the user
@@ -99,7 +99,7 @@ class RandomUtility
         double last = wT * mT - wC * mC;
         output.add(last);
 
-        Collections.shuffle(output);
+        Collections.shuffle(output, RandomUtility.RNG);
         return output;
     }
 
