@@ -144,6 +144,15 @@ class FiberCollection implements Iterable<Fiber>
     {
         for (Fiber fiber : fibers)
         {
+            fiber.bubbleSmooth();
+        }
+    }
+
+
+    void swapSmooth()
+    {
+        for (Fiber fiber : fibers)
+        {
             fiber.swapSmooth();
         }
     }

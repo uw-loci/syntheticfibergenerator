@@ -148,7 +148,11 @@ public class MainWindow extends JFrame
             {
                 FiberCollection fiberCollection = new FiberCollection(params);
                 fiberCollection.generate();
+
+                // TODO: Allow user to choose smoothing method
                 fiberCollection.bubbleSmooth();
+                fiberCollection.swapSmooth();
+
                 fiberCollection.splineSmooth();
                 BufferedImage image = fiberCollection.drawFibers();
                 imageStack.add(image);

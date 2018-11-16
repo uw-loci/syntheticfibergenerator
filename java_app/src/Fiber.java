@@ -37,7 +37,9 @@ class Segment
 
 class Fiber implements Iterable<Segment>
 {
+    // TODO: Allow user to set smoothing parameters
     private static final int SPLINE_RATIO = 4;
+    private static final int BUBBLE_SMOOTH_PASSES = 5;
     private static final int SWAP_SMOOTH_RATIO = 10;
     private static final int SWAP_SMOOTH_RESTARTS = 1;
 
@@ -143,52 +145,43 @@ class Fiber implements Iterable<Segment>
     }
 
 
-    private double totalAngle(ArrayList<Vector2D> difs)
+    /**
+     * Tends to smooth out local "wiggles" in the fibers. 5-10 passes is likely sufficient.
+     */
+    void bubbleSmooth()
     {
-        double sum = 0;
-        for (int i = 0; i < difs.size() - 1; i++)
+        ArrayList<Vector2D> diffs = new ArrayList<>();
+        for (int i = 0; i < points.size() - 1; i++)
         {
-            sum += angle(difs.get(i), difs.get(i + 1));
+            diffs.add(points.get(i + 1).subtract(points.get(i)));
         }
-        return sum;
+
+        // TODO: Break out of the iteration early if a pass gave no changes
+        for (int i = 0; i < BUBBLE_SMOOTH_PASSES; i++)
+        {
+            for (int j = 0; j < diffs.size() - 1; j++)
+            {
+                double oldChange = testSwap(diffs, j, j + 1);
+                Collections.swap(diffs, j, j + 1);
+                double newChange = testSwap(diffs, j, j + 1);
+                if (newChange >= oldChange)
+                {
+                    Collections.swap(diffs, j, j + 1);
+                }
+            }
+        }
+
+        for (int i = 0; i < points.size() - 1; i++)
+        {
+            points.set(i + 1, points.get(i).add(diffs.get(i)));
+        }
     }
 
 
-    private double testSwap(ArrayList<Vector2D> difs, int d1, int d2)
-    {
-
-        double sum = 0.0;
-        if (d1 > 0)
-        {
-            sum +=  d1 > 0 ? angle(difs.get(d1 - 1), difs.get(d1)) : 0;
-        }
-        if (d1 < difs.size() - 1)
-        {
-            sum += angle(difs.get(d1), difs.get(d1 + 1));
-        }
-
-        if (d2 > 0)
-        {
-            sum += angle(difs.get(d2 - 1), difs.get(d2));
-        }
-        if (d2 < difs.size() - 1)
-        {
-            sum += angle(difs.get(d2), difs.get(d2 + 1));
-        }
-        return sum;
-    }
-
-
-    // TODO: Move to general utility, possibly extend Vector2D class
-    private double angle(Vector2D v1, Vector2D v2)
-    {
-        double cos = v1.normalize().dotProduct(v2.normalize());
-        cos = Math.min(1, cos);
-        cos = Math.max(-1, cos);
-        return Math.acos(cos);
-    }
-
-
+    /**
+     * Results in larger-scale smoothing than bubbleSmooth. Generally more computationally intensive
+     * (this depends on SWAP_SMOOTH_RESTARTS and SWAP_SMOOTH_RATIO).
+     */
     void swapSmooth()
     {
         ArrayList<Vector2D> diffs = new ArrayList<>();
@@ -229,6 +222,52 @@ class Fiber implements Iterable<Segment>
         {
             points.set(i + 1, points.get(i).add(bestDiffs.get(i)));
         }
+    }
+
+
+    private static double totalAngle(ArrayList<Vector2D> diffs)
+    {
+        double sum = 0;
+        for (int i = 0; i < diffs.size() - 1; i++)
+        {
+            sum += angle(diffs.get(i), diffs.get(i + 1));
+        }
+        return sum;
+    }
+
+
+    private static double testSwap(ArrayList<Vector2D> diffs, int u, int v)
+    {
+
+        double sum = 0.0;
+        if (u > 0)
+        {
+            sum += angle(diffs.get(u - 1), diffs.get(u));
+        }
+        if (u < diffs.size() - 1)
+        {
+            sum += angle(diffs.get(u), diffs.get(u + 1));
+        }
+
+        if (v > 0)
+        {
+            sum += angle(diffs.get(v - 1), diffs.get(v));
+        }
+        if (v < diffs.size() - 1)
+        {
+            sum += angle(diffs.get(v), diffs.get(v + 1));
+        }
+        return sum;
+    }
+
+
+    // TODO: Move to general utility, possibly extend Vector2D class
+    private static double angle(Vector2D v1, Vector2D v2)
+    {
+        double cos = v1.normalize().dotProduct(v2.normalize());
+        cos = Math.min(1, cos);
+        cos = Math.max(-1, cos);
+        return Math.acos(cos);
     }
 
 
