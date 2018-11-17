@@ -158,6 +158,7 @@ class FiberCollection implements Iterable<Fiber>
     }
 
 
+    // TODO: Allow fibers to overlap with themselves (but adjacent segments can't overlap)
     BufferedImage drawFibers()
     {
         BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);
