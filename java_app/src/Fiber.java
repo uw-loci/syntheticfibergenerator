@@ -236,27 +236,48 @@ class Fiber implements Iterable<Segment>
     }
 
 
+    /**
+     * u, v are assumed to be distinct and lie within the bounds of the array.
+     * @param diffs
+     * @param u
+     * @param v
+     * @return
+     */
     private static double testSwap(ArrayList<Vector2D> diffs, int u, int v)
     {
+        int i1 = Math.min(u, v);
+        int i2 = Math.max(u, v);
+        if (i1 < 0 || i2 > diffs.size() - 1)
+        {
+            throw new ArrayIndexOutOfBoundsException("u and v must be within the array");
+        }
 
         double sum = 0.0;
-        if (u > 0)
+
+        // Don't do this if i1 is right against the beginning of the array
+        if (i1 > 0)
         {
-            sum += angle(diffs.get(u - 1), diffs.get(u));
-        }
-        if (u < diffs.size() - 1)
-        {
-            sum += angle(diffs.get(u), diffs.get(u + 1));
+            sum += angle(diffs.get(i1 - 1), diffs.get(i1));
         }
 
-        if (v > 0)
+        // If i1 < i2 then i1 + 1 <= diffs.size() - 1
+        if (i1 < i2)
         {
-            sum += angle(diffs.get(v - 1), diffs.get(v));
+            sum += angle(diffs.get(i1), diffs.get(i1 + 1));
         }
-        if (v < diffs.size() - 1)
+
+        // Prevent double-counting of the space between i1 and i2 if they're adjacent
+        if (i1 < i2 - 1)
         {
-            sum += angle(diffs.get(v), diffs.get(v + 1));
+            sum += angle(diffs.get(i2 - 1), diffs.get(i2));
         }
+
+        // Don't do this if i2 is right against the end of the array
+        if (i2 < diffs.size() - 1)
+        {
+            sum += angle(diffs.get(i2), diffs.get(i2 + 1));
+        }
+
         return sum;
     }
 
