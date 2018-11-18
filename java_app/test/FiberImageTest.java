@@ -4,12 +4,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class FiberCollectionTest
+public class FiberImageTest
 {
     @Test
     void testGenerateDirections()
     {
-        FiberCollectionParams params = new FiberCollectionParams();
+        FiberImageParams params = new FiberImageParams();
         params.nFibers = 100;
         params.meanLength = 50;
         params.minLength = 40;
@@ -22,8 +22,8 @@ public class FiberCollectionTest
         params.meanAngle = 0.113;
         params.imageWidth = 1000;
         params.imageHeight = 1000;
-        FiberCollection collection = new FiberCollection(params);
-        collection.generate();
+        FiberImage collection = new FiberImage(params);
+        collection.generateFibers();
 
         Vector2D complexMean = new Vector2D(0.0, 0.0);
         for (Fiber fiber : collection)

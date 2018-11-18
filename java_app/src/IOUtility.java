@@ -65,7 +65,7 @@ class IOUtility
     }
 
 
-    static void saveData(FiberCollection fibers, String name) throws IOException
+    static void saveData(FiberImage fibers, String name) throws IOException
     {
         try
         {

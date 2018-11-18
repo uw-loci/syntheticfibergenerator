@@ -1,12 +1,14 @@
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import java.awt.*;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 
-class FiberCollectionParams
+class FiberImageParams
 {
     int nFibers;
     int meanLength;
@@ -25,22 +27,37 @@ class FiberCollectionParams
     double minWidth;
     double maxWidth;
     double widthVariation;
+    double micronsPerPixel;
+    double downsampleFactor;
+    double gaussianBlurRadius;
 }
 
 
-class FiberCollection implements Iterable<Fiber>
+class FiberImage implements Iterable<Fiber>
 {
     private static final float COMPOSITE_ALPHA = 0.6F;
     private static final int FADE_STEPS = 3;
 
-    private FiberCollectionParams params;
+    // The approximate fraction of the image's width that the scale bar should occupy
+    private static final double IDEAL_SCALE_FRAC = 0.2;
+
+    // TODO: Express these in terms of the total image size
+    // Visual properties of the scale bar
+    private static final int CAP_SIZE = 5;
+    private static final int LABEL_BUFF = 5;
+    private static final int SCALE_BUFF = 20;
+
+
+    private FiberImageParams params;
     private ArrayList<Fiber> fibers;
+    private BufferedImage image;
 
 
-    FiberCollection(FiberCollectionParams params)
+    FiberImage(FiberImageParams params)
     {
         this.params = params;
         this.fibers = new ArrayList<>(this.params.nFibers);
+        this.image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);
     }
 
 
@@ -93,7 +110,7 @@ class FiberCollection implements Iterable<Fiber>
     }
 
 
-    void generate()
+    void generateFibers()
     {
         ArrayList<Double> lengths = RandomUtility.getRandomList(params.meanLength, params.minLength, params.maxLength, params.nFibers);
         ArrayList<Double> straightnesses = RandomUtility.getRandomList(params.meanStraightness, params.minStraightness, params.maxStraightness, params.nFibers);
@@ -158,10 +175,16 @@ class FiberCollection implements Iterable<Fiber>
     }
 
 
-    // TODO: Allow fibers to overlap with themselves (but adjacent segments can't overlap)
-    BufferedImage drawFibers()
+    BufferedImage getImage()
     {
-        BufferedImage image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_INT_ARGB);
+        return this.image;
+    }
+
+
+    // TODO: Allow fibers to overlap with themselves (but adjacent segments can't overlap)
+    void drawFibers()
+    {
+
         Graphics2D graphics = image.createGraphics();
         graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, COMPOSITE_ALPHA));
 
@@ -183,7 +206,61 @@ class FiberCollection implements Iterable<Fiber>
 
             graphics.drawImage(layerImage, 0, 0, image.getWidth(), image.getHeight(), null);
         }
-        return image;
+    }
+
+
+    void drawScaleBar()
+    {
+        // Determine the size in microns of the scale bar
+        double targetSize = IDEAL_SCALE_FRAC * params.micronsPerPixel * image.getWidth();
+        double floorPow = Math.floor(Math.log10(targetSize));
+        double possibleSizes[] = {Math.pow(10, floorPow), 5 * Math.pow(10, floorPow), Math.pow(10, floorPow + 1)};
+        double bestSize = possibleSizes[0];
+        for (double size : possibleSizes)
+        {
+            if (Math.abs(targetSize - size) < Math.abs(targetSize - bestSize))
+            {
+                bestSize = size;
+            }
+        }
+
+        // Format the scale label
+        String label;
+        if (Math.abs(Math.floor(Math.log10(bestSize))) <= 2)
+        {
+            label = new DecimalFormat("0.## \u00B5").format(bestSize);
+        }
+        else
+        {
+            label = String.format("%.1e \u00B5", bestSize);
+        }
+
+        Graphics2D graphics = image.createGraphics();
+        graphics.setRenderingHint(
+                RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+        int scaleHeight = image.getHeight() - SCALE_BUFF - CAP_SIZE;
+        int scaleRight = SCALE_BUFF + (int) (bestSize / params.micronsPerPixel);
+
+        // Draw the scale
+        graphics.drawLine(SCALE_BUFF, scaleHeight, scaleRight, scaleHeight);
+        graphics.drawLine(SCALE_BUFF, scaleHeight + CAP_SIZE, SCALE_BUFF, scaleHeight - CAP_SIZE);
+        graphics.drawLine(scaleRight, scaleHeight + CAP_SIZE, scaleRight, scaleHeight - CAP_SIZE);
+
+        // Draw the scale label
+        graphics.drawString(label, SCALE_BUFF, scaleHeight - CAP_SIZE - LABEL_BUFF);
+    }
+
+
+    void downsample()
+    {
+        image = ImageUtility.scale(image, params.downsampleFactor, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+    }
+
+
+    void gaussianBlur()
+    {
+        image = ImageUtility.gaussianBlur(image, params.gaussianBlurRadius);
     }
 
 
