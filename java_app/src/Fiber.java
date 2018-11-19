@@ -116,6 +116,11 @@ class Fiber implements Iterable<Segment>
 
     void splineSmooth()
     {
+        if (params.length <= 1)
+        {
+            return;
+        }
+
         SplineInterpolator interpolator = new SplineInterpolator();
         double[] tPoints = new double[points.size()];
         double[] xPoints = new double[points.size()];
@@ -238,6 +243,7 @@ class Fiber implements Iterable<Segment>
 
     /**
      * u, v are assumed to be distinct and lie within the bounds of the array.
+     *
      * @param diffs
      * @param u
      * @param v

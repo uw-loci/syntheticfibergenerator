@@ -10,26 +10,20 @@ import java.util.Iterator;
 
 class FiberImageParams
 {
-    int nFibers;
-    int meanLength;
-    int minLength;
-    int maxLength;
-    double segmentLength;
-    double meanStraightness;
-    double minStraightness;
-    double maxStraightness;
+    Distribution length;
+    Distribution straightness;
+    Distribution fiberWidth;
     double alignment;
-    double meanAngle;
+    double angle;
+    int nFibers;
+    double segmentLength;
     int imageWidth;
     int imageHeight;
     int edgeBuffer;
-    double meanWidth;
-    double minWidth;
-    double maxWidth;
     double widthVariation;
     double micronsPerPixel;
-    double downsampleFactor;
-    double gaussianBlurRadius;
+    double downSampleFactor;
+    double blurRadius;
 }
 
 
@@ -46,7 +40,6 @@ class FiberImage implements Iterable<Fiber>
     private static final int CAP_SIZE = 5;
     private static final int LABEL_BUFF = 5;
     private static final int SCALE_BUFF = 20;
-
 
     private FiberImageParams params;
     private ArrayList<Fiber> fibers;
@@ -74,7 +67,7 @@ class FiberImage implements Iterable<Fiber>
 
     private ArrayList<Vector2D> generateDirections()
     {
-        Vector2D sum = new Vector2D(Math.cos(params.meanAngle * 2.0), Math.sin(params.meanAngle * 2.0));
+        Vector2D sum = new Vector2D(Math.cos(params.angle * 2.0), Math.sin(params.angle * 2.0));
         sum = sum.scalarMultiply(params.alignment * params.nFibers);
         ArrayList<Vector2D> directions = RandomUtility.getRandomChain(new Vector2D(0.0, 0.0), sum, params.nFibers, 1.0);
         directions = convertToDifferences(directions);
@@ -82,8 +75,8 @@ class FiberImage implements Iterable<Fiber>
         ArrayList<Vector2D> output = new ArrayList<>();
         for (Vector2D direction : directions)
         {
-            double angle = Math.atan2(direction.getY(), direction.getX()) / 2.0;
-            output.add(new Vector2D(Math.cos(angle), Math.sin(angle)));
+            double fiberAngle = Math.atan2(direction.getY(), direction.getX()) / 2.0;
+            output.add(new Vector2D(Math.cos(fiberAngle), Math.sin(fiberAngle)));
         }
         return output;
     }
@@ -112,9 +105,6 @@ class FiberImage implements Iterable<Fiber>
 
     void generateFibers()
     {
-        ArrayList<Double> lengths = RandomUtility.getRandomList(params.meanLength, params.minLength, params.maxLength, params.nFibers);
-        ArrayList<Double> straightnesses = RandomUtility.getRandomList(params.meanStraightness, params.minStraightness, params.maxStraightness, params.nFibers);
-        ArrayList<Double> startingWidths = RandomUtility.getRandomList(params.meanWidth, params.minWidth, params.maxWidth, params.nFibers);
         ArrayList<Vector2D> directions = generateDirections();
 
         for (int i = 0; i < params.nFibers; i++)
@@ -122,10 +112,10 @@ class FiberImage implements Iterable<Fiber>
             FiberParams fiberParams = new FiberParams();
 
             // TODO: Come up with a better solution than casting the length
-            fiberParams.length = (int) lengths.get(i).doubleValue();
+            fiberParams.length = (int) Math.round(params.length.sample());
+            fiberParams.straightness = params.straightness.sample();
+            fiberParams.startingWidth = params.fiberWidth.sample();
             fiberParams.segmentLength = params.segmentLength;
-            fiberParams.straightness = straightnesses.get(i);
-            fiberParams.startingWidth = startingWidths.get(i);
             fiberParams.widthVariation = params.widthVariation;
 
             Vector2D direction = directions.get(i);
@@ -254,13 +244,13 @@ class FiberImage implements Iterable<Fiber>
 
     void downsample()
     {
-        image = ImageUtility.scale(image, params.downsampleFactor, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+        image = ImageUtility.scale(image, params.downSampleFactor, AffineTransformOp.TYPE_BILINEAR);
     }
 
 
     void gaussianBlur()
     {
-        image = ImageUtility.gaussianBlur(image, params.gaussianBlurRadius);
+        image = ImageUtility.gaussianBlur(image, params.blurRadius);
     }
 
 
