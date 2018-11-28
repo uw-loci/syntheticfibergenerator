@@ -48,7 +48,7 @@ public class DistributionDialog
         dialog.add(comboBox, gbc);
 
         gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc.anchor = GridBagConstraints.WEST;
         gbc.gridwidth = 1;
 
         gbc.gridy++;

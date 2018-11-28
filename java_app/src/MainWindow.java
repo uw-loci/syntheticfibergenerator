@@ -1,6 +1,5 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -16,70 +15,31 @@ public class MainWindow extends JFrame
     private Distribution straightness;
     private Distribution width;
 
-    private JPanel panelMain;
-    private JPanel panelLeft;
-    private JPanel panelRight;
-    private JPanel panelNextPrev;
-    private JPanel panelSettings;
-    private JButton buttonPrevious;
-    private JButton buttonNext;
-    private JButton buttonGenerate;
-    private JLabel labelNImage;
-    private JLabel labelNFiber;
-    private JLabel labelSegmentLength;
-    private JLabel labelImageWidth;
-    private JLabel labelImageHeight;
-    private JLabel labelImage;
-    private JTextField fieldNImage;
-    private JTextField fieldNFiber;
-    private JTextField fieldMeanLength;
-    private JTextField fieldSegmentLength;
-    private JTextField fieldMeanStraightness;
-    private JTextField fieldImageWidth;
-    private JTextField fieldImageHeight;
-    private JTextField fieldMinLength;
-    private JTextField fieldMaxLength;
-    private JTextField fieldMinStraightness;
-    private JTextField fieldMaxStraightness;
-    private JTextField fieldAlignment;
-    private JTextField fieldMeanAngle;
-    private JLabel labelAlignment;
-    private JLabel labelMeanAngle;
-    private JTextField fieldEdgeBuffer;
-    private JLabel labelEdgeBuffer;
-    private JTextField fieldMinWidth;
-    private JTextField fieldMaxWidth;
-    private JTextField fieldMeanWidth;
-    private JTextField fieldWidthVariability;
-    private JLabel labelWidthVariability;
-    private JCheckBox checkBoxSetSeed;
-    private JTextField fieldSeed;
-    private JCheckBox checkBoxShowScale;
-    private JTextField fieldMicronsPerPixel;
-    private JPanel panelMicronsPerPixel;
-    private JLabel labelMicronsPerPixel;
-    private JCheckBox checkBoxGaussianBlur;
-    private JTextField fieldGaussianBlurRadius;
-    private JCheckBox checkBoxDownsample;
-    private JTextField fieldDownsampleFactor;
-    private JPanel panelGaussianBlur;
-    private JPanel panelDownsample;
-    private JLabel labelDownsampleFactor;
-    private JLabel labelGaussianBlurRadius;
-    private JButton modifyLengthDistrubutionButton;
-    private JButton modifyStraightnessDistributionButton;
-    private JButton modifyWidthDistributionButton;
-    private JLabel lengthDistributionLabel;
-    private JLabel straightnessDistributionLabel;
-    private JLabel widthDistributionLabel;
-    private JLabel lengthDistributionStringLabel;
-    private JLabel straightnessDistributionStringLabel;
-    private JLabel widthDistributionStringLabel;
+    private JLabel imageDisplay;
+
+    private JTextField nImagesField;
+    private JTextField nFibersField;
+    private JTextField segmentLengthField;
+    private JTextField alignmentField;
+    private JTextField meanAngleField;
+    private JTextField imageWidthField;
+    private JTextField imageHeightField;
+    private JTextField edgeBufferField;
+    private JTextField widthVariabilityField;
+    private JTextField seedField;
+    private JTextField scaleField;
+    private JTextField downsampleField;
+    private JTextField blurRadiusField;
+
+    private JCheckBox seedCheckBox;
+    private JCheckBox showScaleCheckBox;
+    private JCheckBox downsampleCheckBox;
+    private JCheckBox blurCheckBox;
 
     private ArrayList<FiberImage> imageStack;
     private int currentImage;
 
-    private final int IMAGE_PANEL_SIZE = 400;
+    private final int IMAGE_PANEL_SIZE = 500;
     private final String IMAGE_FOLDER = "images" + File.separator;
     private final String DATA_FOLDER = "data" + File.separator;
 
@@ -87,26 +47,179 @@ public class MainWindow extends JFrame
     private MainWindow()
     {
         super("Fiber Generator");
-        imageStack = new ArrayList<>();
-        setContentPane(panelMain);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        setResizable(false);
-        labelImage.setPreferredSize(new Dimension(IMAGE_PANEL_SIZE, IMAGE_PANEL_SIZE));
-        setDefaults();
+        setLayout(new GridBagLayout());
 
-        refreshDistributionDisplays();
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.anchor = GridBagConstraints.NORTH;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        JPanel displayPanel = new JPanel();
+        displayPanel.setLayout(new GridBagLayout());
+        add(displayPanel, gbc);
+
+        gbc.gridx++;
+        JPanel settingsPanel = new JPanel();
+        settingsPanel.setLayout(new GridBagLayout());
+        add(settingsPanel, gbc);
+
+        gbc.gridwidth = 2;
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        imageDisplay = new JLabel("Press \"Generate\" to view images");
+        imageDisplay.setHorizontalAlignment(JLabel.CENTER);
+        imageDisplay.setForeground(Color.WHITE);
+        imageDisplay.setBackground(Color.BLACK);
+        imageDisplay.setOpaque(true);
+        imageDisplay.setPreferredSize(new Dimension(IMAGE_PANEL_SIZE, IMAGE_PANEL_SIZE));
+        displayPanel.add(imageDisplay, gbc);
+
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 100;
+
+        gbc.gridy++;
+        JButton prevButton = new JButton("Previous");
+        displayPanel.add(prevButton, gbc);
+
+        gbc.anchor = GridBagConstraints.WEST;
+
+        gbc.gridx++;
+        JButton nextButton = new JButton("Next");
+        nextButton.setPreferredSize(prevButton.getPreferredSize());
+        displayPanel.add(nextButton, gbc);
+
+        gbc.anchor = GridBagConstraints.WEST;
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        settingsPanel.add(new JLabel("Number of images"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Fibers per image"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Segment length"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Alignment"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Mean angle"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Image width (px)"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Image height (px)"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Image buffer (px)"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Width variability"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Length distribution"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Width distribution"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Straightness distribution"), gbc);
+
+        gbc.gridx--;
+        gbc.gridy++;
+        seedCheckBox = new JCheckBox();
+        settingsPanel.add(seedCheckBox, gbc);
+        gbc.gridx++;
+        settingsPanel.add(new JLabel("Set random seed"), gbc);
+        gbc.gridx--;
+        gbc.gridy++;
+        showScaleCheckBox = new JCheckBox();
+        settingsPanel.add(showScaleCheckBox, gbc);
+        gbc.gridx++;
+        settingsPanel.add(new JLabel("Scale (\u00b5/px)"), gbc);
+        gbc.gridx--;
+        gbc.gridy++;
+        downsampleCheckBox = new JCheckBox();
+        settingsPanel.add(downsampleCheckBox, gbc);
+        gbc.gridx++;
+        settingsPanel.add(new JLabel("Downsample"), gbc);
+        gbc.gridx--;
+        gbc.gridy++;
+        blurCheckBox = new JCheckBox();
+        settingsPanel.add(blurCheckBox, gbc);
+        gbc.gridx++;
+        settingsPanel.add(new JLabel("Gaussian blur"), gbc);
+
+
+        gbc.gridx++;
+        gbc.gridy = 0;
+        nImagesField = new JTextField(10);
+        settingsPanel.add(nImagesField, gbc);
+        gbc.gridy++;
+        nFibersField = new JTextField(10);
+        settingsPanel.add(nFibersField, gbc);
+        gbc.gridy++;
+        segmentLengthField = new JTextField(10);
+        settingsPanel.add(segmentLengthField, gbc);
+        gbc.gridy++;
+        alignmentField = new JTextField(10);
+        settingsPanel.add(alignmentField, gbc);
+        gbc.gridy++;
+        meanAngleField = new JTextField(10);
+        settingsPanel.add(meanAngleField, gbc);
+        gbc.gridy++;
+        imageWidthField = new JTextField(10);
+        settingsPanel.add(imageWidthField, gbc);
+        gbc.gridy++;
+        imageHeightField = new JTextField(10);
+        settingsPanel.add(imageHeightField, gbc);
+        gbc.gridy++;
+        edgeBufferField = new JTextField(10);
+        settingsPanel.add(edgeBufferField, gbc);
+        gbc.gridy++;
+        widthVariabilityField = new JTextField(10);
+        settingsPanel.add(widthVariabilityField, gbc);
+        gbc.gridy++;
+        JButton lengthButton = new JButton("View/Modify");
+        settingsPanel.add(lengthButton, gbc);
+        gbc.gridy++;
+        JButton straightnessButton = new JButton("View/Modify");
+        settingsPanel.add(straightnessButton, gbc);
+        gbc.gridy++;
+        JButton widthButton = new JButton("View/Modify");
+        settingsPanel.add(widthButton, gbc);
+        gbc.gridy++;
+        seedField = new JTextField(10);
+        settingsPanel.add(seedField, gbc);
+        gbc.gridy++;
+        scaleField = new JTextField(10);
+        settingsPanel.add(scaleField, gbc);
+        gbc.gridy++;
+        downsampleField = new JTextField(10);
+        settingsPanel.add(downsampleField, gbc);
+        gbc.gridy++;
+        blurRadiusField = new JTextField(10);
+        settingsPanel.add(blurRadiusField, gbc);
+
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.gridwidth = 3;
+
+        gbc.gridx = 0;
+        gbc.gridy++;
+        JButton generateButton = new JButton("Generate");
+        settingsPanel.add(generateButton, gbc);
+
+        setDefaults();
+        setResizable(false);
         pack();
         setVisible(true);
 
-        buttonGenerate.addActionListener((ActionEvent event) ->
+        imageStack = new ArrayList<>();
+
+        generateButton.addActionListener((ActionEvent event) ->
         {
             int nImages;
             FiberImageParams params = new FiberImageParams();
             try
             {
-                if (checkBoxSetSeed.isSelected())
+                if (seedCheckBox.isSelected())
                 {
-                    int seed = IOUtility.tryParseInt(fieldSeed.getText());
+                    int seed = IOUtility.tryParseInt(seedField.getText());
                     RandomUtility.RNG = new Random((long) seed);
                 }
                 else
@@ -114,18 +227,18 @@ public class MainWindow extends JFrame
                     RandomUtility.RNG = new Random();
                 }
 
-                nImages = IOUtility.tryParseInt(fieldNImage.getText());
-                params.nFibers = IOUtility.tryParseInt(fieldNFiber.getText());
-                params.segmentLength = IOUtility.tryParseDouble(fieldSegmentLength.getText());
-                params.alignment = IOUtility.tryParseDouble(fieldAlignment.getText());
-                params.angle = IOUtility.tryParseDouble(fieldMeanAngle.getText());
-                params.imageWidth = IOUtility.tryParseInt(fieldImageWidth.getText());
-                params.imageHeight = IOUtility.tryParseInt(fieldImageHeight.getText());
-                params.edgeBuffer = IOUtility.tryParseInt(fieldEdgeBuffer.getText());
-                params.widthVariation = IOUtility.tryParseDouble(fieldWidthVariability.getText());
-                params.micronsPerPixel = IOUtility.tryParseDouble(fieldMicronsPerPixel.getText());
-                params.downSampleFactor = IOUtility.tryParseDouble(fieldDownsampleFactor.getText());
-                params.blurRadius = IOUtility.tryParseDouble(fieldGaussianBlurRadius.getText());
+                nImages = IOUtility.tryParseInt(nImagesField.getText());
+                params.nFibers = IOUtility.tryParseInt(nFibersField.getText());
+                params.segmentLength = IOUtility.tryParseDouble(segmentLengthField.getText());
+                params.alignment = IOUtility.tryParseDouble(alignmentField.getText());
+                params.angle = IOUtility.tryParseDouble(meanAngleField.getText());
+                params.imageWidth = IOUtility.tryParseInt(imageWidthField.getText());
+                params.imageHeight = IOUtility.tryParseInt(imageHeightField.getText());
+                params.edgeBuffer = IOUtility.tryParseInt(edgeBufferField.getText());
+                params.widthVariation = IOUtility.tryParseDouble(widthVariabilityField.getText());
+                params.micronsPerPixel = IOUtility.tryParseDouble(scaleField.getText());
+                params.downSampleFactor = IOUtility.tryParseDouble(downsampleField.getText());
+                params.blurRadius = IOUtility.tryParseDouble(blurRadiusField.getText());
 
                 params.length = length;
                 params.straightness = straightness;
@@ -161,15 +274,15 @@ public class MainWindow extends JFrame
                 fiberImage.splineSmooth();
 
                 fiberImage.drawFibers();
-                if (checkBoxGaussianBlur.isSelected())
+                if (blurCheckBox.isSelected())
                 {
                     fiberImage.gaussianBlur();
                 }
-                if (checkBoxShowScale.isSelected())
+                if (showScaleCheckBox.isSelected())
                 {
                     fiberImage.drawScaleBar();
                 }
-                if (checkBoxDownsample.isSelected())
+                if (downsampleCheckBox.isSelected())
                 {
                     fiberImage.downsample();
                 }
@@ -196,7 +309,7 @@ public class MainWindow extends JFrame
             displayImage(imageStack.get(currentImage).getImage());
         });
 
-        buttonPrevious.addActionListener((ActionEvent event) ->
+        prevButton.addActionListener((ActionEvent event) ->
         {
             if (!imageStack.isEmpty() && currentImage > 0)
             {
@@ -205,7 +318,7 @@ public class MainWindow extends JFrame
             }
         });
 
-        buttonNext.addActionListener((ActionEvent event) ->
+        nextButton.addActionListener((ActionEvent event) ->
         {
             if (!imageStack.isEmpty() && currentImage < imageStack.size() - 1)
             {
@@ -213,71 +326,47 @@ public class MainWindow extends JFrame
                 displayImage(imageStack.get(currentImage).getImage());
             }
         });
-        modifyLengthDistrubutionButton.addActionListener(new ActionListener()
+        lengthButton.addActionListener((ActionEvent event) ->
         {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                DistributionDialog dialog = new DistributionDialog(length);
-                dialog.showDialog();
-                length = dialog.distribution;
-                refreshDistributionDisplays();
-            }
+            DistributionDialog dialog = new DistributionDialog(length);
+            dialog.showDialog();
+            length = dialog.distribution;
         });
-        modifyStraightnessDistributionButton.addActionListener(new ActionListener()
+        straightnessButton.addActionListener((ActionEvent event) ->
         {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                DistributionDialog dialog = new DistributionDialog(straightness);
-                dialog.showDialog();
-                straightness = dialog.distribution;
-                refreshDistributionDisplays();
-            }
+            DistributionDialog dialog = new DistributionDialog(straightness);
+            dialog.showDialog();
+            straightness = dialog.distribution;
         });
-        modifyWidthDistributionButton.addActionListener(new ActionListener()
+        widthButton.addActionListener((ActionEvent event) ->
         {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                DistributionDialog dialog = new DistributionDialog(width);
-                dialog.showDialog();
-                width = dialog.distribution;
-                refreshDistributionDisplays();
-            }
+            DistributionDialog dialog = new DistributionDialog(width);
+            dialog.showDialog();
+            width = dialog.distribution;
         });
-    }
-
-
-    private void refreshDistributionDisplays()
-    {
-        lengthDistributionStringLabel.setText(length.toString());
-        straightnessDistributionStringLabel.setText(straightness.toString());
-        widthDistributionStringLabel.setText(width.toString());
-        pack();
     }
 
 
     private void setDefaults()
     {
-        fieldNImage.setText("10");
-        fieldNFiber.setText("15");
-        fieldSegmentLength.setText("10.0");
-        fieldAlignment.setText("0.5");
-        fieldMeanAngle.setText("3.14159");
-        fieldImageWidth.setText(Integer.toString(IMAGE_PANEL_SIZE));
-        fieldImageHeight.setText(Integer.toString(IMAGE_PANEL_SIZE));
-        fieldEdgeBuffer.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
-        fieldWidthVariability.setText("0.5");
-        checkBoxSetSeed.setSelected(true);
-        fieldSeed.setText("1");
-        checkBoxShowScale.setSelected(true);
-        fieldMicronsPerPixel.setText("5");
-        checkBoxDownsample.setSelected(false);
-        fieldDownsampleFactor.setText("0.5");
-        checkBoxGaussianBlur.setSelected(false);
-        fieldGaussianBlurRadius.setText("5.0");
-        length = new Gaussian(1.0, 0.1, 1.0, Double.POSITIVE_INFINITY);
+        nImagesField.setText("10");
+        nFibersField.setText("15");
+        segmentLengthField.setText("10.0");
+        alignmentField.setText("0.5");
+        meanAngleField.setText("3.14159");
+        imageWidthField.setText(Integer.toString(IMAGE_PANEL_SIZE));
+        imageHeightField.setText(Integer.toString(IMAGE_PANEL_SIZE));
+        edgeBufferField.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
+        widthVariabilityField.setText("0.5");
+        seedCheckBox.setSelected(true);
+        seedField.setText("1");
+        showScaleCheckBox.setSelected(true);
+        scaleField.setText("5");
+        downsampleCheckBox.setSelected(false);
+        downsampleField.setText("0.5");
+        blurCheckBox.setSelected(false);
+        blurRadiusField.setText("5.0");
+        length = new Gaussian(10.0, 2.0, 1.0, Double.POSITIVE_INFINITY);
         straightness = new Uniform(0.8, 1.0, 0.0, 1.0);
         width = new Gaussian(2.0, 1.0, 1.0, Double.POSITIVE_INFINITY);
     }
@@ -291,8 +380,8 @@ public class MainWindow extends JFrame
         BufferedImage scaled = ImageUtility.scale(image, scale, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 
         Icon icon = new ImageIcon(scaled);
-        labelImage.setText(null);
-        labelImage.setIcon(icon);
+        imageDisplay.setText(null);
+        imageDisplay.setIcon(icon);
         pack();
     }
 
