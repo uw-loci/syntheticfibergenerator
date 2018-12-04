@@ -1,3 +1,6 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.AffineTransformOp;
@@ -5,16 +8,40 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.io.IOException;
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.util.ArrayList;
 import java.util.Random;
 
 
+class ProgramParams
+{
+    int nImages;
+    int nFibers;
+    double segmentLength;
+    double alignment;
+    double meanAngle;
+    int imageWidth;
+    int imageHeight;
+    int edgeBuffer;
+    double widthVariability;
+    Distribution length = new Gaussian(1, 1, 2, 3);
+    Distribution straightness = new Gaussian(1, 1, 2, 3);
+    Distribution width = new Gaussian(1, 1, 2, 3);
+    boolean setSeed;
+    int seed;
+    boolean showScale;
+    double micronsPerPixel;
+    boolean downsample;
+    double scaleRatio;
+    boolean blur;
+    double blurRadius;
+    boolean addNoise;
+    int meanNoise;
+}
+
+
 public class MainWindow extends JFrame
 {
-    private Distribution length;
-    private Distribution straightness;
-    private Distribution width;
-
     private JLabel imageDisplay;
 
     private JTextField nImagesField;
@@ -30,18 +57,26 @@ public class MainWindow extends JFrame
     private JTextField scaleField;
     private JTextField downsampleField;
     private JTextField blurRadiusField;
+    private JTextField meanNoiseField;
 
     private JCheckBox seedCheckBox;
     private JCheckBox showScaleCheckBox;
     private JCheckBox downsampleCheckBox;
     private JCheckBox blurCheckBox;
+    private JCheckBox noiseCheckBox;
+
+    private Gson serializer;
+    private Gson deserializer;
+
+    private ProgramParams params;
 
     private ArrayList<FiberImage> imageStack;
     private int currentImage;
 
     private final int IMAGE_PANEL_SIZE = 500;
-    private final String IMAGE_FOLDER = "images" + File.separator;
-    private final String DATA_FOLDER = "data" + File.separator;
+    private static final String IMAGE_FOLDER = "images" + File.separator;
+    private static final String DATA_FOLDER = "data" + File.separator;
+    private static final String DEFAULTS_FILE = "defaults.json";
 
 
     private MainWindow()
@@ -92,10 +127,30 @@ public class MainWindow extends JFrame
         nextButton.setPreferredSize(prevButton.getPreferredSize());
         displayPanel.add(nextButton, gbc);
 
+
+        gbc.gridwidth = 3;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JPanel loadSavePanel = new JPanel();
+        loadSavePanel.setLayout(new GridBagLayout());
+        settingsPanel.add(loadSavePanel, gbc);
+        gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.weightx = 100;
+        JButton loadButton = new JButton("Load");
+        loadSavePanel.add(loadButton, gbc);
+        gbc.gridx++;
+        gbc.anchor = GridBagConstraints.WEST;
+        JButton saveButton = new JButton("Save");
+        loadSavePanel.add(saveButton, gbc);
+
         gbc.anchor = GridBagConstraints.WEST;
 
         gbc.gridx = 1;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         settingsPanel.add(new JLabel("Number of images"), gbc);
         gbc.gridy++;
         settingsPanel.add(new JLabel("Fibers per image"), gbc);
@@ -144,10 +199,15 @@ public class MainWindow extends JFrame
         settingsPanel.add(blurCheckBox, gbc);
         gbc.gridx++;
         settingsPanel.add(new JLabel("Gaussian blur"), gbc);
-
+        gbc.gridx--;
+        gbc.gridy++;
+        noiseCheckBox = new JCheckBox();
+        settingsPanel.add(noiseCheckBox, gbc);
+        gbc.gridx++;
+        settingsPanel.add(new JLabel("Poisson noise"), gbc);
 
         gbc.gridx++;
-        gbc.gridy = 0;
+        gbc.gridy = 1;
         nImagesField = new JTextField(10);
         settingsPanel.add(nImagesField, gbc);
         gbc.gridy++;
@@ -178,11 +238,11 @@ public class MainWindow extends JFrame
         JButton lengthButton = new JButton("View/Modify");
         settingsPanel.add(lengthButton, gbc);
         gbc.gridy++;
-        JButton straightnessButton = new JButton("View/Modify");
-        settingsPanel.add(straightnessButton, gbc);
-        gbc.gridy++;
         JButton widthButton = new JButton("View/Modify");
         settingsPanel.add(widthButton, gbc);
+        gbc.gridy++;
+        JButton straightnessButton = new JButton("View/Modify");
+        settingsPanel.add(straightnessButton, gbc);
         gbc.gridy++;
         seedField = new JTextField(10);
         settingsPanel.add(seedField, gbc);
@@ -195,6 +255,9 @@ public class MainWindow extends JFrame
         gbc.gridy++;
         blurRadiusField = new JTextField(10);
         settingsPanel.add(blurRadiusField, gbc);
+        gbc.gridy++;
+        meanNoiseField = new JTextField(10);
+        settingsPanel.add(meanNoiseField, gbc);
 
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = 3;
@@ -204,7 +267,25 @@ public class MainWindow extends JFrame
         JButton generateButton = new JButton("Generate");
         settingsPanel.add(generateButton, gbc);
 
-        setDefaults();
+        serializer = new GsonBuilder()
+                .setPrettyPrinting()
+                .serializeSpecialFloatingPointValues()
+                .create();
+        deserializer = new GsonBuilder()
+                .registerTypeAdapter(Distribution.class, new DistributionDeserializer())
+                .create();
+        try
+        {
+            // TODO: Write a method for this
+            params = deserializer.fromJson(new BufferedReader(new FileReader(DEFAULTS_FILE)), ProgramParams.class);
+        }
+        catch (FileNotFoundException e)
+        {
+            System.out.println("Defaults file not found");
+            System.exit(1);
+        }
+
+        displayParams();
         setResizable(false);
         pack();
         setVisible(true);
@@ -213,11 +294,9 @@ public class MainWindow extends JFrame
 
         generateButton.addActionListener((ActionEvent event) ->
         {
-            int nImages;
-            FiberImageParams params = new FiberImageParams();
             try
             {
-                if (seedCheckBox.isSelected())
+                if (params.setSeed)
                 {
                     int seed = IOUtility.tryParseInt(seedField.getText());
                     RandomUtility.RNG = new Random((long) seed);
@@ -226,35 +305,7 @@ public class MainWindow extends JFrame
                 {
                     RandomUtility.RNG = new Random();
                 }
-
-                nImages = IOUtility.tryParseInt(nImagesField.getText());
-                params.nFibers = IOUtility.tryParseInt(nFibersField.getText());
-                params.segmentLength = IOUtility.tryParseDouble(segmentLengthField.getText());
-                params.alignment = IOUtility.tryParseDouble(alignmentField.getText());
-                params.angle = IOUtility.tryParseDouble(meanAngleField.getText());
-                params.imageWidth = IOUtility.tryParseInt(imageWidthField.getText());
-                params.imageHeight = IOUtility.tryParseInt(imageHeightField.getText());
-                params.edgeBuffer = IOUtility.tryParseInt(edgeBufferField.getText());
-                params.widthVariation = IOUtility.tryParseDouble(widthVariabilityField.getText());
-                params.micronsPerPixel = IOUtility.tryParseDouble(scaleField.getText());
-                params.downSampleFactor = IOUtility.tryParseDouble(downsampleField.getText());
-                params.blurRadius = IOUtility.tryParseDouble(blurRadiusField.getText());
-
-                params.length = length;
-                params.straightness = straightness;
-                params.fiberWidth = width;
-
-                IOUtility.verifyValue(nImages, 1, Integer.MAX_VALUE);
-                IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
-                IOUtility.verifyValue(params.segmentLength, 0.0, Double.POSITIVE_INFINITY);
-                IOUtility.verifyValue(params.alignment, 0.000001, 1.0);
-                IOUtility.verifyValue(params.imageWidth, 1, Integer.MAX_VALUE);
-                IOUtility.verifyValue(params.imageHeight, 1, Integer.MAX_VALUE);
-                IOUtility.verifyValue(params.edgeBuffer, 0, Math.min(params.imageWidth / 2, params.imageHeight / 2));
-                IOUtility.verifyValue(params.widthVariation, 0.0, Double.POSITIVE_INFINITY);
-                IOUtility.verifyValue(params.micronsPerPixel, 0.000001, Double.POSITIVE_INFINITY);
-                IOUtility.verifyValue(params.downSampleFactor, 0, Math.max(params.imageWidth, params.imageHeight));
-                IOUtility.verifyValue(params.blurRadius, 0.0, Double.POSITIVE_INFINITY);
+                readParams();
             }
             catch (IllegalArgumentException exception)
             {
@@ -263,7 +314,7 @@ public class MainWindow extends JFrame
             }
 
             imageStack.clear();
-            for (int i = 0; i < nImages; i++)
+            for (int i = 0; i < params.nImages; i++)
             {
                 FiberImage fiberImage = new FiberImage(params);
                 fiberImage.generateFibers();
@@ -274,15 +325,19 @@ public class MainWindow extends JFrame
                 fiberImage.splineSmooth();
 
                 fiberImage.drawFibers();
-                if (blurCheckBox.isSelected())
+                if (params.addNoise)
+                {
+                    fiberImage.addNoise();
+                }
+                if (params.blur)
                 {
                     fiberImage.gaussianBlur();
                 }
-                if (showScaleCheckBox.isSelected())
+                if (params.showScale)
                 {
                     fiberImage.drawScaleBar();
                 }
-                if (downsampleCheckBox.isSelected())
+                if (params.downsample)
                 {
                     fiberImage.downsample();
                 }
@@ -328,47 +383,125 @@ public class MainWindow extends JFrame
         });
         lengthButton.addActionListener((ActionEvent event) ->
         {
-            DistributionDialog dialog = new DistributionDialog(length);
+            DistributionDialog dialog = new DistributionDialog(params.length);
             dialog.showDialog();
-            length = dialog.distribution;
+            params.length = dialog.distribution;
         });
         straightnessButton.addActionListener((ActionEvent event) ->
         {
-            DistributionDialog dialog = new DistributionDialog(straightness);
+            DistributionDialog dialog = new DistributionDialog(params.straightness);
             dialog.showDialog();
-            straightness = dialog.distribution;
+            params.straightness = dialog.distribution;
         });
         widthButton.addActionListener((ActionEvent event) ->
         {
-            DistributionDialog dialog = new DistributionDialog(width);
+            DistributionDialog dialog = new DistributionDialog(params.width);
             dialog.showDialog();
-            width = dialog.distribution;
+            params.width = dialog.distribution;
+        });
+        loadButton.addActionListener((ActionEvent event) ->
+        {
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+            chooser.setFileFilter(filter);
+            int returnVal = chooser.showOpenDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION)
+            {
+                try
+                {
+                    System.out.println(chooser.getSelectedFile().getAbsolutePath());
+                    FileReader reader = new FileReader(chooser.getSelectedFile().getAbsolutePath());
+                    params = deserializer.fromJson(reader, ProgramParams.class);
+                    reader.close();
+                    displayParams();
+                }
+                catch (IOException e)
+                {
+                    JOptionPane.showMessageDialog(null, "Unable to open file");
+                }
+            }
+        });
+        saveButton.addActionListener((ActionEvent event) ->
+        {
+            JFileChooser chooser = new JFileChooser();
+            FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+            chooser.setFileFilter(filter);
+            int returnVal = chooser.showSaveDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION)
+            {
+                try
+                {
+                    readParams();
+                    System.out.println(chooser.getSelectedFile().getAbsolutePath());
+                    FileWriter writer = new FileWriter(chooser.getSelectedFile().getAbsolutePath());
+                    writer.write(serializer.toJson(params));
+                    writer.close();
+                }
+                catch (IOException e)
+                {
+                    JOptionPane.showMessageDialog(null, "Unable to save file");
+                }
+            }
         });
     }
 
 
-    private void setDefaults()
+    private void readParams() throws IllegalArgumentException
     {
-        nImagesField.setText("10");
-        nFibersField.setText("15");
-        segmentLengthField.setText("10.0");
-        alignmentField.setText("0.5");
-        meanAngleField.setText("3.14159");
-        imageWidthField.setText(Integer.toString(IMAGE_PANEL_SIZE));
-        imageHeightField.setText(Integer.toString(IMAGE_PANEL_SIZE));
-        edgeBufferField.setText(Integer.toString(IMAGE_PANEL_SIZE / 10));
-        widthVariabilityField.setText("0.5");
-        seedCheckBox.setSelected(true);
-        seedField.setText("1");
-        showScaleCheckBox.setSelected(true);
-        scaleField.setText("5");
-        downsampleCheckBox.setSelected(false);
-        downsampleField.setText("0.5");
-        blurCheckBox.setSelected(false);
-        blurRadiusField.setText("5.0");
-        length = new Gaussian(10.0, 2.0, 1.0, Double.POSITIVE_INFINITY);
-        straightness = new Uniform(0.8, 1.0, 0.0, 1.0);
-        width = new Gaussian(2.0, 1.0, 1.0, Double.POSITIVE_INFINITY);
+        params.nImages = IOUtility.tryParseInt(nImagesField.getText());
+        params.nFibers = IOUtility.tryParseInt(nFibersField.getText());
+        params.segmentLength = IOUtility.tryParseDouble(segmentLengthField.getText());
+        params.alignment = IOUtility.tryParseDouble(alignmentField.getText());
+        params.meanAngle = IOUtility.tryParseDouble(meanAngleField.getText());
+        params.imageWidth = IOUtility.tryParseInt(imageWidthField.getText());
+        params.imageHeight = IOUtility.tryParseInt(imageHeightField.getText());
+        params.edgeBuffer = IOUtility.tryParseInt(edgeBufferField.getText());
+        params.widthVariability = IOUtility.tryParseDouble(widthVariabilityField.getText());
+        params.showScale = showScaleCheckBox.isSelected();
+        params.micronsPerPixel = IOUtility.tryParseDouble(scaleField.getText());
+        params.downsample = downsampleCheckBox.isSelected();
+        params.scaleRatio = IOUtility.tryParseDouble(downsampleField.getText());
+        params.blur = blurCheckBox.isSelected();
+        params.blurRadius = IOUtility.tryParseDouble(blurRadiusField.getText());
+        params.addNoise = noiseCheckBox.isSelected();
+        params.meanNoise = IOUtility.tryParseInt(meanNoiseField.getText());
+
+        IOUtility.verifyValue(params.nImages, 1, Integer.MAX_VALUE);
+        IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
+        IOUtility.verifyValue(params.segmentLength, 0.0, Double.POSITIVE_INFINITY);
+        IOUtility.verifyValue(params.alignment, 0.000001, 1.0);
+        IOUtility.verifyValue(params.imageWidth, 1, Integer.MAX_VALUE);
+        IOUtility.verifyValue(params.imageHeight, 1, Integer.MAX_VALUE);
+        IOUtility.verifyValue(params.edgeBuffer, 0, Math.min(params.imageWidth / 2, params.imageHeight / 2));
+        IOUtility.verifyValue(params.widthVariability, 0.0, Double.POSITIVE_INFINITY);
+        IOUtility.verifyValue(params.micronsPerPixel, 0.000001, Double.POSITIVE_INFINITY);
+        IOUtility.verifyValue(params.scaleRatio, 0, Math.max(params.imageWidth, params.imageHeight));
+        IOUtility.verifyValue(params.blurRadius, 0.0, Double.POSITIVE_INFINITY);
+        IOUtility.verifyValue(params.meanNoise, 1.0, Integer.MAX_VALUE);
+    }
+
+
+    private void displayParams()
+    {
+        nImagesField.setText(Integer.toString(params.nImages));
+        nFibersField.setText(Integer.toString(params.nFibers));
+        segmentLengthField.setText(Double.toString(params.segmentLength));
+        alignmentField.setText(Double.toString(params.alignment));
+        meanAngleField.setText(Double.toString(params.meanAngle));
+        imageWidthField.setText(Integer.toString(params.imageWidth));
+        imageHeightField.setText(Integer.toString(params.imageHeight));
+        edgeBufferField.setText(Integer.toString(params.edgeBuffer));
+        widthVariabilityField.setText(Double.toString(params.widthVariability));
+        seedCheckBox.setSelected(params.setSeed);
+        seedField.setText(Integer.toString(params.seed));
+        showScaleCheckBox.setSelected(params.showScale);
+        scaleField.setText(Double.toString(params.micronsPerPixel));
+        downsampleCheckBox.setSelected(params.downsample);
+        downsampleField.setText(Double.toString(params.scaleRatio));
+        blurCheckBox.setSelected(params.blur);
+        blurRadiusField.setText(Double.toString(params.blurRadius));
+        noiseCheckBox.setSelected(params.addNoise);
+        meanNoiseField.setText(Integer.toString(params.meanNoise));
     }
 
 

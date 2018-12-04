@@ -1,8 +1,31 @@
+import com.google.gson.*;
+
+import java.lang.reflect.Type;
+
+
+class DistributionDeserializer implements JsonDeserializer<Object>
+{
+    @Override
+    public Object deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException
+    {
+        JsonObject object = jsonElement.getAsJsonObject();
+        String className = object.get("type").getAsString();
+        if (className.equals("Gaussian"))
+        {
+            return jsonDeserializationContext.deserialize(jsonElement, Gaussian.class);
+        }
+        else
+        {
+            return jsonDeserializationContext.deserialize(jsonElement, Uniform.class);
+        }
+    }
+}
+
+
 abstract class Distribution
 {
     double lowerBound;
     double upperBound;
-
 
     abstract double sample();
 }
@@ -10,6 +33,8 @@ abstract class Distribution
 
 class Gaussian extends Distribution
 {
+    final String type = "Gaussian";
+
     double mean;
     double sigma;
 
@@ -52,6 +77,8 @@ class Gaussian extends Distribution
 
 class Uniform extends Distribution
 {
+    final String type = "Uniform";
+
     double min;
     double max;
 

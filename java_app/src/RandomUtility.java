@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 
@@ -13,7 +14,6 @@ class RandomUtility
      * with limits of floating-point arithmetic; narrow the bounds by this amount so the user
      * doesn't have to worry about this. */
     private static final double BUFF = 1e-10;
-
 
     static double getRandomDouble(double min, double max)
     {

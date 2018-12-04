@@ -1,11 +1,14 @@
+import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
+import java.awt.Color;
 import java.awt.*;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 
 class FiberImageParams
@@ -41,12 +44,12 @@ class FiberImage implements Iterable<Fiber>
     private static final int LABEL_BUFF = 5;
     private static final int SCALE_BUFF = 20;
 
-    private FiberImageParams params;
+    private ProgramParams params;
     private ArrayList<Fiber> fibers;
     private BufferedImage image;
 
 
-    FiberImage(FiberImageParams params)
+    FiberImage(ProgramParams params)
     {
         this.params = params;
         this.fibers = new ArrayList<>(this.params.nFibers);
@@ -67,7 +70,7 @@ class FiberImage implements Iterable<Fiber>
 
     private ArrayList<Vector2D> generateDirections()
     {
-        Vector2D sum = new Vector2D(Math.cos(params.angle * 2.0), Math.sin(params.angle * 2.0));
+        Vector2D sum = new Vector2D(Math.cos(params.meanAngle * 2.0), Math.sin(params.meanAngle * 2.0));
         sum = sum.scalarMultiply(params.alignment * params.nFibers);
         ArrayList<Vector2D> directions = RandomUtility.getRandomChain(new Vector2D(0.0, 0.0), sum, params.nFibers, 1.0);
         directions = convertToDifferences(directions);
@@ -114,9 +117,9 @@ class FiberImage implements Iterable<Fiber>
             // TODO: Come up with a better solution than casting the length
             fiberParams.length = (int) Math.round(params.length.sample());
             fiberParams.straightness = params.straightness.sample();
-            fiberParams.startingWidth = params.fiberWidth.sample();
+            fiberParams.startingWidth = params.width.sample();
             fiberParams.segmentLength = params.segmentLength;
-            fiberParams.widthVariation = params.widthVariation;
+            fiberParams.widthVariation = params.widthVariability;
 
             Vector2D direction = directions.get(i);
             double endDistance = fiberParams.length * fiberParams.segmentLength * fiberParams.straightness;
@@ -244,7 +247,7 @@ class FiberImage implements Iterable<Fiber>
 
     void downsample()
     {
-        image = ImageUtility.scale(image, params.downSampleFactor, AffineTransformOp.TYPE_BILINEAR);
+        image = ImageUtility.scale(image, params.scaleRatio, AffineTransformOp.TYPE_BILINEAR);
     }
 
 
@@ -275,5 +278,25 @@ class FiberImage implements Iterable<Fiber>
         }
         builder.append("\n]");
         return builder.toString();
+    }
+
+
+    void addNoise()
+    {
+        PoissonDistribution dist = new PoissonDistribution(params.meanNoise);
+
+        // Sequence of poisson seeds depends on the initial RNG seed
+        dist.reseedRandomGenerator(RandomUtility.RNG.nextInt());
+        for (int y = 0; y < image.getHeight(); y++)
+        {
+            for (int x = 0; x < image.getWidth(); x++)
+            {
+                int noise = dist.sample();
+                Color color = new Color(image.getRGB(x, y));
+                float[] hsb = new float[3];
+                Color.RGBtoHSB(color.getRed(), color.getBlue(), color.getGreen(), hsb);
+                // TODO: Not finished...
+            }
+        }
     }
 }
