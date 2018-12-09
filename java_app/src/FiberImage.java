@@ -44,9 +44,9 @@ class FiberImage implements Iterable<Fiber>
     private static final int LABEL_BUFF = 5;
     private static final int SCALE_BUFF = 20;
 
-    private ProgramParams params;
+    private transient ProgramParams params;
+    private transient BufferedImage image;
     private ArrayList<Fiber> fibers;
-    private BufferedImage image;
 
 
     FiberImage(ProgramParams params)
@@ -177,9 +177,8 @@ class FiberImage implements Iterable<Fiber>
     // TODO: Allow fibers to overlap with themselves (but adjacent segments can't overlap)
     void drawFibers()
     {
-
         Graphics2D graphics = image.createGraphics();
-        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, COMPOSITE_ALPHA));
+        graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.DST_OVER, (float) params.fiberTransparency / 100F));
 
         for (Fiber fiber : fibers)
         {
@@ -291,11 +290,13 @@ class FiberImage implements Iterable<Fiber>
         {
             for (int x = 0; x < image.getWidth(); x++)
             {
+                // TODO: This sampling is slow for large values of params.meanNoise
                 int noise = dist.sample();
-                Color color = new Color(image.getRGB(x, y));
-                float[] hsb = new float[3];
-                Color.RGBtoHSB(color.getRed(), color.getBlue(), color.getGreen(), hsb);
-                // TODO: Not finished...
+                int argb = image.getRGB(x, y);
+                int a = (argb >> 24) & 0xFF;
+                a = Math.min(a + noise, 0xFF);
+                argb = (a << 24) | 0xFFFFFF;
+                image.setRGB(x, y, argb);
             }
         }
     }

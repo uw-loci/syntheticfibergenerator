@@ -23,6 +23,7 @@ class ProgramParams
     int imageWidth;
     int imageHeight;
     int edgeBuffer;
+    double fiberTransparency;
     double widthVariability;
     Distribution length = new Gaussian(1, 1, 2, 3);
     Distribution straightness = new Gaussian(1, 1, 2, 3);
@@ -52,6 +53,7 @@ public class MainWindow extends JFrame
     private JTextField imageWidthField;
     private JTextField imageHeightField;
     private JTextField edgeBufferField;
+    private JTextField fiberTransparencyField;
     private JTextField widthVariabilityField;
     private JTextField seedField;
     private JTextField scaleField;
@@ -74,8 +76,7 @@ public class MainWindow extends JFrame
     private int currentImage;
 
     private final int IMAGE_PANEL_SIZE = 500;
-    private static final String IMAGE_FOLDER = "images" + File.separator;
-    private static final String DATA_FOLDER = "data" + File.separator;
+    private static String outFolder = "output" + File.separator;
     private static final String DEFAULTS_FILE = "defaults.json";
 
 
@@ -151,6 +152,8 @@ public class MainWindow extends JFrame
 
         gbc.gridx = 1;
         gbc.gridy = 1;
+        settingsPanel.add(new JLabel("Output location"), gbc);
+        gbc.gridy++;
         settingsPanel.add(new JLabel("Number of images"), gbc);
         gbc.gridy++;
         settingsPanel.add(new JLabel("Fibers per image"), gbc);
@@ -166,6 +169,8 @@ public class MainWindow extends JFrame
         settingsPanel.add(new JLabel("Image height (px)"), gbc);
         gbc.gridy++;
         settingsPanel.add(new JLabel("Image buffer (px)"), gbc);
+        gbc.gridy++;
+        settingsPanel.add(new JLabel("Fiber transparency (%)"), gbc);
         gbc.gridy++;
         settingsPanel.add(new JLabel("Width variability"), gbc);
         gbc.gridy++;
@@ -208,6 +213,9 @@ public class MainWindow extends JFrame
 
         gbc.gridx++;
         gbc.gridy = 1;
+        JButton outputLocationButton = new JButton("Open");
+        settingsPanel.add(outputLocationButton, gbc);
+        gbc.gridy++;
         nImagesField = new JTextField(10);
         settingsPanel.add(nImagesField, gbc);
         gbc.gridy++;
@@ -231,6 +239,9 @@ public class MainWindow extends JFrame
         gbc.gridy++;
         edgeBufferField = new JTextField(10);
         settingsPanel.add(edgeBufferField, gbc);
+        gbc.gridy++;
+        fiberTransparencyField = new JTextField(10);
+        settingsPanel.add(fiberTransparencyField, gbc);
         gbc.gridy++;
         widthVariabilityField = new JTextField(10);
         settingsPanel.add(widthVariabilityField, gbc);
@@ -344,7 +355,11 @@ public class MainWindow extends JFrame
                 imageStack.add(fiberImage);
                 try
                 {
-                    IOUtility.saveData(fiberImage, DATA_FOLDER + "data" + i + ".json");
+                    // TODO: Extract to method?
+                    FileWriter writer = new FileWriter(outFolder + "params.json");
+                    writer.write(serializer.toJson(params, ProgramParams.class));
+                    writer.flush();
+                    writer.close();
                 }
                 catch (IOException exception)
                 {
@@ -352,7 +367,15 @@ public class MainWindow extends JFrame
                 }
                 try
                 {
-                    IOUtility.saveImage(fiberImage.getImage(), IMAGE_FOLDER + "image" + i + ".png");
+                    IOUtility.saveData(fiberImage, outFolder + "data" + i + ".json");
+                }
+                catch (IOException exception)
+                {
+                    JOptionPane.showMessageDialog(null, exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                try
+                {
+                    IOUtility.saveImage(fiberImage.getImage(), outFolder + "image" + i + ".png");
                 }
                 catch (IOException exception)
                 {
@@ -363,7 +386,6 @@ public class MainWindow extends JFrame
             currentImage = 0;
             displayImage(imageStack.get(currentImage).getImage());
         });
-
         prevButton.addActionListener((ActionEvent event) ->
         {
             if (!imageStack.isEmpty() && currentImage > 0)
@@ -372,7 +394,6 @@ public class MainWindow extends JFrame
                 displayImage(imageStack.get(currentImage).getImage());
             }
         });
-
         nextButton.addActionListener((ActionEvent event) ->
         {
             if (!imageStack.isEmpty() && currentImage < imageStack.size() - 1)
@@ -404,12 +425,12 @@ public class MainWindow extends JFrame
             JFileChooser chooser = new JFileChooser();
             FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
             chooser.setFileFilter(filter);
+            chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             int returnVal = chooser.showOpenDialog(null);
             if (returnVal == JFileChooser.APPROVE_OPTION)
             {
                 try
                 {
-                    System.out.println(chooser.getSelectedFile().getAbsolutePath());
                     FileReader reader = new FileReader(chooser.getSelectedFile().getAbsolutePath());
                     params = deserializer.fromJson(reader, ProgramParams.class);
                     reader.close();
@@ -432,7 +453,6 @@ public class MainWindow extends JFrame
                 try
                 {
                     readParams();
-                    System.out.println(chooser.getSelectedFile().getAbsolutePath());
                     FileWriter writer = new FileWriter(chooser.getSelectedFile().getAbsolutePath());
                     writer.write(serializer.toJson(params));
                     writer.close();
@@ -441,6 +461,16 @@ public class MainWindow extends JFrame
                 {
                     JOptionPane.showMessageDialog(null, "Unable to save file");
                 }
+            }
+        });
+        outputLocationButton.addActionListener((ActionEvent event) ->
+        {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int returnVal = chooser.showSaveDialog(null);
+            if (returnVal == JFileChooser.APPROVE_OPTION)
+            {
+                outFolder = chooser.getSelectedFile().getAbsolutePath() + File.separator;
             }
         });
     }
@@ -456,6 +486,7 @@ public class MainWindow extends JFrame
         params.imageWidth = IOUtility.tryParseInt(imageWidthField.getText());
         params.imageHeight = IOUtility.tryParseInt(imageHeightField.getText());
         params.edgeBuffer = IOUtility.tryParseInt(edgeBufferField.getText());
+        params.fiberTransparency = IOUtility.tryParseDouble(fiberTransparencyField.getText());
         params.widthVariability = IOUtility.tryParseDouble(widthVariabilityField.getText());
         params.showScale = showScaleCheckBox.isSelected();
         params.micronsPerPixel = IOUtility.tryParseDouble(scaleField.getText());
@@ -473,6 +504,7 @@ public class MainWindow extends JFrame
         IOUtility.verifyValue(params.imageWidth, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.imageHeight, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.edgeBuffer, 0, Math.min(params.imageWidth / 2, params.imageHeight / 2));
+        IOUtility.verifyValue(params.fiberTransparency, 0, 100);
         IOUtility.verifyValue(params.widthVariability, 0.0, Double.POSITIVE_INFINITY);
         IOUtility.verifyValue(params.micronsPerPixel, 0.000001, Double.POSITIVE_INFINITY);
         IOUtility.verifyValue(params.scaleRatio, 0, Math.max(params.imageWidth, params.imageHeight));
@@ -491,6 +523,7 @@ public class MainWindow extends JFrame
         imageWidthField.setText(Integer.toString(params.imageWidth));
         imageHeightField.setText(Integer.toString(params.imageHeight));
         edgeBufferField.setText(Integer.toString(params.edgeBuffer));
+        fiberTransparencyField.setText(Double.toString(params.fiberTransparency));
         widthVariabilityField.setText(Double.toString(params.widthVariability));
         seedCheckBox.setSelected(params.setSeed);
         seedField.setText(Integer.toString(params.seed));

@@ -7,6 +7,7 @@
   "imageWidth": 500,
   "imageHeight": 500,
   "edgeBuffer": 50,
+  "fiberTransparency": 60.0,
   "widthVariability": 0.5,
   "length": {
     "type": "Gaussian",

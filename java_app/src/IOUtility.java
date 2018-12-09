@@ -1,3 +1,6 @@
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
@@ -70,7 +73,11 @@ class IOUtility
         try
         {
             FileWriter writer = new FileWriter(name);
-            writer.write(fibers.toString());
+            Gson serializer = new GsonBuilder()
+                    .setPrettyPrinting()
+                    .serializeSpecialFloatingPointValues()
+                    .create();
+            writer.write(serializer.toJson(fibers, FiberImage.class));
             writer.flush();
             writer.close();
         }
