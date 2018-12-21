@@ -9,7 +9,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 class FiberParams
 {
-    int length;
+    int nSegments;
     double straightness;
     double startingWidth;
     double widthVariation;
@@ -97,26 +97,21 @@ class Fiber implements Iterable<Segment>
 
     void generate()
     {
-        points = RandomUtility.getRandomChain(params.start, params.end, params.length, params.segmentLength);
+        points = RandomUtility.getRandomChain(params.start, params.end, params.nSegments, params.segmentLength);
 
         double width = params.startingWidth;
-        for (int i = 0; i < params.length; i++)
+        for (int i = 0; i < params.nSegments; i++)
         {
             widths.add(width);
-            double diff;
-            do
-            {
-                diff = RandomUtility.RNG.nextGaussian() * params.widthVariation;
-            }
-            while (width + diff < 0.0);
-            width += diff;
+            double variability = Math.min(Math.abs(width), params.widthVariation);
+            width += RandomUtility.getRandomDouble(-variability, variability);
         }
     }
 
 
     void splineSmooth()
     {
-        if (params.length <= 1)
+        if (params.nSegments <= 1)
         {
             return;
         }

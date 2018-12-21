@@ -23,7 +23,6 @@ class ProgramParams
     int imageWidth;
     int imageHeight;
     int edgeBuffer;
-    double fiberTransparency;
     double widthVariability;
     Distribution length = new Gaussian(1, 1, 2, 3);
     Distribution straightness = new Gaussian(1, 1, 2, 3);
@@ -31,13 +30,13 @@ class ProgramParams
     boolean setSeed;
     int seed;
     boolean showScale;
-    double micronsPerPixel;
+    double pixelsPerMicron;
     boolean downsample;
     double scaleRatio;
     boolean blur;
     double blurRadius;
     boolean addNoise;
-    int meanNoise;
+    double meanNoise;
 }
 
 
@@ -53,7 +52,6 @@ public class MainWindow extends JFrame
     private JTextField imageWidthField;
     private JTextField imageHeightField;
     private JTextField edgeBufferField;
-    private JTextField fiberTransparencyField;
     private JTextField widthVariabilityField;
     private JTextField seedField;
     private JTextField scaleField;
@@ -170,8 +168,6 @@ public class MainWindow extends JFrame
         gbc.gridy++;
         settingsPanel.add(new JLabel("Image buffer (px)"), gbc);
         gbc.gridy++;
-        settingsPanel.add(new JLabel("Fiber transparency (%)"), gbc);
-        gbc.gridy++;
         settingsPanel.add(new JLabel("Width variability"), gbc);
         gbc.gridy++;
         settingsPanel.add(new JLabel("Length distribution"), gbc);
@@ -191,7 +187,7 @@ public class MainWindow extends JFrame
         showScaleCheckBox = new JCheckBox();
         settingsPanel.add(showScaleCheckBox, gbc);
         gbc.gridx++;
-        settingsPanel.add(new JLabel("Scale (\u00b5/px)"), gbc);
+        settingsPanel.add(new JLabel("Scale (px/\u00b5)"), gbc);
         gbc.gridx--;
         gbc.gridy++;
         downsampleCheckBox = new JCheckBox();
@@ -239,9 +235,6 @@ public class MainWindow extends JFrame
         gbc.gridy++;
         edgeBufferField = new JTextField(10);
         settingsPanel.add(edgeBufferField, gbc);
-        gbc.gridy++;
-        fiberTransparencyField = new JTextField(10);
-        settingsPanel.add(fiberTransparencyField, gbc);
         gbc.gridy++;
         widthVariabilityField = new JTextField(10);
         settingsPanel.add(widthVariabilityField, gbc);
@@ -375,7 +368,7 @@ public class MainWindow extends JFrame
                 }
                 try
                 {
-                    IOUtility.saveImage(fiberImage.getImage(), outFolder + "image" + i + ".png");
+                    IOUtility.saveImage(fiberImage.getImage(), outFolder + "image" + i + ".tiff");
                 }
                 catch (IOException exception)
                 {
@@ -486,30 +479,31 @@ public class MainWindow extends JFrame
         params.imageWidth = IOUtility.tryParseInt(imageWidthField.getText());
         params.imageHeight = IOUtility.tryParseInt(imageHeightField.getText());
         params.edgeBuffer = IOUtility.tryParseInt(edgeBufferField.getText());
-        params.fiberTransparency = IOUtility.tryParseDouble(fiberTransparencyField.getText());
         params.widthVariability = IOUtility.tryParseDouble(widthVariabilityField.getText());
+        params.setSeed = seedCheckBox.isSelected();
+        params.seed = IOUtility.tryParseInt(seedField.getText());
         params.showScale = showScaleCheckBox.isSelected();
-        params.micronsPerPixel = IOUtility.tryParseDouble(scaleField.getText());
+        params.pixelsPerMicron = IOUtility.tryParseDouble(scaleField.getText());
         params.downsample = downsampleCheckBox.isSelected();
         params.scaleRatio = IOUtility.tryParseDouble(downsampleField.getText());
         params.blur = blurCheckBox.isSelected();
         params.blurRadius = IOUtility.tryParseDouble(blurRadiusField.getText());
         params.addNoise = noiseCheckBox.isSelected();
-        params.meanNoise = IOUtility.tryParseInt(meanNoiseField.getText());
+        params.meanNoise = IOUtility.tryParseDouble(meanNoiseField.getText());
 
         IOUtility.verifyValue(params.nImages, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.segmentLength, 0.0, Double.POSITIVE_INFINITY);
         IOUtility.verifyValue(params.alignment, 0.000001, 1.0);
+        IOUtility.verifyValue(params.meanAngle, 0.0, 180.0);
         IOUtility.verifyValue(params.imageWidth, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.imageHeight, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.edgeBuffer, 0, Math.min(params.imageWidth / 2, params.imageHeight / 2));
-        IOUtility.verifyValue(params.fiberTransparency, 0, 100);
         IOUtility.verifyValue(params.widthVariability, 0.0, Double.POSITIVE_INFINITY);
-        IOUtility.verifyValue(params.micronsPerPixel, 0.000001, Double.POSITIVE_INFINITY);
+        IOUtility.verifyValue(params.pixelsPerMicron, 0.000001, Double.POSITIVE_INFINITY);
         IOUtility.verifyValue(params.scaleRatio, 0, Math.max(params.imageWidth, params.imageHeight));
         IOUtility.verifyValue(params.blurRadius, 0.0, Double.POSITIVE_INFINITY);
-        IOUtility.verifyValue(params.meanNoise, 1.0, Integer.MAX_VALUE);
+        IOUtility.verifyValue(params.meanNoise, 0.000001, Double.MAX_VALUE);
     }
 
 
@@ -523,18 +517,17 @@ public class MainWindow extends JFrame
         imageWidthField.setText(Integer.toString(params.imageWidth));
         imageHeightField.setText(Integer.toString(params.imageHeight));
         edgeBufferField.setText(Integer.toString(params.edgeBuffer));
-        fiberTransparencyField.setText(Double.toString(params.fiberTransparency));
         widthVariabilityField.setText(Double.toString(params.widthVariability));
         seedCheckBox.setSelected(params.setSeed);
         seedField.setText(Integer.toString(params.seed));
         showScaleCheckBox.setSelected(params.showScale);
-        scaleField.setText(Double.toString(params.micronsPerPixel));
+        scaleField.setText(Double.toString(params.pixelsPerMicron));
         downsampleCheckBox.setSelected(params.downsample);
         downsampleField.setText(Double.toString(params.scaleRatio));
         blurCheckBox.setSelected(params.blur);
         blurRadiusField.setText(Double.toString(params.blurRadius));
         noiseCheckBox.setSelected(params.addNoise);
-        meanNoiseField.setText(Integer.toString(params.meanNoise));
+        meanNoiseField.setText(Double.toString(params.meanNoise));
     }
 
 
