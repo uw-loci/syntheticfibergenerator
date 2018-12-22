@@ -9,12 +9,12 @@ import java.io.*;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Random;
 
 
-class ProgramParams
-{
+class ProgramParams {
     int nImages;
     int nFibers;
     double segmentLength;
@@ -40,8 +40,7 @@ class ProgramParams
 }
 
 
-public class MainWindow extends JFrame
-{
+public class MainWindow extends JFrame {
     private JLabel imageDisplay;
 
     private JTextField nImagesField;
@@ -59,6 +58,11 @@ public class MainWindow extends JFrame
     private JTextField blurRadiusField;
     private JTextField meanNoiseField;
 
+    private JTextField outputPathLabel;
+    private JTextField lengthDistributionLabel;
+    private JTextField widthDistributionLabel;
+    private JTextField straightnessDistributionLabel;
+
     private JCheckBox seedCheckBox;
     private JCheckBox showScaleCheckBox;
     private JCheckBox downsampleCheckBox;
@@ -73,36 +77,48 @@ public class MainWindow extends JFrame
     private ArrayList<FiberImage> imageStack;
     private int currentImage;
 
-    private final int IMAGE_PANEL_SIZE = 500;
+    private final int FIELD_W = 5;
+    private final int IMAGE_PANEL_SIZE = 512;
     private static String outFolder = "output" + File.separator;
     private static final String DEFAULTS_FILE = "defaults.json";
 
 
-    private MainWindow()
-    {
+    private GridBagConstraints resetGBC() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        return gbc;
+    }
+
+    private MainWindow() {
         super("Fiber Generator");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = new GridBagConstraints();
-
-        gbc.anchor = GridBagConstraints.NORTH;
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        JPanel displayPanel = new JPanel();
-        displayPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc = resetGBC();
+        gbc.gridheight = 2;
+        JPanel displayPanel = new JPanel(new GridBagLayout());
         add(displayPanel, gbc);
-
+        gbc.gridheight = 1;
+        gbc.anchor = GridBagConstraints.NORTH;
         gbc.gridx++;
-        JPanel settingsPanel = new JPanel();
-        settingsPanel.setLayout(new GridBagLayout());
-        add(settingsPanel, gbc);
+        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+        add(tabbedPane, gbc);
+        gbc.gridy++;
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        JButton generateButton = new JButton("Generate...");
+        add(generateButton, gbc);
 
+        JPanel generationPanel = new JPanel(new GridBagLayout());
+        tabbedPane.addTab("Generation", null, generationPanel);
+        JPanel structurePanel = new JPanel(new GridBagLayout());
+        tabbedPane.addTab("Structure", null, structurePanel);
+        JPanel appearancePanel = new JPanel(new GridBagLayout());
+        tabbedPane.addTab("Appearance", null, appearancePanel);
+
+        gbc = resetGBC();
         gbc.gridwidth = 2;
-
-        gbc.gridx = 0;
-        gbc.gridy = 0;
         imageDisplay = new JLabel("Press \"Generate\" to view images");
         imageDisplay.setHorizontalAlignment(JLabel.CENTER);
         imageDisplay.setForeground(Color.WHITE);
@@ -111,165 +127,222 @@ public class MainWindow extends JFrame
         imageDisplay.setPreferredSize(new Dimension(IMAGE_PANEL_SIZE, IMAGE_PANEL_SIZE));
         displayPanel.add(imageDisplay, gbc);
 
-        gbc.gridwidth = 1;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc = resetGBC();
         gbc.weightx = 100;
-
-        gbc.gridy++;
+        gbc.gridy = 1;
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.EAST;
         JButton prevButton = new JButton("Previous");
         displayPanel.add(prevButton, gbc);
 
         gbc.anchor = GridBagConstraints.WEST;
-
         gbc.gridx++;
         JButton nextButton = new JButton("Next");
         nextButton.setPreferredSize(prevButton.getPreferredSize());
         displayPanel.add(nextButton, gbc);
 
-
-        gbc.gridwidth = 3;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        JPanel loadSavePanel = new JPanel();
-        loadSavePanel.setLayout(new GridBagLayout());
-        settingsPanel.add(loadSavePanel, gbc);
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.anchor = GridBagConstraints.EAST;
+        gbc = resetGBC();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.ipadx = 10;
+        gbc.ipady = 10;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.weightx = 100;
-        JButton loadButton = new JButton("Load");
-        loadSavePanel.add(loadButton, gbc);
-        gbc.gridx++;
-        gbc.anchor = GridBagConstraints.WEST;
-        JButton saveButton = new JButton("Save");
-        loadSavePanel.add(saveButton, gbc);
+        gbc.weighty = 100;
+        JPanel sessionPanel = new JPanel(new GridBagLayout());
+        sessionPanel.setBorder(BorderFactory.createTitledBorder("Session"));
+        generationPanel.add(sessionPanel, gbc);
 
+        gbc.weighty = 0;
+        JPanel distributionPanel = new JPanel(new GridBagLayout());
+        distributionPanel.setBorder(BorderFactory.createTitledBorder("Distributions"));
+        structurePanel.add(distributionPanel, gbc);
+        gbc.weighty = 100;
+        gbc.gridy++;
+        JPanel valuePanel = new JPanel(new GridBagLayout());
+        valuePanel.setBorder(BorderFactory.createTitledBorder("Values"));
+        structurePanel.add(valuePanel, gbc);
+
+        gbc.weighty = 0;
+        gbc.gridy = 0;
+        JPanel requiredPanel = new JPanel(new GridBagLayout());
+        requiredPanel.setBorder(BorderFactory.createTitledBorder("Required"));
+        appearancePanel.add(requiredPanel, gbc);
+        gbc.weighty = 100;
+        gbc.gridy++;
+        JPanel optionalPanel = new JPanel(new GridBagLayout());
+        optionalPanel.setBorder(BorderFactory.createTitledBorder("Optional"));
+        appearancePanel.add(optionalPanel, gbc);
+
+        gbc = resetGBC();
+        gbc.insets = new Insets(0, 0, 0, 5);
         gbc.anchor = GridBagConstraints.WEST;
+        sessionPanel.add(new JLabel("Parameters:"), gbc);
+        gbc.gridy++;
+        sessionPanel.add(new JLabel("Output location:"), gbc);
+        gbc.gridwidth = 2;
+        gbc.gridy++;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        outputPathLabel = new JTextField(outFolder);
+        outputPathLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        outputPathLabel.setOpaque(false);
+        outputPathLabel.setEditable(false);
+        sessionPanel.add(outputPathLabel, gbc);
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridwidth = 1;
+        gbc.gridy++;
+        sessionPanel.add(new JLabel("Number of images:"), gbc);
+        gbc.gridy++;
+        seedCheckBox = new JCheckBox("Random seed:");
+        sessionPanel.add(seedCheckBox, gbc);
+        gbc.gridy++;
 
         gbc.gridx = 1;
-        gbc.gridy = 1;
-        settingsPanel.add(new JLabel("Output location"), gbc);
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 5, 0, 0);
+        JButton loadButton = new JButton("Open...");
+        sessionPanel.add(loadButton, gbc);
         gbc.gridy++;
-        settingsPanel.add(new JLabel("Number of images"), gbc);
+        JButton saveButton = new JButton("Open...");
+        sessionPanel.add(saveButton, gbc);
+        gbc.gridy += 2;
+        nImagesField = new JTextField(FIELD_W);
+        sessionPanel.add(nImagesField, gbc);
         gbc.gridy++;
-        settingsPanel.add(new JLabel("Fibers per image"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Segment length"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Alignment"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Mean angle"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Image width (px)"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Image height (px)"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Image buffer (px)"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Width variability"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Length distribution"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Width distribution"), gbc);
-        gbc.gridy++;
-        settingsPanel.add(new JLabel("Straightness distribution"), gbc);
-
-        gbc.gridx--;
-        gbc.gridy++;
-        seedCheckBox = new JCheckBox();
-        settingsPanel.add(seedCheckBox, gbc);
-        gbc.gridx++;
-        settingsPanel.add(new JLabel("Set random seed"), gbc);
-        gbc.gridx--;
-        gbc.gridy++;
-        showScaleCheckBox = new JCheckBox();
-        settingsPanel.add(showScaleCheckBox, gbc);
-        gbc.gridx++;
-        settingsPanel.add(new JLabel("Scale (px/\u00b5)"), gbc);
-        gbc.gridx--;
-        gbc.gridy++;
-        downsampleCheckBox = new JCheckBox();
-        settingsPanel.add(downsampleCheckBox, gbc);
-        gbc.gridx++;
-        settingsPanel.add(new JLabel("Downsample"), gbc);
-        gbc.gridx--;
-        gbc.gridy++;
-        blurCheckBox = new JCheckBox();
-        settingsPanel.add(blurCheckBox, gbc);
-        gbc.gridx++;
-        settingsPanel.add(new JLabel("Gaussian blur"), gbc);
-        gbc.gridx--;
-        gbc.gridy++;
-        noiseCheckBox = new JCheckBox();
-        settingsPanel.add(noiseCheckBox, gbc);
-        gbc.gridx++;
-        settingsPanel.add(new JLabel("Poisson noise"), gbc);
-
-        gbc.gridx++;
-        gbc.gridy = 1;
-        JButton outputLocationButton = new JButton("Open");
-        settingsPanel.add(outputLocationButton, gbc);
-        gbc.gridy++;
-        nImagesField = new JTextField(10);
-        settingsPanel.add(nImagesField, gbc);
-        gbc.gridy++;
-        nFibersField = new JTextField(10);
-        settingsPanel.add(nFibersField, gbc);
-        gbc.gridy++;
-        segmentLengthField = new JTextField(10);
-        settingsPanel.add(segmentLengthField, gbc);
-        gbc.gridy++;
-        alignmentField = new JTextField(10);
-        settingsPanel.add(alignmentField, gbc);
-        gbc.gridy++;
-        meanAngleField = new JTextField(10);
-        settingsPanel.add(meanAngleField, gbc);
-        gbc.gridy++;
-        imageWidthField = new JTextField(10);
-        settingsPanel.add(imageWidthField, gbc);
-        gbc.gridy++;
-        imageHeightField = new JTextField(10);
-        settingsPanel.add(imageHeightField, gbc);
-        gbc.gridy++;
-        edgeBufferField = new JTextField(10);
-        settingsPanel.add(edgeBufferField, gbc);
-        gbc.gridy++;
-        widthVariabilityField = new JTextField(10);
-        settingsPanel.add(widthVariabilityField, gbc);
-        gbc.gridy++;
-        JButton lengthButton = new JButton("View/Modify");
-        settingsPanel.add(lengthButton, gbc);
-        gbc.gridy++;
-        JButton widthButton = new JButton("View/Modify");
-        settingsPanel.add(widthButton, gbc);
-        gbc.gridy++;
-        JButton straightnessButton = new JButton("View/Modify");
-        settingsPanel.add(straightnessButton, gbc);
-        gbc.gridy++;
-        seedField = new JTextField(10);
-        settingsPanel.add(seedField, gbc);
-        gbc.gridy++;
-        scaleField = new JTextField(10);
-        settingsPanel.add(scaleField, gbc);
-        gbc.gridy++;
-        downsampleField = new JTextField(10);
-        settingsPanel.add(downsampleField, gbc);
-        gbc.gridy++;
-        blurRadiusField = new JTextField(10);
-        settingsPanel.add(blurRadiusField, gbc);
-        gbc.gridy++;
-        meanNoiseField = new JTextField(10);
-        settingsPanel.add(meanNoiseField, gbc);
-
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = 3;
+        seedField = new JTextField(FIELD_W);
+        sessionPanel.add(seedField, gbc);
 
         gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        distributionPanel.add(new JLabel("Length distribution:"), gbc);
+        gbc.gridwidth = 2;
         gbc.gridy++;
-        JButton generateButton = new JButton("Generate");
-        settingsPanel.add(generateButton, gbc);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        lengthDistributionLabel = new JTextField();
+        lengthDistributionLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        lengthDistributionLabel.setOpaque(false);
+        lengthDistributionLabel.setEditable(false);
+        distributionPanel.add(lengthDistributionLabel, gbc);
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridwidth = 1;
+        gbc.gridy++;
+        distributionPanel.add(new JLabel("Width distribution:"), gbc);
+        gbc.gridwidth = 2;
+        gbc.gridy++;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        widthDistributionLabel = new JTextField();
+        widthDistributionLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        widthDistributionLabel.setOpaque(false);
+        widthDistributionLabel.setEditable(false);
+        distributionPanel.add(widthDistributionLabel, gbc);
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridwidth = 1;
+        gbc.gridy++;
+        distributionPanel.add(new JLabel("Straightness distribution:"), gbc);
+        gbc.gridwidth = 2;
+        gbc.gridy++;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        straightnessDistributionLabel = new JTextField();
+        straightnessDistributionLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        straightnessDistributionLabel.setOpaque(false);
+        straightnessDistributionLabel.setEditable(false);
+        distributionPanel.add(straightnessDistributionLabel, gbc);
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.gridwidth = 1;
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 5, 0, 0);
+        JButton lengthButton = new JButton("Modify...");
+        distributionPanel.add(lengthButton, gbc);
+        gbc.gridy += 2;
+        JButton widthButton = new JButton("Modify...");
+        distributionPanel.add(widthButton, gbc);
+        gbc.gridy += 2;
+        JButton straightnessButton = new JButton("Modify...");
+        distributionPanel.add(straightnessButton, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        valuePanel.add(new JLabel("Width change:"), gbc);
+        gbc.gridy++;
+        valuePanel.add(new JLabel("Fibers per image:"), gbc);
+        gbc.gridy++;
+        valuePanel.add(new JLabel("Alignment:"), gbc);
+        gbc.gridy++;
+        valuePanel.add(new JLabel("Angle:"), gbc);
+        gbc.gridy++;
+        valuePanel.add(new JLabel("Segment length:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 5, 0, 0);
+        widthVariabilityField = new JTextField(FIELD_W);
+        valuePanel.add(widthVariabilityField, gbc);
+        gbc.gridy++;
+        nFibersField = new JTextField(FIELD_W);
+        valuePanel.add(nFibersField, gbc);
+        gbc.gridy++;
+        alignmentField = new JTextField(FIELD_W);
+        valuePanel.add(alignmentField, gbc);
+        gbc.gridy++;
+        meanAngleField = new JTextField(FIELD_W);
+        valuePanel.add(meanAngleField, gbc);
+        gbc.gridy++;
+        segmentLengthField = new JTextField(FIELD_W);
+        valuePanel.add(segmentLengthField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        requiredPanel.add(new JLabel("Image height:"), gbc);
+        gbc.gridy++;
+        requiredPanel.add(new JLabel("Image width:"), gbc);
+        gbc.gridy++;
+        requiredPanel.add(new JLabel("Edge buffer:"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 5, 0, 0);
+        imageHeightField = new JTextField(FIELD_W);
+        requiredPanel.add(imageHeightField, gbc);
+        gbc.gridy++;
+        imageWidthField = new JTextField(FIELD_W);
+        requiredPanel.add(imageWidthField, gbc);
+        gbc.gridy++;
+        edgeBufferField = new JTextField(FIELD_W);
+        requiredPanel.add(edgeBufferField, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        showScaleCheckBox = new JCheckBox("Scale (px/\u03BC):");
+        optionalPanel.add(showScaleCheckBox, gbc);
+        gbc.gridy++;
+        downsampleCheckBox = new JCheckBox("Downsampling:");
+        optionalPanel.add(downsampleCheckBox, gbc);
+        gbc.gridy++;
+        blurCheckBox = new JCheckBox("Blur radius:");
+        optionalPanel.add(blurCheckBox, gbc);
+        gbc.gridy++;
+        noiseCheckBox = new JCheckBox("Poisson noise:");
+        optionalPanel.add(noiseCheckBox, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 5, 0, 0);
+        scaleField = new JTextField(FIELD_W);
+        optionalPanel.add(scaleField, gbc);
+        gbc.gridy++;
+        downsampleField = new JTextField(FIELD_W);
+        optionalPanel.add(downsampleField, gbc);
+        gbc.gridy++;
+        blurRadiusField = new JTextField(FIELD_W);
+        optionalPanel.add(blurRadiusField, gbc);
+        gbc.gridy++;
+        meanNoiseField = new JTextField(FIELD_W);
+        optionalPanel.add(meanNoiseField, gbc);
 
         serializer = new GsonBuilder()
                 .setPrettyPrinting()
@@ -278,13 +351,10 @@ public class MainWindow extends JFrame
         deserializer = new GsonBuilder()
                 .registerTypeAdapter(Distribution.class, new DistributionDeserializer())
                 .create();
-        try
-        {
+        try {
             // TODO: Write a method for this
             params = deserializer.fromJson(new BufferedReader(new FileReader(DEFAULTS_FILE)), ProgramParams.class);
-        }
-        catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             System.out.println("Defaults file not found");
             System.exit(1);
         }
@@ -298,28 +368,21 @@ public class MainWindow extends JFrame
 
         generateButton.addActionListener((ActionEvent event) ->
         {
-            try
-            {
-                if (params.setSeed)
-                {
+            try {
+                if (params.setSeed) {
                     int seed = IOUtility.tryParseInt(seedField.getText());
                     RandomUtility.RNG = new Random((long) seed);
-                }
-                else
-                {
+                } else {
                     RandomUtility.RNG = new Random();
                 }
                 readParams();
-            }
-            catch (IllegalArgumentException exception)
-            {
+            } catch (IllegalArgumentException exception) {
                 JOptionPane.showMessageDialog(null, exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             imageStack.clear();
-            for (int i = 0; i < params.nImages; i++)
-            {
+            for (int i = 0; i < params.nImages; i++) {
                 FiberImage fiberImage = new FiberImage(params);
                 fiberImage.generateFibers();
 
@@ -329,49 +392,36 @@ public class MainWindow extends JFrame
                 fiberImage.splineSmooth();
 
                 fiberImage.drawFibers();
-                if (params.addNoise)
-                {
+                if (params.addNoise) {
                     fiberImage.addNoise();
                 }
-                if (params.blur)
-                {
+                if (params.blur) {
                     fiberImage.gaussianBlur();
                 }
-                if (params.showScale)
-                {
+                if (params.showScale) {
                     fiberImage.drawScaleBar();
                 }
-                if (params.downsample)
-                {
+                if (params.downsample) {
                     fiberImage.downsample();
                 }
                 imageStack.add(fiberImage);
-                try
-                {
+                try {
                     // TODO: Extract to method?
                     FileWriter writer = new FileWriter(outFolder + "params.json");
                     writer.write(serializer.toJson(params, ProgramParams.class));
                     writer.flush();
                     writer.close();
-                }
-                catch (IOException exception)
-                {
+                } catch (IOException exception) {
                     JOptionPane.showMessageDialog(null, exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
-                try
-                {
+                try {
                     IOUtility.saveData(fiberImage, outFolder + "data" + i + ".json");
-                }
-                catch (IOException exception)
-                {
+                } catch (IOException exception) {
                     JOptionPane.showMessageDialog(null, exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
-                try
-                {
+                try {
                     IOUtility.saveImage(fiberImage.getImage(), outFolder + "image" + i + ".tiff");
-                }
-                catch (IOException exception)
-                {
+                } catch (IOException exception) {
                     JOptionPane.showMessageDialog(null, exception.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -381,16 +431,14 @@ public class MainWindow extends JFrame
         });
         prevButton.addActionListener((ActionEvent event) ->
         {
-            if (!imageStack.isEmpty() && currentImage > 0)
-            {
+            if (!imageStack.isEmpty() && currentImage > 0) {
                 currentImage--;
                 displayImage(imageStack.get(currentImage).getImage());
             }
         });
         nextButton.addActionListener((ActionEvent event) ->
         {
-            if (!imageStack.isEmpty() && currentImage < imageStack.size() - 1)
-            {
+            if (!imageStack.isEmpty() && currentImage < imageStack.size() - 1) {
                 currentImage++;
                 displayImage(imageStack.get(currentImage).getImage());
             }
@@ -400,18 +448,21 @@ public class MainWindow extends JFrame
             DistributionDialog dialog = new DistributionDialog(params.length);
             dialog.showDialog();
             params.length = dialog.distribution;
+            displayParams();
         });
         straightnessButton.addActionListener((ActionEvent event) ->
         {
             DistributionDialog dialog = new DistributionDialog(params.straightness);
             dialog.showDialog();
             params.straightness = dialog.distribution;
+            displayParams();
         });
         widthButton.addActionListener((ActionEvent event) ->
         {
             DistributionDialog dialog = new DistributionDialog(params.width);
             dialog.showDialog();
             params.width = dialog.distribution;
+            displayParams();
         });
         loadButton.addActionListener((ActionEvent event) ->
         {
@@ -420,17 +471,13 @@ public class MainWindow extends JFrame
             chooser.setFileFilter(filter);
             chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             int returnVal = chooser.showOpenDialog(null);
-            if (returnVal == JFileChooser.APPROVE_OPTION)
-            {
-                try
-                {
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                try {
                     FileReader reader = new FileReader(chooser.getSelectedFile().getAbsolutePath());
                     params = deserializer.fromJson(reader, ProgramParams.class);
                     reader.close();
                     displayParams();
-                }
-                catch (IOException e)
-                {
+                } catch (IOException e) {
                     JOptionPane.showMessageDialog(null, "Unable to open file");
                 }
             }
@@ -438,39 +485,21 @@ public class MainWindow extends JFrame
         saveButton.addActionListener((ActionEvent event) ->
         {
             JFileChooser chooser = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
-            chooser.setFileFilter(filter);
-            int returnVal = chooser.showSaveDialog(null);
-            if (returnVal == JFileChooser.APPROVE_OPTION)
-            {
-                try
-                {
-                    readParams();
-                    FileWriter writer = new FileWriter(chooser.getSelectedFile().getAbsolutePath());
-                    writer.write(serializer.toJson(params));
-                    writer.close();
-                }
-                catch (IOException e)
-                {
-                    JOptionPane.showMessageDialog(null, "Unable to save file");
-                }
-            }
-        });
-        outputLocationButton.addActionListener((ActionEvent event) ->
-        {
-            JFileChooser chooser = new JFileChooser();
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int returnVal = chooser.showSaveDialog(null);
-            if (returnVal == JFileChooser.APPROVE_OPTION)
-            {
-                outFolder = chooser.getSelectedFile().getAbsolutePath() + File.separator;
+            if (returnVal == JFileChooser.APPROVE_OPTION) {
+                if (chooser.getSelectedFile().isDirectory()) {
+                    outFolder = chooser.getSelectedFile().getAbsolutePath();
+                } else {
+                    outFolder = chooser.getCurrentDirectory().getAbsolutePath();
+                }
+                displayParams();
             }
         });
     }
 
 
-    private void readParams() throws IllegalArgumentException
-    {
+    private void readParams() throws IllegalArgumentException {
         params.nImages = IOUtility.tryParseInt(nImagesField.getText());
         params.nFibers = IOUtility.tryParseInt(nFibersField.getText());
         params.segmentLength = IOUtility.tryParseDouble(segmentLengthField.getText());
@@ -507,8 +536,7 @@ public class MainWindow extends JFrame
     }
 
 
-    private void displayParams()
-    {
+    private void displayParams() {
         nImagesField.setText(Integer.toString(params.nImages));
         nFibersField.setText(Integer.toString(params.nFibers));
         segmentLengthField.setText(Double.toString(params.segmentLength));
@@ -528,11 +556,22 @@ public class MainWindow extends JFrame
         blurRadiusField.setText(Double.toString(params.blurRadius));
         noiseCheckBox.setSelected(params.addNoise);
         meanNoiseField.setText(Double.toString(params.meanNoise));
+
+        pack();
+        outputPathLabel.setPreferredSize(outputPathLabel.getSize());
+        widthDistributionLabel.setPreferredSize(widthDistributionLabel.getSize());
+        lengthDistributionLabel.setPreferredSize(lengthDistributionLabel.getSize());
+        straightnessDistributionLabel.setPreferredSize(straightnessDistributionLabel.getSize());
+
+        outputPathLabel.setToolTipText(outFolder);
+        outputPathLabel.setText(outFolder);
+        widthDistributionLabel.setText(params.width.toString());
+        lengthDistributionLabel.setText(params.length.toString());
+        straightnessDistributionLabel.setText(params.straightness.toString());
     }
 
 
-    private void displayImage(BufferedImage image)
-    {
+    private void displayImage(BufferedImage image) {
         double xScale = (double) IMAGE_PANEL_SIZE / image.getWidth();
         double yScale = (double) IMAGE_PANEL_SIZE / image.getHeight();
         double scale = Math.min(xScale, yScale);
@@ -545,8 +584,7 @@ public class MainWindow extends JFrame
     }
 
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new MainWindow();
     }
 }

@@ -1,6 +1,7 @@
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 
 
 class DistributionDeserializer implements JsonDeserializer<Object>
@@ -70,7 +71,7 @@ class Gaussian extends Distribution
     @Override
     public String toString()
     {
-        return String.format("Gaussian(mean=%f, sigma=%f)", mean, sigma);
+        return String.format("Gaussian: \u03BC=%s, \u03C3=%s", Double.toString(mean), Double.toString(sigma));
     }
 }
 
@@ -108,6 +109,6 @@ class Uniform extends Distribution
     @Override
     public String toString()
     {
-        return String.format("Uniform(min=%f, max=%f)", min, max);
+        return String.format("Uniform: %s-%s", Double.toString(min), Double.toString(max));
     }
 }
