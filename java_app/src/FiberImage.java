@@ -150,6 +150,9 @@ class FiberImage implements Iterable<Fiber> {
 
     void drawFibers() {
         Graphics2D graphics = image.createGraphics();
+        graphics.setRenderingHint(
+                RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_OFF);
         graphics.setColor(new Color(255, 255, 255));
         for (Fiber fiber : fibers) {
             for (Segment segment : fiber) {
@@ -242,5 +245,9 @@ class FiberImage implements Iterable<Fiber> {
                 raster.setPixel(x, y, pixel);
             }
         }
+    }
+
+    void distanceFunction() {
+        image = ImageUtility.distanceFunction(image, params.distanceFalloff);
     }
 }

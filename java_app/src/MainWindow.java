@@ -37,6 +37,8 @@ class ProgramParams {
     double blurRadius;
     boolean addNoise;
     double meanNoise;
+    boolean distance;
+    double distanceFalloff;
 }
 
 
@@ -57,6 +59,7 @@ public class MainWindow extends JFrame {
     private JTextField downsampleField;
     private JTextField blurRadiusField;
     private JTextField meanNoiseField;
+    private JTextField distanceField;
 
     private JTextField outputPathLabel;
     private JTextField lengthDistributionLabel;
@@ -68,6 +71,7 @@ public class MainWindow extends JFrame {
     private JCheckBox downsampleCheckBox;
     private JCheckBox blurCheckBox;
     private JCheckBox noiseCheckBox;
+    private JCheckBox distanceCheckBox;
 
     private Gson serializer;
     private Gson deserializer;
@@ -328,6 +332,9 @@ public class MainWindow extends JFrame {
         gbc.gridy++;
         noiseCheckBox = new JCheckBox("Poisson noise:");
         optionalPanel.add(noiseCheckBox, gbc);
+        gbc.gridy++;
+        distanceCheckBox = new JCheckBox("Distance function:");
+        optionalPanel.add(distanceCheckBox, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
@@ -343,6 +350,9 @@ public class MainWindow extends JFrame {
         gbc.gridy++;
         meanNoiseField = new JTextField(FIELD_W);
         optionalPanel.add(meanNoiseField, gbc);
+        gbc.gridy++;
+        distanceField = new JTextField(FIELD_W);
+        optionalPanel.add(distanceField, gbc);
 
         serializer = new GsonBuilder()
                 .setPrettyPrinting()
@@ -392,6 +402,9 @@ public class MainWindow extends JFrame {
                 fiberImage.splineSmooth();
 
                 fiberImage.drawFibers();
+                if (params.distance) {
+                    fiberImage.distanceFunction();
+                }
                 if (params.addNoise) {
                     fiberImage.addNoise();
                 }
@@ -519,6 +532,8 @@ public class MainWindow extends JFrame {
         params.blurRadius = IOUtility.tryParseDouble(blurRadiusField.getText());
         params.addNoise = noiseCheckBox.isSelected();
         params.meanNoise = IOUtility.tryParseDouble(meanNoiseField.getText());
+        params.distance = distanceCheckBox.isSelected();
+        params.distanceFalloff = IOUtility.tryParseDouble(distanceField.getText());
 
         IOUtility.verifyValue(params.nImages, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
@@ -533,6 +548,7 @@ public class MainWindow extends JFrame {
         IOUtility.verifyValue(params.scaleRatio, 0, Math.max(params.imageWidth, params.imageHeight));
         IOUtility.verifyValue(params.blurRadius, 0.0, Double.POSITIVE_INFINITY);
         IOUtility.verifyValue(params.meanNoise, 0.000001, Double.MAX_VALUE);
+        IOUtility.verifyValue(params.distanceFalloff, 0, Double.POSITIVE_INFINITY);
     }
 
 
@@ -556,6 +572,8 @@ public class MainWindow extends JFrame {
         blurRadiusField.setText(Double.toString(params.blurRadius));
         noiseCheckBox.setSelected(params.addNoise);
         meanNoiseField.setText(Double.toString(params.meanNoise));
+        distanceCheckBox.setSelected(params.distance);
+        distanceField.setText(Double.toString(params.distanceFalloff));
 
         pack();
         outputPathLabel.setPreferredSize(outputPathLabel.getSize());

@@ -75,16 +75,17 @@ class ImageUtility {
                 if (pixel[0] == 0) {
                     outRaster.setPixel(x, y, pixel);
                 } else {
+                    // TODO: the value of "falloff" sets an upper bound on the R values that matter
                     int maxR = (int) Math.sqrt(sq(input.getWidth()) + sq(input.getHeight())) + 1;
-                    for (int r = DIST_SEARCH_STEP; r < maxR; r += DIST_SEARCH_STEP) {
+                    int bestX = -1;
+                    int bestY = -1;
+                    double minDist = Double.POSITIVE_INFINITY;
+                    for (int r = DIST_SEARCH_STEP; r < maxR && (bestX == - 1 || bestY == -1); r += DIST_SEARCH_STEP) {
                         // TODO: possibly use 2-element int array to clean this up
                         int xMin = Math.max(0, x - r);
                         int xMax = Math.min(input.getWidth(), x + r);
                         int yMin = Math.max(0, y - r);
                         int yMax = Math.min(input.getHeight(), y + r);
-                        int bestX = -1;
-                        int bestY = -1;
-                        double minDist = Double.POSITIVE_INFINITY;
                         for (int yIn = yMin; yIn < yMax; yIn++) {
                             for (int xIn = xMin; xIn < xMax; xIn++) {
                                 int[] inPixel = new int[1];
@@ -100,14 +101,14 @@ class ImageUtility {
                                 }
                             }
                         }
-                        int[] outPixel = new int[1];
-                        if (bestX != -1 && bestY != -1) {
-                            outPixel[0] = Math.min(255, (int) (minDist * falloff));
-                        } else {
-                            outPixel[0] = 255;
-                        }
-                        outRaster.setPixel(x, y, outPixel);
                     }
+                    int[] outPixel = new int[1];
+                    if (bestX != -1 && bestY != -1) {
+                        outPixel[0] = Math.min(255, (int) (minDist * falloff));
+                    } else {
+                        outPixel[0] = 255;
+                    }
+                    outRaster.setPixel(x, y, outPixel);
                 }
             }
         }
