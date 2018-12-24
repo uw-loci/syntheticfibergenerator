@@ -1,7 +1,8 @@
+package syntheticfibergenerator;
+
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
-import java.text.DecimalFormat;
 
 
 class DistributionDeserializer implements JsonDeserializer<Object>

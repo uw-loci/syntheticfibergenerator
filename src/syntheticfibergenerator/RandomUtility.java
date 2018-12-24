@@ -1,14 +1,15 @@
+package syntheticfibergenerator;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 
-class RandomUtility
+public class RandomUtility
 {
-    static Random RNG;
+    public static Random RNG;
 
     /* If we generate random values too close to the upper or lower bounds it can cause problems
      * with limits of floating-point arithmetic; narrow the bounds by this amount so the user
@@ -56,7 +57,7 @@ class RandomUtility
     }
 
 
-    static ArrayList<Double> getRandomList(double mT, double xMin, double xMax, int nValues)
+    public static ArrayList<Double> getRandomList(double mT, double xMin, double xMax, int nValues)
     {
         ArrayList<Double> evenWeights = new ArrayList<>(Collections.nCopies(nValues, 1.0));
         return getRandomList(mT, xMin, xMax, evenWeights);

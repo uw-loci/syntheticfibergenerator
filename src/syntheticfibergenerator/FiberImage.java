@@ -1,3 +1,5 @@
+package syntheticfibergenerator;
+
 import org.apache.commons.math3.distribution.PoissonDistribution;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 

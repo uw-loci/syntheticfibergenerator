@@ -9,7 +9,7 @@ public class FiberImageTest
     @Test
     void testGenerateDirections()
     {
-//        FiberImageParams params = new FiberImageParams();
+//        fiberphantom.FiberImageParams params = new fiberphantom.FiberImageParams();
 //        params.nFibers = 100;
 //        params.meanLength = 50;
 //        params.minLength = 40;
@@ -22,7 +22,7 @@ public class FiberImageTest
 //        params.meanAngle = 0.113;
 //        params.imageWidth = 1000;
 //        params.imageHeight = 1000;
-//        FiberImage collection = new FiberImage(params);
+//        fiberphantom.FiberImage collection = new fiberphantom.FiberImage(params);
 //        collection.generateFibers();
 //
 //        Vector2D complexMean = new Vector2D(0.0, 0.0);

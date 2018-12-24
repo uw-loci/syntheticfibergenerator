@@ -1,3 +1,5 @@
+package syntheticfibergenerator;
+
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 
@@ -12,10 +14,19 @@ public class Circle
     double radius;
 
 
-    Circle(Vector2D center, double radius)
+    public Circle(Vector2D center, double radius)
     {
         this.center = center;
         this.radius = radius;
+    }
+
+    public Vector2D getCenter() {
+        // Vector2D instances are guaranteed to be immutable
+        return center;
+    }
+
+    public double getRadius() {
+        return radius;
     }
 
 
@@ -44,7 +55,7 @@ public class Circle
      * @param circle2
      * @return
      */
-    static Vector2D circleCircleIntersect(Circle circle1, Circle circle2)
+    public static Vector2D circleCircleIntersect(Circle circle1, Circle circle2)
     {
         double d = circle2.center.subtract(circle1.center).getNorm();
 
@@ -84,7 +95,7 @@ public class Circle
      * @param circle
      * @return
      */
-    static Vector2D diskCircleIntersect(Circle disk, Circle circle)
+    public static Vector2D diskCircleIntersect(Circle disk, Circle circle)
     {
         // Check whether the circle is within the disk (the other way around is invalid)
         double d = disk.center.distance(circle.center);

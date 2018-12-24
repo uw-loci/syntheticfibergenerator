@@ -1,0 +1,68 @@
+% spellchecker: disable
+
+\documentclass[12pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+
+\title{Random Walks With Fixed Endpoints}
+\author{Matthew Dutson}
+
+% spellchecker: enable
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+\section*{Motivation}
+
+Two of the major mathematical challenges in implementing the collagen fiber generator are: 
+\begin{enumerate}
+    \item Generating random lists of real numbers, potentially given a list of weights, which have a fixed weighted mean. The challenge is that these values (for instance, straightness) are restricted to a certain range. Normally, the approach would be to sample from a distribution with the desired mean and then add some $\Delta$ to each $x_i$, where $\Delta = \bar{x}_i - \mu$. However, this could potentially push values out of the allowed range.
+    \item Generating a discrete random path of fixed length between two points in 2D or 3D Euclidian space. Fibers are defined by their endpoints and the length of the path connecting them. This means that, for fibers with more than two segments, there are infinitely many ways to draw paths between the endpoints.
+\end{enumerate}
+Both of these problems can be solved with a random walk between fixed points. Assuming the mean is not weighted, the first problem reduces to producing a random sequence $\{x_1, x_2, \ldots x_n\}$ where
+\begin{equation*}
+    \sum_{i = 1}^n x_i = n \cdot \mu
+\end{equation*}
+and the $x_i$ values are from the range $x_\text{min}$ and $x_\text{max}$.
+
+The second problem is similar. Assuming each step in the discrete path is of the same length $l$, the random choice at each step is an angle $\theta$ (or in the case of three dimensions, two angles $\theta$ and $\phi$). The solution is a set of vectors $\{\vec{v}_1, \vec{v}_2, \ldots, \vec{v}_n\}$ where $|\vec{v}_i| = l$ and
+\begin{equation*}
+    \sum_{i = 1}^n \vec{v}_i = \vec{R}
+\end{equation*}
+$\vec{R}$ is the displacement between the starting and ending points.
+
+
+\section*{Challenges}
+
+Here we focus on the second problem (2D and 3D). Let $W$ be the set of all random walks of $n$ steps. Let $S \subset W$ the subset of walks with displacement $\vec{R}$. Ideally, a solution $\{\vec{v}_1, \vec{v}_2, \ldots, \vec{v}_n\}$ should sample evenly from the set $S$. In theory, this could be accomplished using the following method:
+\begin{enumerate}
+    \item Let $\vec{p}_1$ and $\vec{p}_{n + 1}$ be the starting and final points, respectively.
+    \item Assume the algorithm has progressed to some point $\vec{p}_i$.
+    \item The set of points directly reachable from $\vec{p}_i$ is a circle of radius $l$ (or the higher-dimensional analog).
+    \item Let $P(n, \vec{R})$ be the differential probability of a random walk of $n$ steps achieving a displacement of $\vec{R}$ (in reality, this probability should be symmetric in the direction of $\vec{R}$ and depend only on its magnitude $|\vec{R}|$).
+    \item Choose a point randomly from the circle/sphere of radius $l$, sampling from the probability distribution $P(n - i - 1, \vec{x} - \vec{p}_i)$, where $\vec{x}$ is on the circle of radius $l$. This is the probability that a random walk from $\vec{p}_n$ of $n - i - 1$ steps will arrive at the point $\vec{x}$ rather than some other point on the circle around $\vec{p}_i$.
+    \item Set $\vec{p}_{i + 1}$ to the randomly chosen $\vec{x}$ and proceed to the next iteration.
+\end{enumerate}
+
+The challenge in actually implementing the algorithm described above is that there is no general form for $P(n, \vec{R})$. For large $n$, the probability can be estimated using Stirling's approximation.
+\begin{equation*}
+    TODO: Insert here
+\end{equation*}
+However, the problems with applying this approximation to our problem are obvious, especially when $|\vec{R}|$ is close to $n \cdot l$. The exponential in the equation above never reaches zero, which means that all steps are allowed, even if they lead to a configuration in which the end is no longer reachable in the number of remaining steps.
+
+Unfortunately there is no known general expression for $P(n, \vec{R})$ (VERIFY THIS). The only way to estimate $P(n, \vec{R})$ is computationally, by generating a very large number of random walks of length $n = 1, 2, 3, \ldots$ and observing the distribution of their final displacements from the source. Such simulations were performed for up to $n = 8$ 
+
+\section*{Workable Algorithms}
+
+\section*{Other Applications}
+Another application is the generation of random discrete functions $f(x)$ on an interval $(x_1, x_2)$ such that the Riemann integral of $f$ from $x_1$ to $x_2$ is a predetermined constant and the derivatives of $f$ are subject to certain constraints. A simple example is generating a function with a minimum ``smoothness'', that is, a function whose slope is confined to some range $(-a, a)$.
+
+\end{document}
