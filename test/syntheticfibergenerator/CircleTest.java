@@ -1,4 +1,5 @@
-import syntheticfibergenerator.Circle;
+package syntheticfibergenerator;
+
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.junit.jupiter.api.Test;
 
