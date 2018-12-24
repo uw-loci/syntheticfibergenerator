@@ -122,23 +122,23 @@ class FiberImage implements Iterable<Fiber> {
     }
 
 
-    void splineSmooth() {
-        for (Fiber fiber : fibers) {
-            fiber.splineSmooth();
-        }
-    }
-
-
     void bubbleSmooth() {
         for (Fiber fiber : fibers) {
-            fiber.bubbleSmooth();
+            fiber.bubbleSmooth(params.bubblePasses);
         }
     }
 
 
     void swapSmooth() {
         for (Fiber fiber : fibers) {
-            fiber.swapSmooth();
+            fiber.swapSmooth(params.swapRatio);
+        }
+    }
+
+
+    void splineSmooth() {
+        for (Fiber fiber : fibers) {
+            fiber.splineSmooth(params.splineRatio);
         }
     }
 

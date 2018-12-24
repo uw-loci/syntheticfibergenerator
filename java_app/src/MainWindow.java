@@ -9,7 +9,7 @@ import java.io.*;
 import java.io.IOException;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.text.DecimalFormat;
+import java.nio.charset.IllegalCharsetNameException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -39,6 +39,13 @@ class ProgramParams {
     double meanNoise;
     boolean distance;
     double distanceFalloff;
+
+    boolean bubbleSmooth;
+    int bubblePasses;
+    boolean swapSmooth;
+    int swapRatio;
+    boolean splineSmooth;
+    int splineRatio;
 }
 
 
@@ -72,6 +79,14 @@ public class MainWindow extends JFrame {
     private JCheckBox blurCheckBox;
     private JCheckBox noiseCheckBox;
     private JCheckBox distanceCheckBox;
+
+    private JTextField bubbleSmoothField;
+    private JTextField swapSmoothField;
+    private JTextField splineSmoothField;
+
+    private JCheckBox bubbleSmoothCheckBox;
+    private JCheckBox swapSmoothCheckBox;
+    private JCheckBox splineSmoothCheckBox;
 
     private Gson serializer;
     private Gson deserializer;
@@ -171,11 +186,15 @@ public class MainWindow extends JFrame {
         JPanel requiredPanel = new JPanel(new GridBagLayout());
         requiredPanel.setBorder(BorderFactory.createTitledBorder("Required"));
         appearancePanel.add(requiredPanel, gbc);
-        gbc.weighty = 100;
         gbc.gridy++;
         JPanel optionalPanel = new JPanel(new GridBagLayout());
         optionalPanel.setBorder(BorderFactory.createTitledBorder("Optional"));
         appearancePanel.add(optionalPanel, gbc);
+        gbc.weighty = 100;
+        gbc.gridy++;
+        JPanel smoothPanel = new JPanel(new GridBagLayout());
+        smoothPanel.setBorder(BorderFactory.createTitledBorder("Smoothing"));
+        appearancePanel.add(smoothPanel, gbc);
 
         gbc = resetGBC();
         gbc.insets = new Insets(0, 0, 0, 5);
@@ -354,6 +373,30 @@ public class MainWindow extends JFrame {
         distanceField = new JTextField(FIELD_W);
         optionalPanel.add(distanceField, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 0, 0, 5);
+        bubbleSmoothCheckBox = new JCheckBox("Bubble smoothing:");
+        smoothPanel.add(bubbleSmoothCheckBox, gbc);
+        gbc.gridy++;
+        swapSmoothCheckBox = new JCheckBox("Swap smoothing:");
+        smoothPanel.add(swapSmoothCheckBox, gbc);
+        gbc.gridy++;
+        splineSmoothCheckBox = new JCheckBox("Spline smoothing:");
+        smoothPanel.add(splineSmoothCheckBox, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 0;
+        gbc.insets = new Insets(0, 5, 0, 0);
+        bubbleSmoothField = new JTextField(FIELD_W);
+        smoothPanel.add(bubbleSmoothField, gbc);
+        gbc.gridy++;
+        swapSmoothField = new JTextField(FIELD_W);
+        smoothPanel.add(swapSmoothField, gbc);
+        gbc.gridy++;
+        splineSmoothField = new JTextField(FIELD_W);
+        smoothPanel.add(splineSmoothField, gbc);
+
         serializer = new GsonBuilder()
                 .setPrettyPrinting()
                 .serializeSpecialFloatingPointValues()
@@ -397,9 +440,15 @@ public class MainWindow extends JFrame {
                 fiberImage.generateFibers();
 
                 // TODO: Allow user to choose smoothing method
-                fiberImage.bubbleSmooth();
-                fiberImage.swapSmooth();
-                fiberImage.splineSmooth();
+                if (params.bubbleSmooth) {
+                    fiberImage.bubbleSmooth();
+                }
+                if (params.swapSmooth) {
+                    fiberImage.swapSmooth();
+                }
+                if (params.splineSmooth) {
+                    fiberImage.splineSmooth();
+                }
 
                 fiberImage.drawFibers();
                 if (params.distance) {
@@ -534,6 +583,12 @@ public class MainWindow extends JFrame {
         params.meanNoise = IOUtility.tryParseDouble(meanNoiseField.getText());
         params.distance = distanceCheckBox.isSelected();
         params.distanceFalloff = IOUtility.tryParseDouble(distanceField.getText());
+        params.bubbleSmooth = bubbleSmoothCheckBox.isSelected();
+        params.bubblePasses = IOUtility.tryParseInt(bubbleSmoothField.getText());
+        params.swapSmooth = swapSmoothCheckBox.isSelected();
+        params.swapRatio = IOUtility.tryParseInt(swapSmoothField.getText());
+        params.splineSmooth = splineSmoothCheckBox.isSelected();
+        params.splineRatio = IOUtility.tryParseInt(splineSmoothField.getText());
 
         IOUtility.verifyValue(params.nImages, 1, Integer.MAX_VALUE);
         IOUtility.verifyValue(params.nFibers, 1, Integer.MAX_VALUE);
@@ -549,6 +604,9 @@ public class MainWindow extends JFrame {
         IOUtility.verifyValue(params.blurRadius, 0.0, Double.POSITIVE_INFINITY);
         IOUtility.verifyValue(params.meanNoise, 0.000001, Double.MAX_VALUE);
         IOUtility.verifyValue(params.distanceFalloff, 0, Double.POSITIVE_INFINITY);
+        IOUtility.verifyValue(params.bubblePasses, 0, Integer.MAX_VALUE);
+        IOUtility.verifyValue(params.swapRatio, 0, Integer.MAX_VALUE);
+        IOUtility.verifyValue(params.splineRatio, 0, Integer.MAX_VALUE);
     }
 
 
@@ -574,7 +632,12 @@ public class MainWindow extends JFrame {
         meanNoiseField.setText(Double.toString(params.meanNoise));
         distanceCheckBox.setSelected(params.distance);
         distanceField.setText(Double.toString(params.distanceFalloff));
-
+        bubbleSmoothCheckBox.setSelected(params.bubbleSmooth);
+        bubbleSmoothField.setText(Integer.toString(params.bubblePasses));
+        swapSmoothCheckBox.setSelected(params.swapSmooth);
+        swapSmoothField.setText(Integer.toString(params.swapRatio));
+        splineSmoothCheckBox.setSelected(params.splineSmooth);
+        splineSmoothField.setText(Integer.toString(params.splineRatio));
         pack();
         outputPathLabel.setPreferredSize(outputPathLabel.getSize());
         widthDistributionLabel.setPreferredSize(widthDistributionLabel.getSize());
