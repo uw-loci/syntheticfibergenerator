@@ -59,7 +59,7 @@ class ImageUtility {
 
     /**
      * Expects a 4-byte grayscale image as input. Outputs a 4-byte greyscale image.
-     * Each output pixel's value is equal to falloff times the Euclidian distance to the closest background pixel.
+     * Each output pixel's param is equal to falloff times the Euclidian distance to the closest background pixel.
      *
      * @param input
      * @param falloff
@@ -77,7 +77,7 @@ class ImageUtility {
                 if (pixel[0] == 0) {
                     outRaster.setPixel(x, y, pixel);
                 } else {
-                    // TODO: the value of "falloff" sets an upper bound on the R values that matter
+                    // TODO: the param of "falloff" sets an upper bound on the R values that matter
                     int maxR = (int) Math.sqrt(sq(input.getWidth()) + sq(input.getHeight())) + 1;
                     int bestX = -1;
                     int bestY = -1;

@@ -24,7 +24,7 @@ public class FiberImageTest
 //        params.meanAngle = 0.113;
 //        params.imageWidth = 1000;
 //        params.imageHeight = 1000;
-//        fiberphantom.FiberImage collection = new fiberphantom.FiberImage(params);
+//        fiberphantom.FiberCollection collection = new fiberphantom.FiberCollection(params);
 //        collection.generateFibers();
 //
 //        Vector2D complexMean = new Vector2D(0.0, 0.0);

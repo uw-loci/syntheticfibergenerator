@@ -70,7 +70,7 @@ class IOUtility
     }
 
 
-    static void saveData(FiberImage fibers, String name) throws IOException
+    static void saveData(FiberCollection fibers, String name) throws IOException
     {
         try
         {
@@ -79,7 +79,7 @@ class IOUtility
                     .setPrettyPrinting()
                     .serializeSpecialFloatingPointValues()
                     .create();
-            writer.write(serializer.toJson(fibers, FiberImage.class));
+            writer.write(serializer.toJson(fibers, FiberCollection.class));
             writer.flush();
             writer.close();
         }

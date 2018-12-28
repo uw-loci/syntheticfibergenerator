@@ -1,8 +1,5 @@
 package syntheticfibergenerator;
 
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
-
-
 public class Circle
 {
     /* Sometimes we'll have two circles that should be touching but are actually some very small
@@ -10,17 +7,17 @@ public class Circle
      * by some small amount. */
     private static final double BUFF = 1e-10;
 
-    Vector2D center;
+    Vector center;
     double radius;
 
 
-    public Circle(Vector2D center, double radius)
+    public Circle(Vector center, double radius)
     {
         this.center = center;
         this.radius = radius;
     }
 
-    public Vector2D getCenter() {
+    public Vector getCenter() {
         // Vector2D instances are guaranteed to be immutable
         return center;
     }
@@ -30,7 +27,7 @@ public class Circle
     }
 
 
-    private boolean contains(Vector2D point)
+    private boolean contains(Vector point)
     {
         return sq(point.getX() - center.getX()) + sq(point.getY() - center.getY()) <= sq(radius + BUFF);
     }
@@ -55,7 +52,7 @@ public class Circle
      * @param circle2
      * @return
      */
-    public static Vector2D circleCircleIntersect(Circle circle1, Circle circle2)
+    public static Vector circleCircleIntersect(Circle circle1, Circle circle2)
     {
         double d = circle2.center.subtract(circle1.center).getNorm();
 
@@ -80,9 +77,9 @@ public class Circle
         double a = (sq(circle1.radius) - sq(circle2.radius) + sq(d)) / (2 * d);
         double h = Math.sqrt(sq(circle1.radius) - sq(a));
 
-        Vector2D axis = circle2.center.subtract(circle1.center).normalize();
-        Vector2D intersect1 = circle1.center.add(rotateVector(new Vector2D(a, h), axis));
-        Vector2D intersect2 = circle1.center.add(rotateVector(new Vector2D(a, -h), axis));
+        Vector axis = circle2.center.subtract(circle1.center).normalize();
+        Vector intersect1 = circle1.center.add(new Vector(a, h).rotate(axis));
+        Vector intersect2 = circle1.center.add(new Vector(a, -h).rotate(axis));
 
         return RandomUtility.RNG.nextBoolean() ? intersect1 : intersect2;
     }
@@ -95,37 +92,32 @@ public class Circle
      * @param circle
      * @return
      */
-    public static Vector2D diskCircleIntersect(Circle disk, Circle circle)
+    public static Vector diskCircleIntersect(Circle disk, Circle circle)
     {
         // Check whether the circle is within the disk (the other way around is invalid)
         double d = disk.center.distance(circle.center);
         if (d < disk.radius - circle.radius)
         {
             double randAngle = RandomUtility.getRandomDouble(-Math.PI, Math.PI);
-            return circle.center.add(new Vector2D(Math.cos(randAngle), Math.sin(randAngle)));
+            return circle.center.add(new Vector(Math.cos(randAngle), Math.sin(randAngle)));
         }
         else
         {
-            Vector2D intersect = circleCircleIntersect(disk, circle);
+            Vector intersect = circleCircleIntersect(disk, circle);
 
             // Axis points from the center of "circle" to the center of "disk"
-            Vector2D axisDir = disk.center.subtract(circle.center).normalize();
+            Vector axisDir = disk.center.subtract(circle.center).normalize();
             double axisAngle = Math.atan2(axisDir.getY(), axisDir.getX());
 
             // Determine the range of angles to use
-            Vector2D intersectDir = intersect.subtract(circle.center).normalize();
-
-            // Sometimes the dot product can exceed 1 even if both vectors are normalized
-            double dotProd = axisDir.dotProduct(intersectDir);
-            dotProd = Math.min(1.0, dotProd);
-            dotProd = Math.max(-1.0, dotProd);
-            double width = Math.acos(dotProd);
-            double minAngle = axisAngle - width;
-            double maxAngle = axisAngle + width;
+            Vector intersectDir = intersect.subtract(circle.center).normalize();
 
             // Choose a random point between minAngle and maxAngle on the circle
+            double width = axisDir.angleWith(intersectDir);
+            double minAngle = axisAngle - width;
+            double maxAngle = axisAngle + width;
             double randAngle = RandomUtility.getRandomDouble(minAngle, maxAngle);
-            Vector2D randDir = new Vector2D(Math.cos(randAngle), Math.sin(randAngle));
+            Vector randDir = new Vector(Math.cos(randAngle), Math.sin(randAngle));
             return circle.center.add(randDir.scalarMultiply(circle.radius));
         }
     }
@@ -139,7 +131,7 @@ public class Circle
      * @param disk2
      * @return
      */
-    static Vector2D diskDiskIntersect(Circle disk1, Circle disk2)
+    static Vector diskDiskIntersect(Circle disk1, Circle disk2)
     {
         // Check whether the disks are nested
         double d = disk1.center.distance(disk2.center);
@@ -151,12 +143,12 @@ public class Circle
             double yMin = inner.center.getY() + inner.radius;
             double yMax = inner.center.getY() - inner.radius;
 
-            Vector2D point;
+            Vector point;
             do
             {
                 double xRand = RandomUtility.getRandomDouble(xMin, xMax);
                 double yRand = RandomUtility.getRandomDouble(yMin, yMax);
-                point = new Vector2D(xRand, yRand);
+                point = new Vector(xRand, yRand);
             }
             while (!inner.contains(point));
             return point;
@@ -164,12 +156,12 @@ public class Circle
         else
         {
             // Axis points from the center of "filled1" to the center of "filled2"
-            Vector2D axisDir = disk2.center.subtract(disk1.center).normalize();
+            Vector axisDir = disk2.center.subtract(disk1.center).normalize();
 
             // Determine the distance from the axis to the intersect points
-            Vector2D intersect = circleCircleIntersect(disk1, disk2);
-            Vector2D intersectShift = (intersect.subtract(disk1.center));
-            Vector2D parallelComp = axisDir.scalarMultiply(intersectShift.dotProduct(axisDir));
+            Vector intersect = circleCircleIntersect(disk1, disk2);
+            Vector intersectShift = (intersect.subtract(disk1.center));
+            Vector parallelComp = axisDir.scalarMultiply(intersectShift.dotProduct(axisDir));
 
             // The dimensions of our "lens" bounding box
             double boxHeight = intersectShift.subtract(parallelComp).getNorm();
@@ -177,27 +169,18 @@ public class Circle
             double boxRight = disk1.radius;
 
             // Generate outputs until we find a good one
-            Vector2D point;
+            Vector point;
             do
             {
                 double xRand = RandomUtility.getRandomDouble(boxLeft, boxRight);
                 double yRand = RandomUtility.getRandomDouble(-boxHeight, boxHeight);
 
-                Vector2D displacement = rotateVector(new Vector2D(xRand, yRand), axisDir);
+                Vector displacement = new Vector(xRand, yRand).rotate(axisDir);
                 point = disk1.center.add(displacement);
             }
             while (!disk1.contains(point) || !disk2.contains(point));
             return point;
         }
-    }
-
-
-    private static Vector2D rotateVector(Vector2D vector, Vector2D newXAxis)
-    {
-        Vector2D newYAxis = new Vector2D(-newXAxis.getY(), newXAxis.getX());
-        Vector2D xRotated = newXAxis.scalarMultiply(vector.getX());
-        Vector2D yRotated = newYAxis.scalarMultiply(vector.getY());
-        return xRotated.add(yRotated);
     }
 
 

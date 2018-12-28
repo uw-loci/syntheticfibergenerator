@@ -1,7 +1,6 @@
 package syntheticfibergenerator;
 
 import org.apache.commons.math3.distribution.PoissonDistribution;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 import java.awt.Color;
 import java.awt.*;
@@ -13,25 +12,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 
-class FiberImageParams {
-    Distribution length;
-    Distribution straightness;
-    Distribution fiberWidth;
-    double alignment;
-    double angle;
-    int nFibers;
-    double segmentLength;
-    int imageWidth;
-    int imageHeight;
-    int edgeBuffer;
-    double widthVariation;
-    double micronsPerPixel;
-    double downSampleFactor;
-    double blurRadius;
-}
-
-
-class FiberImage implements Iterable<Fiber> {
+class FiberCollection implements Iterable<Fiber> {
     private static final float COMPOSITE_ALPHA = 0.6F;
     private static final int FADE_STEPS = 3;
 
@@ -44,20 +25,20 @@ class FiberImage implements Iterable<Fiber> {
     private static final int LABEL_BUFF = 5;
     private static final int SCALE_BUFF = 20;
 
-    private transient ProgramParams params;
+    private transient ImageCollection.ProgramParams params;
     private transient BufferedImage image;
     private ArrayList<Fiber> fibers;
 
 
-    FiberImage(ProgramParams params) {
+    FiberCollection(ImageCollection.ProgramParams params) {
         this.params = params;
-        this.fibers = new ArrayList<>(this.params.nFibers);
-        this.image = new BufferedImage(params.imageWidth, params.imageHeight, BufferedImage.TYPE_BYTE_GRAY);
+        this.fibers = new ArrayList<>(this.params.nFibers.getValue());
+        this.image = new BufferedImage(params.imageWidth.getValue(), params.imageHeight.getValue(), BufferedImage.TYPE_BYTE_GRAY);
     }
 
 
-    private ArrayList<Vector2D> convertToDifferences(ArrayList<Vector2D> arrayList) {
-        ArrayList<Vector2D> output = new ArrayList<>();
+    private ArrayList<Vector> convertToDifferences(ArrayList<Vector> arrayList) {
+        ArrayList<Vector> output = new ArrayList<>();
         for (int i = 0; i < arrayList.size() - 1; i++) {
             output.add(arrayList.get(i + 1).subtract(arrayList.get(i)));
         }
@@ -65,54 +46,54 @@ class FiberImage implements Iterable<Fiber> {
     }
 
 
-    private ArrayList<Vector2D> generateDirections() {
-        Vector2D sum = new Vector2D(Math.cos(Math.toRadians(-params.meanAngle) * 2.0), Math.sin(Math.toRadians(-params.meanAngle) * 2.0));
-        sum = sum.scalarMultiply(params.alignment * params.nFibers);
-        ArrayList<Vector2D> directions = RandomUtility.getRandomChain(new Vector2D(0.0, 0.0), sum, params.nFibers, 1.0);
+    private ArrayList<Vector> generateDirections() {
+        Vector sum = new Vector(Math.cos(Math.toRadians(-params.meanAngle.getValue()) * 2.0), Math.sin(Math.toRadians(-params.meanAngle.getValue()) * 2.0));
+        sum = sum.scalarMultiply(params.alignment.getValue() * params.nFibers.getValue());
+        ArrayList<Vector> directions = RandomUtility.getRandomChain(new Vector(0.0, 0.0), sum, params.nFibers.getValue(), 1.0);
         directions = convertToDifferences(directions);
 
-        ArrayList<Vector2D> output = new ArrayList<>();
-        for (Vector2D direction : directions) {
+        ArrayList<Vector> output = new ArrayList<>();
+        for (Vector direction : directions) {
             double fiberAngle = Math.atan2(direction.getY(), direction.getX()) / 2.0;
-            output.add(new Vector2D(Math.cos(fiberAngle), Math.sin(fiberAngle)));
+            output.add(new Vector(Math.cos(fiberAngle), Math.sin(fiberAngle)));
         }
         return output;
     }
 
 
-    private Vector2D findFiberStart(double length, Vector2D direction) {
+    private Vector findFiberStart(double length, Vector direction) {
         double xDisp = direction.normalize().getX() * length;
         double yDisp = direction.normalize().getY() * length;
 
         // TODO: If not all of the fiber can be shown, at least show as much as possible (right now we just give up)
-        if (Math.abs(xDisp) > params.imageWidth - 2 * params.edgeBuffer || Math.abs(yDisp) > params.imageHeight - 2 * params.edgeBuffer) {
+        if (Math.abs(xDisp) > params.imageWidth.getValue() - 2 * params.edgeBuffer.getValue() || Math.abs(yDisp) > params.imageHeight.getValue() - 2 * params.edgeBuffer.getValue()) {
             System.out.println("Warning: fiber will not fit in image frame");
-            return RandomUtility.getRandomPoint(0.0, params.imageWidth, 0.0, params.imageHeight);
+            return RandomUtility.getRandomPoint(0.0, params.imageWidth.getValue(), 0.0, params.imageHeight.getValue());
         }
 
-        double xMin = Math.max(params.edgeBuffer, params.edgeBuffer - xDisp);
-        double yMin = Math.max(params.edgeBuffer, params.edgeBuffer - yDisp);
-        double xMax = Math.min(params.imageWidth - params.edgeBuffer, params.imageWidth - params.edgeBuffer - xDisp);
-        double yMax = Math.min(params.imageHeight - params.edgeBuffer, params.imageHeight - params.edgeBuffer - yDisp);
+        double xMin = Math.max(params.edgeBuffer.getValue(), params.edgeBuffer.getValue() - xDisp);
+        double yMin = Math.max(params.edgeBuffer.getValue(), params.edgeBuffer.getValue() - yDisp);
+        double xMax = Math.min(params.imageWidth.getValue() - params.edgeBuffer.getValue(), params.imageWidth.getValue() - params.edgeBuffer.getValue() - xDisp);
+        double yMax = Math.min(params.imageHeight.getValue() - params.edgeBuffer.getValue(), params.imageHeight.getValue() - params.edgeBuffer.getValue() - yDisp);
 
         return RandomUtility.getRandomPoint(xMin, xMax, yMin, yMax);
     }
 
 
     void generateFibers() {
-        ArrayList<Vector2D> directions = generateDirections();
+        ArrayList<Vector> directions = generateDirections();
 
-        for (int i = 0; i < params.nFibers; i++) {
+        for (int i = 0; i < params.nFibers.getValue(); i++) {
             FiberParams fiberParams = new FiberParams();
 
             // TODO: Come up with a better solution than casting the nSegments
-            fiberParams.nSegments = (int) Math.round(params.length.sample() / params.segmentLength);
+            fiberParams.nSegments = (int) Math.round(params.length.sample() / params.segmentLength.getValue());
             fiberParams.straightness = params.straightness.sample();
             fiberParams.startingWidth = params.width.sample();
-            fiberParams.segmentLength = params.segmentLength;
-            fiberParams.widthVariation = params.widthVariability;
+            fiberParams.segmentLength = params.segmentLength.getValue();
+            fiberParams.widthVariation = params.widthVariability.getValue();
 
-            Vector2D direction = directions.get(i);
+            Vector direction = directions.get(i);
             double endDistance = fiberParams.nSegments * fiberParams.segmentLength * fiberParams.straightness;
             fiberParams.start = findFiberStart(endDistance, direction);
             fiberParams.end = fiberParams.start.add(direction.scalarMultiply(endDistance));
@@ -126,21 +107,21 @@ class FiberImage implements Iterable<Fiber> {
 
     void bubbleSmooth() {
         for (Fiber fiber : fibers) {
-            fiber.bubbleSmooth(params.bubblePasses);
+            fiber.bubbleSmooth(params.bubble.getValue());
         }
     }
 
 
     void swapSmooth() {
         for (Fiber fiber : fibers) {
-            fiber.swapSmooth(params.swapRatio);
+            fiber.swapSmooth(params.swap.getValue());
         }
     }
 
 
     void splineSmooth() {
         for (Fiber fiber : fibers) {
-            fiber.splineSmooth(params.splineRatio);
+            fiber.splineSmooth(params.spline.getValue());
         }
     }
 
@@ -167,7 +148,7 @@ class FiberImage implements Iterable<Fiber> {
 
     void drawScaleBar() {
         // Determine the size in microns of the scale bar
-        double micronsPerPixel = 1.0 / params.pixelsPerMicron;
+        double micronsPerPixel = 1.0 / params.scale.getValue();
         double targetSize = IDEAL_SCALE_FRAC * micronsPerPixel * image.getWidth();
         double floorPow = Math.floor(Math.log10(targetSize));
         double possibleSizes[] = {Math.pow(10, floorPow), 5 * Math.pow(10, floorPow), Math.pow(10, floorPow + 1)};
@@ -204,12 +185,12 @@ class FiberImage implements Iterable<Fiber> {
 
 
     void downsample() {
-        image = ImageUtility.scale(image, params.scaleRatio, AffineTransformOp.TYPE_BILINEAR);
+        image = ImageUtility.scale(image, params.scale.getValue(), AffineTransformOp.TYPE_BILINEAR);
     }
 
 
     void gaussianBlur() {
-        image = ImageUtility.gaussianBlur(image, params.blurRadius);
+        image = ImageUtility.gaussianBlur(image, params.blur.getValue());
     }
 
 
@@ -218,24 +199,9 @@ class FiberImage implements Iterable<Fiber> {
     }
 
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("[");
-        for (Iterator<Fiber> iter = fibers.iterator(); iter.hasNext(); ) {
-            builder.append(iter.next().toString());
-            if (iter.hasNext()) {
-                builder.append(",");
-            }
-        }
-        builder.append("\n]");
-        return builder.toString();
-    }
-
-
     void addNoise() {
         // Sequence of poisson seeds depends on the initial RNG seed
-        PoissonDistribution noise = new PoissonDistribution(params.meanNoise);
+        PoissonDistribution noise = new PoissonDistribution(params.noise.getValue());
         noise.reseedRandomGenerator(RandomUtility.RNG.nextInt());
 
         WritableRaster raster = image.getRaster();
@@ -250,6 +216,6 @@ class FiberImage implements Iterable<Fiber> {
     }
 
     void distanceFunction() {
-        image = ImageUtility.distanceFunction(image, params.distanceFalloff);
+        image = ImageUtility.distanceFunction(image, params.distance.getValue());
     }
 }

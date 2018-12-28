@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
-import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 
 class FiberParams {
@@ -15,18 +14,18 @@ class FiberParams {
     double startingWidth;
     double widthVariation;
     double segmentLength;
-    Vector2D start;
-    Vector2D end;
+    Vector start;
+    Vector end;
 }
 
 
 class Segment {
-    Vector2D start;
-    Vector2D end;
+    Vector start;
+    Vector end;
     double width;
 
 
-    Segment(Vector2D start, Vector2D end, double width) {
+    Segment(Vector start, Vector end, double width) {
         this.start = start;
         this.end = end;
         this.width = width;
@@ -37,12 +36,12 @@ class Segment {
 class Fiber implements Iterable<Segment> {
 
     class SegmentIterator implements Iterator<Segment> {
-        private Iterator<Vector2D> start;
-        private Iterator<Vector2D> end;
+        private Iterator<Vector> start;
+        private Iterator<Vector> end;
         private Iterator<Double> width;
 
 
-        private SegmentIterator(ArrayList<Vector2D> points) {
+        private SegmentIterator(ArrayList<Vector> points) {
             start = points.iterator();
             end = points.iterator();
             if (end.hasNext()) {
@@ -64,7 +63,7 @@ class Fiber implements Iterable<Segment> {
 
 
     FiberParams params;
-    private ArrayList<Vector2D> points;
+    private ArrayList<Vector> points;
     private ArrayList<Double> widths;
 
 
@@ -114,7 +113,7 @@ class Fiber implements Iterable<Segment> {
         ArrayList<Double> newWidths = new ArrayList<>();
         double t = 0;
         for (; t <= (double) nPoints - 1; t += 1 / (double) splineRatio) {
-            points.add(new Vector2D(xFunc.value(t), yFunc.value(t)));
+            points.add(new Vector(xFunc.value(t), yFunc.value(t)));
             if (t + 1 / (double) splineRatio <= (double) nPoints - 1) {
                 newWidths.add(widths.get((int) t));
             }
@@ -128,7 +127,7 @@ class Fiber implements Iterable<Segment> {
      */
     void bubbleSmooth(int bubblePasses) {
         // TODO: create a class which represents a list of points with toDiffs() and fromDiffs() methods
-        ArrayList<Vector2D> diffs = new ArrayList<>();
+        ArrayList<Vector> diffs = new ArrayList<>();
         for (int i = 0; i < points.size() - 1; i++) {
             diffs.add(points.get(i + 1).subtract(points.get(i)));
         }
@@ -161,7 +160,7 @@ class Fiber implements Iterable<Segment> {
      * (this depends on SWAP_SMOOTH_RESTARTS and SWAP_SMOOTH_RATIO).
      */
     void swapSmooth(int swapRatio) {
-        ArrayList<Vector2D> diffs = new ArrayList<>();
+        ArrayList<Vector> diffs = new ArrayList<>();
         for (int i = 0; i < points.size() - 1; i++) {
             diffs.add(points.get(i + 1).subtract(points.get(i)));
         }
@@ -184,10 +183,10 @@ class Fiber implements Iterable<Segment> {
     }
 
 
-    private static double totalAngle(ArrayList<Vector2D> diffs) {
+    private static double totalAngle(ArrayList<Vector> diffs) {
         double sum = 0;
         for (int i = 0; i < diffs.size() - 1; i++) {
-            sum += angle(diffs.get(i), diffs.get(i + 1));
+            sum += diffs.get(i).angleWith(diffs.get(i + 1));
         }
         return sum;
     }
@@ -201,7 +200,7 @@ class Fiber implements Iterable<Segment> {
      * @param v
      * @return
      */
-    private static double testSwap(ArrayList<Vector2D> diffs, int u, int v) {
+    private static double testSwap(ArrayList<Vector> diffs, int u, int v) {
         int i1 = Math.min(u, v);
         int i2 = Math.max(u, v);
         if (i1 < 0 || i2 > diffs.size() - 1) {
@@ -212,57 +211,24 @@ class Fiber implements Iterable<Segment> {
 
         // Don't do this if i1 is right against the beginning of the array
         if (i1 > 0) {
-            sum += angle(diffs.get(i1 - 1), diffs.get(i1));
+            sum += diffs.get(i1 - 1).angleWith(diffs.get(i1));
         }
 
         // If i1 < i2 then i1 + 1 <= diffs.size() - 1
         if (i1 < i2) {
-            sum += angle(diffs.get(i1), diffs.get(i1 + 1));
+            sum += diffs.get(i1).angleWith(diffs.get(i1 + 1));
         }
 
         // Prevent double-counting of the space between i1 and i2 if they're adjacent
         if (i1 < i2 - 1) {
-            sum += angle(diffs.get(i2 - 1), diffs.get(i2));
+            sum += diffs.get(i2 - 1).angleWith(diffs.get(i2));
         }
 
         // Don't do this if i2 is right against the end of the array
         if (i2 < diffs.size() - 1) {
-            sum += angle(diffs.get(i2), diffs.get(i2 + 1));
+            sum += diffs.get(i2).angleWith(diffs.get(i2 + 1));
         }
 
         return sum;
-    }
-
-
-    // TODO: Move to general utility, possibly extend Vector2D class
-    private static double angle(Vector2D v1, Vector2D v2) {
-        double cos = v1.normalize().dotProduct(v2.normalize());
-        cos = Math.min(1, cos);
-        cos = Math.max(-1, cos);
-        return Math.acos(cos);
-    }
-
-
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("\n{ \"points\" : [\n");
-        for (Iterator<Vector2D> iter = points.iterator(); iter.hasNext(); ) {
-            Vector2D point = iter.next();
-            builder.append(String.format("{ \"x\" : %.4f, ", point.getX()));
-            builder.append(String.format("\"y\" : %.4f }", point.getY()));
-            if (iter.hasNext()) {
-                builder.append(",\n");
-            }
-        }
-        builder.append(" ],\n\"widths\" : [\n");
-        for (Iterator<Double> iter = widths.iterator(); iter.hasNext(); ) {
-            builder.append(String.format("%.4f", iter.next()));
-            if (iter.hasNext()) {
-                builder.append(",\n");
-            }
-        }
-        builder.append(" ] }");
-        return builder.toString();
     }
 }
