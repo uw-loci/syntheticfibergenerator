@@ -17,18 +17,48 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MainWindow extends JFrame {
 
-    private JButton generateButton;
+    // Constant definitions
+    private static final int IMAGE_DISPLAY_SIZE = 512;
+    private static final String DEFAULTS_FILE = "defaults.json";
+    private static final String DATA_PREFIX = "data";
+    private static final String IMAGE_PREFIX = "image";
+    private static final String IMAGE_EXT = "tiff";
+
+    // Can be modified via the "Output location" button, therefore not final
+    private String outFolder = "output" + File.separator;
+
+    // Save serializer and deserializer so we don't have to re-construct them
+    private Gson serializer;
+    private Gson deserializer;
+
+    // Current parameters, generated data, and index of displayed image
+    private ImageCollection.Params params;
+    private ImageCollection collection;
+    private int displayIdx;
+
+    // Elements of the display panel
+    private JLabel imageDisplay;
     private JButton prevButton;
     private JButton nextButton;
-    private JButton lengthButton;
-    private JButton straightnessButton;
-    private JButton widthButton;
+
+    private JButton generateButton;
+
+    // Elements of the "Session" panel
     private JButton loadButton;
     private JButton saveButton;
-
-    private JLabel imageDisplay;
-
+    private JTextField outputPathDisplay;
     private JTextField nImagesField;
+    private JCheckBox seedCheck;
+    private JTextField seedField;
+
+    // Elements of the "Distribution" panel
+    private JButton lengthButton;
+    private JTextField lengthDisplay;
+    private JButton widthButton;
+    private JTextField widthDisplay;
+    private JButton straightButton;
+    private JTextField straightDisplay;
+
     private JTextField nFibersField;
     private JTextField segmentLengthField;
     private JTextField alignmentField;
@@ -37,22 +67,18 @@ public class MainWindow extends JFrame {
     private JTextField imageHeightField;
     private JTextField edgeBufferField;
     private JTextField widthVariabilityField;
-    private JTextField seedField;
     private JTextField scaleField;
     private JTextField downsampleField;
     private JTextField blurRadiusField;
     private JTextField noiseField;
     private JTextField distanceField;
 
-    private JTextField outputPathLabel;
-    private JTextField lengthDistributionLabel;
-    private JTextField widthDistributionLabel;
-    private JTextField straightnessDistributionLabel;
 
-    private JCheckBox seedCheck;
+
+
     private JCheckBox scaleCheck;
     private JCheckBox downsampleCheck;
-    private JCheckBox blurCheckBox;
+    private JCheckBox blurCheck;
     private JCheckBox noiseCheck;
     private JCheckBox distanceCheck;
 
@@ -64,57 +90,54 @@ public class MainWindow extends JFrame {
     private JCheckBox swapCheck;
     private JCheckBox splineCheck;
 
-    private Gson serializer;
-    private Gson deserializer;
 
-    ImageCollection.ProgramParams params;
-    private ImageCollection collection;
-
-    private int displayIdx;
-
-    private String outFolder = "output" + File.separator;
-
-    private static final int FIELD_W = 5;
-    private static final int IMAGE_PANEL_SIZE = 512;
-    private static final String DEFAULTS_FILE = "defaults.json";
-    private static final String IMAGE_PREFIX = "image";
-    private static final String IMAGE_EXTENSION = "tiff";
-    private static final String DATA_PREFIX = "data";
-
-
-    private GridBagConstraints resetGBC() {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        return gbc;
+    private MainWindow() {
+        super("Fiber Generator");
+        initParams();
+        initGUI();
+        displayParams();
     }
 
+    private void initParams() {
+        serializer = new GsonBuilder()
+                .setPrettyPrinting()
+                .serializeSpecialFloatingPointValues()
+                .create();
+        deserializer = new GsonBuilder()
+                .registerTypeAdapter(Distribution.class, new DistributionSerializer())
+                .create();
 
-    private String guiName(ImageCollection.ProgramParams.Param param) {
-        String name = param.getName();
-        String uppercase = name.substring(0, 1).toUpperCase() + name.substring(1);
-        return uppercase + ":";
+        readParamsFile(DEFAULTS_FILE);
+
+        params.setNames();
+        params.length.setBounds(0, Double.POSITIVE_INFINITY);
+        params.straightness.setBounds(0, 1);
+        params.width.setBounds(0, Double.POSITIVE_INFINITY);
     }
-
 
     private void initGUI() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = resetGBC();
-        gbc.gridheight = 2;
+        GridBagConstraints gbc = newGBC();
+
         JPanel displayPanel = new JPanel(new GridBagLayout());
+        gbc.gridheight = 2;
         add(displayPanel, gbc);
-        gbc.gridheight = 1;
-        gbc.anchor = GridBagConstraints.NORTH;
-        gbc.gridx++;
+
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+        gbc.anchor = GridBagConstraints.NORTH;
+        gbc.gridheight = 1;
+        gbc.gridx++;
         add(tabbedPane, gbc);
-        gbc.gridy++;
-        gbc.insets = new Insets(5, 10, 5, 10);
+
+        generateButton = new JButton("Generate...");
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        JButton generateButton = new JButton("Generate...");
+        gbc.insets = new Insets(5, 10, 5, 10);
+        gbc.gridy++;
         add(generateButton, gbc);
+
+        gbc = newGBC();
 
         JPanel generationPanel = new JPanel(new GridBagLayout());
         tabbedPane.addTab("Generation", null, generationPanel);
@@ -123,78 +146,73 @@ public class MainWindow extends JFrame {
         JPanel appearancePanel = new JPanel(new GridBagLayout());
         tabbedPane.addTab("Appearance", null, appearancePanel);
 
-        gbc = resetGBC();
+        imageDisplay = createImageDisplay();
         gbc.gridwidth = 2;
-        imageDisplay = new JLabel("Press \"Generate\" to view images");
-        imageDisplay.setHorizontalAlignment(JLabel.CENTER);
-        imageDisplay.setForeground(Color.WHITE);
-        imageDisplay.setBackground(Color.BLACK);
-        imageDisplay.setOpaque(true);
-        imageDisplay.setPreferredSize(new Dimension(IMAGE_PANEL_SIZE, IMAGE_PANEL_SIZE));
         displayPanel.add(imageDisplay, gbc);
 
-        gbc = resetGBC();
+        gbc = newGBC();
+
+        prevButton = new JButton("Previous");
+        gbc.anchor = GridBagConstraints.EAST;
+        gbc.insets = new Insets(5, 5, 5, 5);
         gbc.weightx = 100;
         gbc.gridy = 1;
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.anchor = GridBagConstraints.EAST;
-        JButton prevButton = new JButton("Previous");
         displayPanel.add(prevButton, gbc);
 
+        nextButton = new JButton("Next");
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridx++;
-        JButton nextButton = new JButton("Next");
         nextButton.setPreferredSize(prevButton.getPreferredSize());
         displayPanel.add(nextButton, gbc);
 
-        // TODO: Start here
-        gbc = resetGBC();
+        gbc = newGBC();
+
+        OptionPanel session = new OptionPanel("Session");
+        gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.ipadx = 10;
         gbc.ipady = 10;
-        gbc.anchor = GridBagConstraints.NORTHWEST;
         gbc.weightx = 100;
         gbc.weighty = 100;
-        OptionPanel session = new OptionPanel("Session");
         generationPanel.add(session, gbc);
 
-        gbc.weighty = 0;
         OptionPanel distribution = new OptionPanel("Distributions");
-        structurePanel.add(distribution, gbc);
-        gbc.weighty = 100;
-        gbc.gridy++;
-        OptionPanel values = new OptionPanel("Values");
-        structurePanel.add(values, gbc);
-
         gbc.weighty = 0;
         gbc.gridy = 0;
-        OptionPanel required = new OptionPanel("Required");
-        appearancePanel.add(required, gbc);
-        gbc.gridy++;
-        OptionPanel optional = new OptionPanel("Optional");
-        appearancePanel.add(optional, gbc);
+        structurePanel.add(distribution, gbc);
+
+        OptionPanel values = new OptionPanel("Values");
         gbc.weighty = 100;
         gbc.gridy++;
+        structurePanel.add(values, gbc);
+
+        OptionPanel required = new OptionPanel("Required");
+        gbc.weighty = 0;
+        gbc.gridy = 0;
+        appearancePanel.add(required, gbc);
+
+        OptionPanel optional = new OptionPanel("Optional");
+        gbc.gridy++;
+        appearancePanel.add(optional, gbc);
+
         OptionPanel smooth = new OptionPanel("Smoothing");
+        gbc.weighty = 100;
+        gbc.gridy++;
         appearancePanel.add(smooth, gbc);
 
-        session.addLabel("Parameters:");
-        loadButton = session.addButton("Open...");
-        session.addLabel("Output location:");
-        saveButton = session.addButton("Open...");
-        outputPathLabel = session.addFieldRow(outFolder);
+        loadButton = session.addButtonLine("Parameters:", "Open...");
+        saveButton = session.addButtonLine("Output location:", "Open...");
+        outputPathDisplay = session.addDisplayField(outFolder);
         nImagesField = session.addFieldLine(guiName(params.nImages));
-        seedField = session.addFieldLine(guiName(params.seed));
+        seedCheck = session.addCheckBox(guiName(params.seed));
+        seedField = session.addField();
 
-        distribution.addLabel("Length distribution:");
-        lengthButton = distribution.addButton("Modify...");
-        lengthDistributionLabel = distribution.addFieldRow(params.length.toString()); // TODO: Do we need to resize after this?
-        distribution.addLabel("Width distribution:");
-        widthButton = distribution.addButton("Modify...");
-        widthDistributionLabel = distribution.addFieldRow(params.width.toString()); // TODO: Do we need to resize after this?
-        distribution.addLabel("Straightness distribution:");
-        straightnessButton = distribution.addButton("Modify...");
-        straightnessDistributionLabel = distribution.addFieldRow(params.straightness.toString()); // TODO: Do we need to resize after this?
+        lengthButton = distribution.addButtonLine("Length distribution:", "Modify...");
+        lengthDisplay = distribution.addDisplayField(params.length.toString());
+        widthButton = distribution.addButtonLine("Width distribution:", "Modify...");
+        widthDisplay = distribution.addDisplayField(params.width.toString());
+        straightButton = distribution.addButtonLine("Straightness distribution:", "Modify...");
+        straightDisplay = distribution.addDisplayField(params.straightness.toString());
 
         widthVariabilityField = values.addFieldLine(guiName(params.widthVariability));
         nFibersField = values.addFieldLine(guiName(params.nFibers));
@@ -206,28 +224,51 @@ public class MainWindow extends JFrame {
         imageWidthField = required.addFieldLine(guiName(params.imageWidth));
         edgeBufferField = required.addFieldLine(guiName(params.edgeBuffer));
 
-        scaleCheck = optional.addCheckbox(guiName(params.scale));
+        scaleCheck = optional.addCheckBox(guiName(params.scale));
         scaleField = optional.addField();
-        downsampleCheck = optional.addCheckbox(guiName(params.downsample));
+        downsampleCheck = optional.addCheckBox(guiName(params.downsample));
         downsampleField = optional.addField();
-        blurCheckBox = optional.addCheckbox(guiName(params.blur));
+        blurCheck = optional.addCheckBox(guiName(params.blur));
         blurRadiusField = optional.addField();
-        noiseCheck = optional.addCheckbox(guiName(params.noise));
+        noiseCheck = optional.addCheckBox(guiName(params.noise));
         noiseField = optional.addField();
-        distanceCheck = optional.addCheckbox(guiName(params.distance));
+        distanceCheck = optional.addCheckBox(guiName(params.distance));
         distanceField = optional.addField();
 
-        bubbleCheck = smooth.addCheckbox(guiName(params.bubble));
+        bubbleCheck = smooth.addCheckBox(guiName(params.bubble));
         bubbleField = smooth.addField();
-        swapCheck = smooth.addCheckbox(guiName(params.swap));
+        swapCheck = smooth.addCheckBox(guiName(params.swap));
         swapField = smooth.addField();
-        splineCheck = smooth.addCheckbox(guiName(params.spline));
+        splineCheck = smooth.addCheckBox(guiName(params.spline));
         splineField = smooth.addField();
 
         setupListeners();
         setResizable(false);
         pack();
         setVisible(true);
+    }
+
+    private static JLabel createImageDisplay() {
+        JLabel output = new JLabel("Press \"Generate\" to view images");
+        output.setHorizontalAlignment(JLabel.CENTER);
+        output.setForeground(Color.WHITE);
+        output.setBackground(Color.BLACK);
+        output.setOpaque(true);
+        output.setPreferredSize(new Dimension(IMAGE_DISPLAY_SIZE, IMAGE_DISPLAY_SIZE));
+        return output;
+    }
+
+    private static GridBagConstraints newGBC() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        return gbc;
+    }
+
+    private String guiName(ImageCollection.Params.Param param) {
+        String name = param.getName();
+        String uppercase = name.substring(0, 1).toUpperCase() + name.substring(1);
+        return uppercase + ":";
     }
 
     private void writeStringFile(String filename, String contents) {
@@ -242,16 +283,16 @@ public class MainWindow extends JFrame {
     }
 
     private void writeImageFile(String prefix, BufferedImage image) {
-        String filename = prefix + '.' + IMAGE_EXTENSION;
+        String filename = prefix + '.' + IMAGE_EXT;
         try {
-            ImageIO.write(image, IMAGE_EXTENSION, new File(filename));
+            ImageIO.write(image, IMAGE_EXT, new File(filename));
         } catch (IOException exception) {
             showError("Error while writing \"" + filename + '\"');
         }
     }
 
     private void writeResults() {
-        writeStringFile(outFolder + "params.json", serializer.toJson(params, ImageCollection.ProgramParams.class));
+        writeStringFile(outFolder + "params.json", serializer.toJson(params, ImageCollection.Params.class));
         for (int i = 0; i < collection.size(); i++) {
             String imagePrefix = outFolder + IMAGE_PREFIX + i;
             writeImageFile(imagePrefix, collection.get(i).getImage());
@@ -267,9 +308,8 @@ public class MainWindow extends JFrame {
     private void readParamsFile(String filename) {
         try {
             FileReader reader = new FileReader(filename);
-            params = deserializer.fromJson(reader, ImageCollection.ProgramParams.class);
+            params = deserializer.fromJson(reader, ImageCollection.Params.class);
             reader.close();
-            displayParams();
         } catch (FileNotFoundException e) {
             showError("File \"" + filename + "\" not found");
         } catch (IOException e) {
@@ -308,19 +348,19 @@ public class MainWindow extends JFrame {
         {
             DistributionDialog dialog = new DistributionDialog(params.length);
             params.length = dialog.distribution;
-            lengthDistributionLabel.setText(params.length.toString());
+            lengthDisplay.setText(params.length.toString());
         });
-        straightnessButton.addActionListener((ActionEvent event) ->
+        straightButton.addActionListener((ActionEvent event) ->
         {
             DistributionDialog dialog = new DistributionDialog(params.straightness);
             params.straightness = dialog.distribution;
-            straightnessDistributionLabel.setText(params.straightness.toString());
+            straightDisplay.setText(params.straightness.toString());
         });
         widthButton.addActionListener((ActionEvent event) ->
         {
             DistributionDialog dialog = new DistributionDialog(params.width);
             params.width = dialog.distribution;
-            widthDistributionLabel.setText(params.width.toString());
+            widthDisplay.setText(params.width.toString());
         });
         loadButton.addActionListener((ActionEvent event) ->
         {
@@ -344,30 +384,6 @@ public class MainWindow extends JFrame {
                 }
             }
         });
-    }
-
-    private void initParams() {
-        serializer = new GsonBuilder()
-                .setPrettyPrinting()
-                .serializeSpecialFloatingPointValues()
-                .create();
-        deserializer = new GsonBuilder()
-                .registerTypeAdapter(Distribution.class, new DistributionSerializer())
-                .create();
-
-        readParamsFile(DEFAULTS_FILE);
-
-        params.setNames();
-        params.length.setBounds(0, Double.POSITIVE_INFINITY);
-        params.straightness.setBounds(0, 1);
-        params.width.setBounds(0, Double.POSITIVE_INFINITY);
-    }
-
-    private MainWindow() {
-        super("Fiber Generator");
-
-        initParams();
-        initGUI();
     }
 
 
@@ -430,7 +446,7 @@ public class MainWindow extends JFrame {
         scaleField.setText(Double.toString(params.scale.getValue()));
         downsampleCheck.setSelected(params.downsample.use);
         downsampleField.setText(Double.toString(params.downsample.getValue()));
-        blurCheckBox.setSelected(params.blur.use);
+        blurCheck.setSelected(params.blur.use);
         blurRadiusField.setText(Double.toString(params.blur.getValue()));
         noiseCheck.setSelected(params.noise.use);
         noiseField.setText(Double.toString(params.noise.getValue()));
@@ -444,22 +460,22 @@ public class MainWindow extends JFrame {
         splineField.setText(Integer.toString(params.spline.getValue()));
 
         pack();
-        outputPathLabel.setPreferredSize(outputPathLabel.getSize());
-        widthDistributionLabel.setPreferredSize(widthDistributionLabel.getSize());
-        lengthDistributionLabel.setPreferredSize(lengthDistributionLabel.getSize());
-        straightnessDistributionLabel.setPreferredSize(straightnessDistributionLabel.getSize());
+        outputPathDisplay.setPreferredSize(outputPathDisplay.getSize());
+        widthDisplay.setPreferredSize(widthDisplay.getSize());
+        lengthDisplay.setPreferredSize(lengthDisplay.getSize());
+        straightDisplay.setPreferredSize(straightDisplay.getSize());
 
-        outputPathLabel.setToolTipText(outFolder);
-        outputPathLabel.setText(outFolder);
-        widthDistributionLabel.setText(params.width.toString());
-        lengthDistributionLabel.setText(params.length.toString());
-        straightnessDistributionLabel.setText(params.straightness.toString());
+        outputPathDisplay.setToolTipText(outFolder);
+        outputPathDisplay.setText(outFolder);
+        widthDisplay.setText(params.width.toString());
+        lengthDisplay.setText(params.length.toString());
+        straightDisplay.setText(params.straightness.toString());
     }
 
 
     private void displayImage(BufferedImage image) {
-        double xScale = (double) IMAGE_PANEL_SIZE / image.getWidth();
-        double yScale = (double) IMAGE_PANEL_SIZE / image.getHeight();
+        double xScale = (double) IMAGE_DISPLAY_SIZE / image.getWidth();
+        double yScale = (double) IMAGE_DISPLAY_SIZE / image.getHeight();
         double scale = Math.min(xScale, yScale);
         BufferedImage scaled = ImageUtility.scale(image, scale, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 

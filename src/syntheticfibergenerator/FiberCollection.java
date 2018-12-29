@@ -25,12 +25,12 @@ class FiberCollection implements Iterable<Fiber> {
     private static final int LABEL_BUFF = 5;
     private static final int SCALE_BUFF = 20;
 
-    private transient ImageCollection.ProgramParams params;
+    private transient ImageCollection.Params params;
     private transient BufferedImage image;
     private ArrayList<Fiber> fibers;
 
 
-    FiberCollection(ImageCollection.ProgramParams params) {
+    FiberCollection(ImageCollection.Params params) {
         this.params = params;
         this.fibers = new ArrayList<>(this.params.nFibers.getValue());
         this.image = new BufferedImage(params.imageWidth.getValue(), params.imageHeight.getValue(), BufferedImage.TYPE_BYTE_GRAY);

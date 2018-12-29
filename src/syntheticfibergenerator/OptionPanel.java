@@ -3,87 +3,88 @@ package syntheticfibergenerator;
 import javax.swing.*;
 import java.awt.*;
 
-public class OptionPanel extends JPanel {
+class OptionPanel extends JPanel {
 
-    private int yLeft = 0;
-    private int yRight = 0; // TODO: Just have one y tracker and require a certain order on inserts
+    private static final int FIELD_W = 5;
+    private static final int INNER_BUFF = 5;
 
-    OptionPanel(String name) {
+    private int y = 0;
+
+    OptionPanel(String borderText) {
         super(new GridBagLayout());
-        setBorder(BorderFactory.createTitledBorder(name));
+        setBorder(BorderFactory.createTitledBorder(borderText));
     }
 
-    JTextField addFieldLine(String name) {
-        addLabel(name);
-        return addField();
+    JButton addButtonLine(String labelText, String buttonText) {
+        addLabel(labelText);
+        return addButton(buttonText);
     }
 
-    JCheckBox addCheckbox(String name) { // TODO: Clean up duplicate code
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 5); // TODO: Extract to constant
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 0;
-        gbc.gridy = yLeft;
-        JCheckBox box = new JCheckBox(name);
-        add(box, gbc);
-        yLeft++;
-        return box;
-    }
-
-    JTextField addField() {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 5, 0, 0); // TODO: Extract to constant
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 1;
-        gbc.gridy = yRight;
-        JTextField field = new JTextField(5); // TODO: Extract to constant
-        add(field, gbc);
-        yRight++;
-        return field;
-    }
-
-    JLabel addLabel(String name) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 0, 0, 5); // TODO: Extract to constant
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 0;
-        gbc.gridy = yLeft;
-        JLabel label = new JLabel(name);
-        add(label, gbc);
-        yLeft++;
-        return label;
-    }
-
-    JButton addButton(String name) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(0, 5, 0, 0); // TODO: Extract to constant
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = 1;
-        gbc.gridy = yRight;
-        JButton button = new JButton(name);
+    JButton addButton(String labelText) {
+        GridBagConstraints gbc = gbcRight();
+        JButton button = new JButton(labelText);
         add(button, gbc);
-        yRight++;
+        y++;
         return button;
     }
 
-    /**
-     * Note this will behave strangely if yLeft and yRight are not the same.
-     * @param contents
-     * @return
-     */
-    JTextField addFieldRow(String contents) {
+    JTextField addFieldLine(String labelText) {
+        addLabel(labelText);
+        return addField();
+    }
+
+    JTextField addField() {
+        GridBagConstraints gbc = gbcRight();
+        JTextField field = new JTextField(FIELD_W);
+        add(field, gbc);
+        y++;
+        return field;
+    }
+
+    JTextField addDisplayField(String contents) {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridx = 0;
-        gbc.gridy = yLeft;
         gbc.gridwidth = 2;
+        gbc.gridx = 0;
+        gbc.gridy = y;
         JTextField field = new JTextField(contents);
         field.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         field.setOpaque(false);
         field.setEditable(false);
         add(field, gbc);
-        yLeft++;
-        yRight++;
+        y++;
         return field;
+    }
+
+    JLabel addLabel(String labelText) {
+        GridBagConstraints gbc = gbcLeft();
+        JLabel label = new JLabel(labelText);
+        add(label, gbc);
+        return label;
+    }
+
+    JCheckBox addCheckBox(String checkBoxText) {
+        GridBagConstraints gbc = gbcLeft();
+        JCheckBox box = new JCheckBox(checkBoxText);
+        add(box, gbc);
+        return box;
+    }
+
+    private GridBagConstraints gbcLeft() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, 0, 0, INNER_BUFF);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        return gbc;
+    }
+
+    private GridBagConstraints gbcRight() {
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(0, INNER_BUFF, 0, 0);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridx = 1;
+        gbc.gridy = y;
+        return gbc;
     }
 }

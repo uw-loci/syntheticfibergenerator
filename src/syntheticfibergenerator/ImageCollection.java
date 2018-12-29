@@ -7,11 +7,11 @@ import java.util.Random;
 
 public class ImageCollection {
 
-    private ProgramParams params;
+    private Params params;
 
     private ArrayList<FiberCollection> imageStack;
 
-    static class ProgramParams {
+    static class Params {
 
         interface Parser<Type> {
             Type parse(String s);
@@ -124,7 +124,8 @@ public class ImageCollection {
         Optional<Integer> spline;
     }
 
-    ImageCollection(ProgramParams params) {
+    ImageCollection(Params params) {
+        imageStack = new ArrayList<>();
         this.params = params;
     }
 
