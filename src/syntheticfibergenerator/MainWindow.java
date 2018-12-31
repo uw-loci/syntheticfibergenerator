@@ -51,7 +51,7 @@ public class MainWindow extends JFrame {
     private JCheckBox seedCheck;
     private JTextField seedField;
 
-    // Elements of the "Distribution" panel
+    // Elements of the "Distributions" panel
     private JButton lengthButton;
     private JTextField lengthDisplay;
     private JButton widthButton;
@@ -59,14 +59,16 @@ public class MainWindow extends JFrame {
     private JButton straightButton;
     private JTextField straightDisplay;
 
+    // Elements of the "Values" panel
     private JTextField nFibersField;
-    private JTextField segmentLengthField;
+    private JTextField segmentLenField;
+    private JTextField widthChangeField;
     private JTextField alignmentField;
     private JTextField meanAngleField;
+
     private JTextField imageWidthField;
     private JTextField imageHeightField;
     private JTextField edgeBufferField;
-    private JTextField widthVariabilityField;
     private JTextField scaleField;
     private JTextField downsampleField;
     private JTextField blurRadiusField;
@@ -109,7 +111,6 @@ public class MainWindow extends JFrame {
 
         readParamsFile(DEFAULTS_FILE);
 
-        params.setNames();
         params.length.setBounds(0, Double.POSITIVE_INFINITY);
         params.straightness.setBounds(0, 1);
         params.width.setBounds(0, Double.POSITIVE_INFINITY);
@@ -214,11 +215,11 @@ public class MainWindow extends JFrame {
         straightButton = distribution.addButtonLine("Straightness distribution:", "Modify...");
         straightDisplay = distribution.addDisplayField(params.straightness.toString());
 
-        widthVariabilityField = values.addFieldLine(guiName(params.widthVariability));
         nFibersField = values.addFieldLine(guiName(params.nFibers));
+        segmentLenField = values.addFieldLine(guiName(params.segmentLength));
+        widthChangeField = values.addFieldLine(guiName(params.widthChange));
         alignmentField = values.addFieldLine(guiName(params.alignment));
         meanAngleField = values.addFieldLine(guiName(params.meanAngle));
-        segmentLengthField = values.addFieldLine(guiName(params.segmentLength));
 
         imageHeightField = required.addFieldLine(guiName(params.imageHeight));
         imageWidthField = required.addFieldLine(guiName(params.imageWidth));
@@ -317,12 +318,18 @@ public class MainWindow extends JFrame {
         } catch (JsonParseException e) {
             showError("Malformed parameters file \"" + filename + '\"');
         }
+        params.setNames();
     }
 
     private void setupListeners() {
         generateButton.addActionListener((ActionEvent event) ->
         {
-            readParams();
+            try {
+                readParams();
+            } catch (IllegalArgumentException e) {
+                showError(e.getMessage());
+                return;
+            }
             collection = new ImageCollection(params);
             collection.generateFibers();
             writeResults();
@@ -390,13 +397,13 @@ public class MainWindow extends JFrame {
     private void readParams() throws IllegalArgumentException {
         params.nImages.parse(nImagesField.getText(), Integer::parseInt);
         params.nFibers.parse(nFibersField.getText(), Integer::parseInt);
-        params.segmentLength.parse(segmentLengthField.getText(), Double::parseDouble);
+        params.segmentLength.parse(segmentLenField.getText(), Double::parseDouble);
         params.alignment.parse(alignmentField.getText(), Double::parseDouble);
         params.meanAngle.parse(meanAngleField.getText(), Double::parseDouble);
         params.imageWidth.parse(imageWidthField.getText(), Integer::parseInt);
         params.imageHeight.parse(imageHeightField.getText(), Integer::parseInt);
         params.edgeBuffer.parse(edgeBufferField.getText(), Integer::parseInt);
-        params.widthVariability.parse(widthVariabilityField.getText(), Double::parseDouble);
+        params.widthChange.parse(widthChangeField.getText(), Double::parseDouble);
 
         params.seed.parse(seedCheck.isSelected(), seedField.getText(), Integer::parseInt);
         params.scale.parse(scaleCheck.isSelected(), scaleField.getText(), Double::parseDouble);
@@ -431,33 +438,33 @@ public class MainWindow extends JFrame {
 
 
     private void displayParams() {
-        nImagesField.setText(Integer.toString(params.nImages.getValue()));
-        nFibersField.setText(Integer.toString(params.nFibers.getValue()));
-        segmentLengthField.setText(Double.toString(params.segmentLength.getValue()));
-        alignmentField.setText(Double.toString(params.alignment.getValue()));
-        meanAngleField.setText(Double.toString(params.meanAngle.getValue()));
-        imageWidthField.setText(Integer.toString(params.imageWidth.getValue()));
-        imageHeightField.setText(Integer.toString(params.imageHeight.getValue()));
-        edgeBufferField.setText(Integer.toString(params.edgeBuffer.getValue()));
-        widthVariabilityField.setText(Double.toString(params.widthVariability.getValue()));
+        nImagesField.setText(params.nImages.getString());
+        nFibersField.setText(params.nFibers.getString());
+        segmentLenField.setText(params.segmentLength.getString());
+        alignmentField.setText(params.alignment.getString());
+        meanAngleField.setText(params.meanAngle.getString());
+        imageWidthField.setText(params.imageWidth.getString());
+        imageHeightField.setText(params.imageHeight.getString());
+        edgeBufferField.setText(params.edgeBuffer.getString());
+        widthChangeField.setText(params.widthChange.getString());
         seedCheck.setSelected(params.seed.use);
-        seedField.setText(Integer.toString(params.seed.getValue()));
+        seedField.setText(params.seed.getString());
         scaleCheck.setSelected(params.scale.use);
-        scaleField.setText(Double.toString(params.scale.getValue()));
+        scaleField.setText(params.scale.getString());
         downsampleCheck.setSelected(params.downsample.use);
-        downsampleField.setText(Double.toString(params.downsample.getValue()));
+        downsampleField.setText(params.downsample.getString());
         blurCheck.setSelected(params.blur.use);
-        blurRadiusField.setText(Double.toString(params.blur.getValue()));
+        blurRadiusField.setText(params.blur.getString());
         noiseCheck.setSelected(params.noise.use);
-        noiseField.setText(Double.toString(params.noise.getValue()));
+        noiseField.setText(params.noise.getString());
         distanceCheck.setSelected(params.distance.use);
-        distanceField.setText(Double.toString(params.distance.getValue()));
+        distanceField.setText(params.distance.getString());
         bubbleCheck.setSelected(params.bubble.use);
-        bubbleField.setText(Integer.toString(params.bubble.getValue()));
+        bubbleField.setText(params.bubble.getString());
         swapCheck.setSelected(params.swap.use);
-        swapField.setText(Integer.toString(params.swap.getValue()));
+        swapField.setText(params.swap.getString());
         splineCheck.setSelected(params.spline.use);
-        splineField.setText(Integer.toString(params.spline.getValue()));
+        splineField.setText(params.spline.getString());
 
         pack();
         outputPathDisplay.setPreferredSize(outputPathDisplay.getSize());

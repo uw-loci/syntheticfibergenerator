@@ -13,8 +13,6 @@ import java.util.Iterator;
 
 
 class FiberCollection implements Iterable<Fiber> {
-    private static final float COMPOSITE_ALPHA = 0.6F;
-    private static final int FADE_STEPS = 3;
 
     // The approximate fraction of the image's width that the scale bar should occupy
     private static final double IDEAL_SCALE_FRAC = 0.2;
@@ -91,7 +89,7 @@ class FiberCollection implements Iterable<Fiber> {
             fiberParams.straightness = params.straightness.sample();
             fiberParams.startingWidth = params.width.sample();
             fiberParams.segmentLength = params.segmentLength.getValue();
-            fiberParams.widthVariation = params.widthVariability.getValue();
+            fiberParams.widthVariation = params.widthChange.getValue();
 
             Vector direction = directions.get(i);
             double endDistance = fiberParams.nSegments * fiberParams.segmentLength * fiberParams.straightness;

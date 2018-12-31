@@ -26,6 +26,10 @@ public class ImageCollection {
                 return value;
             }
 
+            String getString() {
+                return value == null ? "" : value.toString();
+            }
+
             void setName(String name) {
                 this.name = name;
             }
@@ -59,10 +63,13 @@ public class ImageCollection {
             }
 
             void parse(String s, Parser<Type> p) {
+                if (s.replaceAll("\\s+","").isEmpty()) {
+                    throw new IllegalArgumentException("Value of \"" + name + "\" must be non-empty");
+                }
                 try {
                     value = p.parse(s);
                 } catch (Exception e) {
-                    throw new IllegalArgumentException("Unable to parse param \"" + s + "\" for parameter " + name); // TODO: Use better exception
+                    throw new IllegalArgumentException("Unable to parse value \"" + s + "\" for parameter \"" + name + '\"'); // TODO: Use better exception
                 }
             }
         }
@@ -73,9 +80,35 @@ public class ImageCollection {
 
             void parse(boolean use, String s, Parser<Type> p) {
                 this.use = use;
-                super.parse(s, p);
+                if (use) {
+                    super.parse(s, p);
+                }
             }
         }
+
+        Param<Integer> nImages = new Param<>();
+        Param<Integer> nFibers = new Param<>();
+        Param<Double> segmentLength = new Param<>();
+        Param<Double> alignment = new Param<>();
+        Param<Double> meanAngle = new Param<>();
+        Param<Double> widthChange = new Param<>();
+        Param<Integer> imageWidth = new Param<>();
+        Param<Integer> imageHeight = new Param<>();
+        Param<Integer> edgeBuffer = new Param<>();
+
+        Distribution length = new Uniform(0, Double.POSITIVE_INFINITY);
+        Distribution straightness = new Uniform(0, 1);
+        Distribution width = new Uniform(0, Double.POSITIVE_INFINITY);
+
+        Optional<Integer> seed = new Optional<>();
+        Optional<Double> scale = new Optional<>();
+        Optional<Double> downsample = new Optional<>();
+        Optional<Double> blur = new Optional<>();
+        Optional<Double> noise = new Optional<>();
+        Optional<Double> distance = new Optional<>();
+        Optional<Integer> bubble = new Optional<>();
+        Optional<Integer> swap = new Optional<>();
+        Optional<Integer> spline = new Optional<>();
 
         void setNames() {
             nImages.setName("number of images");
@@ -83,7 +116,7 @@ public class ImageCollection {
             segmentLength.setName("segment length");
             alignment.setName("alignment");
             meanAngle.setName("mean angle");
-            widthVariability.setName("width variability");
+            widthChange.setName("width change");
             imageWidth.setName("image width");
             imageHeight.setName("image height");
             edgeBuffer.setName("edge buffer");
@@ -97,31 +130,6 @@ public class ImageCollection {
             swap.setName("swap");
             spline.setName("spline");
         }
-
-        Param<Integer> nImages;
-        Param<Integer> nFibers;
-        Param<Double> segmentLength;
-        Param<Double> alignment;
-        Param<Double> meanAngle;
-        Param<Double> widthVariability;
-        Param<Integer> imageWidth;
-        Param<Integer> imageHeight;
-        Param<Integer> edgeBuffer;
-
-        // TODO: set lower and upper bound in constructor (hard-coded)
-        Distribution length;
-        Distribution straightness;
-        Distribution width;
-
-        Optional<Integer> seed;
-        Optional<Double> scale;
-        Optional<Double> downsample;
-        Optional<Double> blur;
-        Optional<Double> noise;
-        Optional<Double> distance;
-        Optional<Integer> bubble;
-        Optional<Integer> swap;
-        Optional<Integer> spline;
     }
 
     ImageCollection(Params params) {
