@@ -94,7 +94,7 @@ public class ImageCollection {
         Param<Double> widthChange = new Param<>();
         Param<Integer> imageWidth = new Param<>();
         Param<Integer> imageHeight = new Param<>();
-        Param<Integer> edgeBuffer = new Param<>();
+        Param<Integer> imageBuffer = new Param<>();
 
         Distribution length = new Uniform(0, Double.POSITIVE_INFINITY);
         Distribution straightness = new Uniform(0, 1);
@@ -119,7 +119,7 @@ public class ImageCollection {
             widthChange.setName("width change");
             imageWidth.setName("image width");
             imageHeight.setName("image height");
-            edgeBuffer.setName("edge buffer");
+            imageBuffer.setName("edge buffer");
             seed.setName("seed");
             scale.setName("scale");
             downsample.setName("downsample");

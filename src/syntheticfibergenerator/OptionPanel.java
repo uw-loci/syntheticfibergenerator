@@ -41,13 +41,13 @@ class OptionPanel extends JPanel {
         return field;
     }
 
-    JTextField addDisplayField(String contents) {
+    JTextField addDisplayField() {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = 2;
         gbc.gridx = 0;
         gbc.gridy = y;
-        JTextField field = new JTextField(contents);
+        JTextField field = new JTextField();
         field.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         field.setOpaque(false);
         field.setEditable(false);

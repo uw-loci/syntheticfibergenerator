@@ -64,15 +64,15 @@ class FiberCollection implements Iterable<Fiber> {
         double yDisp = direction.normalize().getY() * length;
 
         // TODO: If not all of the fiber can be shown, at least show as much as possible (right now we just give up)
-        if (Math.abs(xDisp) > params.imageWidth.getValue() - 2 * params.edgeBuffer.getValue() || Math.abs(yDisp) > params.imageHeight.getValue() - 2 * params.edgeBuffer.getValue()) {
+        if (Math.abs(xDisp) > params.imageWidth.getValue() - 2 * params.imageBuffer.getValue() || Math.abs(yDisp) > params.imageHeight.getValue() - 2 * params.imageBuffer.getValue()) {
             System.out.println("Warning: fiber will not fit in image frame");
             return RandomUtility.getRandomPoint(0.0, params.imageWidth.getValue(), 0.0, params.imageHeight.getValue());
         }
 
-        double xMin = Math.max(params.edgeBuffer.getValue(), params.edgeBuffer.getValue() - xDisp);
-        double yMin = Math.max(params.edgeBuffer.getValue(), params.edgeBuffer.getValue() - yDisp);
-        double xMax = Math.min(params.imageWidth.getValue() - params.edgeBuffer.getValue(), params.imageWidth.getValue() - params.edgeBuffer.getValue() - xDisp);
-        double yMax = Math.min(params.imageHeight.getValue() - params.edgeBuffer.getValue(), params.imageHeight.getValue() - params.edgeBuffer.getValue() - yDisp);
+        double xMin = Math.max(params.imageBuffer.getValue(), params.imageBuffer.getValue() - xDisp);
+        double yMin = Math.max(params.imageBuffer.getValue(), params.imageBuffer.getValue() - yDisp);
+        double xMax = Math.min(params.imageWidth.getValue() - params.imageBuffer.getValue(), params.imageWidth.getValue() - params.imageBuffer.getValue() - xDisp);
+        double yMax = Math.min(params.imageHeight.getValue() - params.imageBuffer.getValue(), params.imageHeight.getValue() - params.imageBuffer.getValue() - yDisp);
 
         return RandomUtility.getRandomPoint(xMin, xMax, yMin, yMax);
     }
