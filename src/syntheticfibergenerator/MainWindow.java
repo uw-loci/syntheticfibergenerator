@@ -1,4 +1,4 @@
-package syntheticfibergenerator;
+package syntheticfibergenerator; // TODO: Cleaned up
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -120,7 +120,7 @@ public class MainWindow extends JFrame {
                 .serializeSpecialFloatingPointValues()
                 .create();
         deserializer = new GsonBuilder()
-                .registerTypeAdapter(Distribution.class, new DistributionSerializer())
+                .registerTypeAdapter(Distribution.class, new Distribution.Serializer())
                 .create();
 
         readParamsFile(DEFAULTS_FILE);
@@ -272,11 +272,11 @@ public class MainWindow extends JFrame {
         seedField.setText(params.seed.getString());
 
         lengthDisplay.setPreferredSize(lengthDisplay.getSize());
-        lengthDisplay.setText(params.length.toString());
+        lengthDisplay.setText(params.length.getString());
         widthDisplay.setPreferredSize(widthDisplay.getSize());
-        widthDisplay.setText(params.width.toString());
+        widthDisplay.setText(params.width.getString());
         straightDisplay.setPreferredSize(straightDisplay.getSize());
-        straightDisplay.setText(params.straightness.toString());
+        straightDisplay.setText(params.straightness.getString());
 
         nFibersField.setText(params.nFibers.getString());
         segmentField.setText(params.segmentLength.getString());
@@ -481,18 +481,18 @@ public class MainWindow extends JFrame {
     private void lengthPressed() {
         DistributionDialog dialog = new DistributionDialog(params.length);
         params.length = dialog.distribution;
-        lengthDisplay.setText(params.length.toString());
+        displayParams();
     }
 
     private void widthPressed() {
         DistributionDialog dialog = new DistributionDialog(params.width);
         params.width = dialog.distribution;
-        widthDisplay.setText(params.width.toString());
+        displayParams();
     }
 
     private void straightPressed() {
         DistributionDialog dialog = new DistributionDialog(params.straightness);
         params.straightness = dialog.distribution;
-        straightDisplay.setText(params.straightness.toString());
+        displayParams();
     }
 }

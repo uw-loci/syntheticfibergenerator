@@ -1,4 +1,4 @@
-package syntheticfibergenerator;
+package syntheticfibergenerator; // TODO: Cleaned up
 
 import javax.swing.*;
 import java.awt.*;
@@ -86,8 +86,8 @@ class DistributionDialog extends JDialog {
             Gaussian gaussian = (Gaussian) distribution;
             label1.setText(GUIUtility.guiName(gaussian.mean));
             field1.setText(gaussian.mean.getString());
-            label2.setText(GUIUtility.guiName(gaussian.sdev));
-            field2.setText(gaussian.sdev.getString());
+            label2.setText(GUIUtility.guiName(gaussian.sigma));
+            field2.setText(gaussian.sigma.getString());
         } else if (distribution instanceof Uniform) {
             Uniform uniform = (Uniform) distribution;
             label1.setText(GUIUtility.guiName(uniform.min));
@@ -126,7 +126,7 @@ class DistributionDialog extends JDialog {
                 if (selection.equals(Gaussian.typename)) {
                     Gaussian gaussian = (Gaussian) distribution;
                     gaussian.mean.parse(field1.getText(), Double::parseDouble);
-                    gaussian.sdev.parse(field2.getText(), Double::parseDouble);
+                    gaussian.sigma.parse(field2.getText(), Double::parseDouble);
                 } else if (selection.equals(Uniform.typename)) {
                     Uniform uniform = (Uniform) distribution;
                     uniform.min.parse(field1.getText(), Double::parseDouble);
