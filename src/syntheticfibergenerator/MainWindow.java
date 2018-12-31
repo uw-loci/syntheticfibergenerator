@@ -96,13 +96,6 @@ public class MainWindow extends JFrame {
         new MainWindow();
     }
 
-    private static GridBagConstraints newGBC() {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        return gbc;
-    }
-
     private static JLabel createImageDisplay() {
         JLabel output = new JLabel("Press \"Generate\" to view images");
         output.setHorizontalAlignment(JLabel.CENTER);
@@ -113,21 +106,12 @@ public class MainWindow extends JFrame {
         return output;
     }
 
-    private static void showError(String message) {
-        JOptionPane.showMessageDialog(null, message, "Error", JOptionPane.ERROR_MESSAGE);
-    }
-
-    private static String guiName(ImageCollection.Params.Param param) {
-        String name = param.getName();
-        String uppercase = name.substring(0, 1).toUpperCase() + name.substring(1);
-        return uppercase + ":";
-    }
-
     private MainWindow() {
         super("Fiber Generator");
         initParams();
         initGUI();
         displayParams();
+        setVisible(true);
     }
 
     private void initParams() {
@@ -150,7 +134,7 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = newGBC();
+        GridBagConstraints gbc = GUIUtility.newGBC();
 
         JPanel displayPanel = new JPanel(new GridBagLayout());
         gbc.gridheight = 2;
@@ -168,7 +152,7 @@ public class MainWindow extends JFrame {
         gbc.gridy++;
         add(generateButton, gbc);
 
-        gbc = newGBC();
+        gbc = GUIUtility.newGBC();
 
         JPanel generationPanel = new JPanel(new GridBagLayout());
         tabbedPane.addTab("Generation", null, generationPanel);
@@ -181,7 +165,7 @@ public class MainWindow extends JFrame {
         gbc.gridwidth = 2;
         displayPanel.add(imageDisplay, gbc);
 
-        gbc = newGBC();
+        gbc = GUIUtility.newGBC();
 
         prevButton = new JButton("Previous");
         gbc.anchor = GridBagConstraints.EAST;
@@ -196,7 +180,7 @@ public class MainWindow extends JFrame {
         nextButton.setPreferredSize(prevButton.getPreferredSize());
         displayPanel.add(nextButton, gbc);
 
-        gbc = newGBC();
+        gbc = GUIUtility.newGBC();
 
         OptionPanel session = new OptionPanel("Session");
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -234,8 +218,8 @@ public class MainWindow extends JFrame {
         loadButton = session.addButtonLine("Parameters:", "Open...");
         saveButton = session.addButtonLine("Output location:", "Open...");
         pathDisplay = session.addDisplayField();
-        nImagesField = session.addFieldLine(guiName(params.nImages));
-        seedCheck = session.addCheckBox(guiName(params.seed));
+        nImagesField = session.addFieldLine(GUIUtility.guiName(params.nImages));
+        seedCheck = session.addCheckBox(GUIUtility.guiName(params.seed));
         seedField = session.addField();
 
         lengthButton = distribution.addButtonLine("Length distribution:", "Modify...");
@@ -245,38 +229,37 @@ public class MainWindow extends JFrame {
         straightButton = distribution.addButtonLine("Straightness distribution:", "Modify...");
         straightDisplay = distribution.addDisplayField();
 
-        nFibersField = values.addFieldLine(guiName(params.nFibers));
-        segmentField = values.addFieldLine(guiName(params.segmentLength));
-        widthChangeField = values.addFieldLine(guiName(params.widthChange));
-        alignmentField = values.addFieldLine(guiName(params.alignment));
-        meanAngleField = values.addFieldLine(guiName(params.meanAngle));
+        nFibersField = values.addFieldLine(GUIUtility.guiName(params.nFibers));
+        segmentField = values.addFieldLine(GUIUtility.guiName(params.segmentLength));
+        widthChangeField = values.addFieldLine(GUIUtility.guiName(params.widthChange));
+        alignmentField = values.addFieldLine(GUIUtility.guiName(params.alignment));
+        meanAngleField = values.addFieldLine(GUIUtility.guiName(params.meanAngle));
 
-        imageWidthField = required.addFieldLine(guiName(params.imageWidth));
-        imageHeightField = required.addFieldLine(guiName(params.imageHeight));
-        imageBufferField = required.addFieldLine(guiName(params.imageBuffer));
+        imageWidthField = required.addFieldLine(GUIUtility.guiName(params.imageWidth));
+        imageHeightField = required.addFieldLine(GUIUtility.guiName(params.imageHeight));
+        imageBufferField = required.addFieldLine(GUIUtility.guiName(params.imageBuffer));
 
-        scaleCheck = optional.addCheckBox(guiName(params.scale));
+        scaleCheck = optional.addCheckBox(GUIUtility.guiName(params.scale));
         scaleField = optional.addField();
-        sampleCheck = optional.addCheckBox(guiName(params.downsample));
+        sampleCheck = optional.addCheckBox(GUIUtility.guiName(params.downsample));
         sampleField = optional.addField();
-        blurCheck = optional.addCheckBox(guiName(params.blur));
+        blurCheck = optional.addCheckBox(GUIUtility.guiName(params.blur));
         blurField = optional.addField();
-        noiseCheck = optional.addCheckBox(guiName(params.noise));
+        noiseCheck = optional.addCheckBox(GUIUtility.guiName(params.noise));
         noiseField = optional.addField();
-        distanceCheck = optional.addCheckBox(guiName(params.distance));
+        distanceCheck = optional.addCheckBox(GUIUtility.guiName(params.distance));
         distanceField = optional.addField();
 
-        bubbleCheck = smooth.addCheckBox(guiName(params.bubble));
+        bubbleCheck = smooth.addCheckBox(GUIUtility.guiName(params.bubble));
         bubbleField = smooth.addField();
-        swapCheck = smooth.addCheckBox(guiName(params.swap));
+        swapCheck = smooth.addCheckBox(GUIUtility.guiName(params.swap));
         swapField = smooth.addField();
-        splineCheck = smooth.addCheckBox(guiName(params.spline));
+        splineCheck = smooth.addCheckBox(GUIUtility.guiName(params.spline));
         splineField = smooth.addField();
 
         setupListeners();
         setResizable(false);
         pack();
-        setVisible(true);
     }
 
     private void displayParams() {
@@ -363,7 +346,7 @@ public class MainWindow extends JFrame {
         params.imageWidth.verifyGreater(0);
         params.imageHeight.verifyGreater(0);
         params.imageBuffer.verifyGreater(0);
-        params.imageBuffer.verifyLessEq(Math.min(params.imageWidth.getValue() / 2, params.imageHeight.getValue() / 2)); // TODO: Does the logic of the program require this?
+        // TODO: Handle image buffer which is too large when choosing fiber positions
 
         params.scale.verifyGreater(0.0);
         params.downsample.verifyGreater(0.0);
@@ -374,6 +357,21 @@ public class MainWindow extends JFrame {
         params.bubble.verifyGreater(0);
         params.swap.verifyGreater(0);
         params.spline.verifyGreater(0);
+    }
+
+    private void readParamsFile(String filename) {
+        try {
+            FileReader reader = new FileReader(filename);
+            params = deserializer.fromJson(reader, ImageCollection.Params.class);
+            reader.close();
+        } catch (FileNotFoundException e) {
+            GUIUtility.showError("File \"" + filename + "\" not found");
+        } catch (IOException e) {
+            GUIUtility.showError("Error when reading \"" + filename + '\"');
+        } catch (JsonParseException e) {
+            GUIUtility.showError("Malformed parameters file \"" + filename + '\"');
+        }
+        params.setNames();
     }
 
     private void writeResults() {
@@ -392,8 +390,8 @@ public class MainWindow extends JFrame {
             writer.write(contents);
             writer.flush();
             writer.close();
-        } catch (IOException exception) {
-            showError("Error while writing \"" + filename + '\"');
+        } catch (IOException e) {
+            GUIUtility.showError("Error while writing \"" + filename + '\"');
         }
     }
 
@@ -401,35 +399,31 @@ public class MainWindow extends JFrame {
         String filename = prefix + '.' + IMAGE_EXT;
         try {
             ImageIO.write(image, IMAGE_EXT, new File(filename));
-        } catch (IOException exception) {
-            showError("Error while writing \"" + filename + '\"');
+        } catch (IOException e) {
+            GUIUtility.showError("Error while writing \"" + filename + '\"');
         }
     }
 
-    private void readParamsFile(String filename) {
-        try {
-            FileReader reader = new FileReader(filename);
-            params = deserializer.fromJson(reader, ImageCollection.Params.class);
-            reader.close();
-        } catch (FileNotFoundException e) {
-            showError("File \"" + filename + "\" not found");
-        } catch (IOException e) {
-            showError("Error when reading \"" + filename + '\"');
-        } catch (JsonParseException e) {
-            showError("Malformed parameters file \"" + filename + '\"');
-        }
-        params.setNames();
+    private void displayImage(BufferedImage image) {
+        double xScale = (double) IMAGE_DISPLAY_SIZE / image.getWidth();
+        double yScale = (double) IMAGE_DISPLAY_SIZE / image.getHeight();
+        double scale = Math.min(xScale, yScale);
+        BufferedImage scaled = ImageUtility.scale(image, scale, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+
+        Icon icon = new ImageIcon(scaled);
+        imageDisplay.setText(null);
+        imageDisplay.setIcon(icon);
     }
 
     private void setupListeners() {
-        generateButton.addActionListener((ActionEvent event) -> generatePressed());
-        prevButton.addActionListener((ActionEvent event) -> prevPressed());
-        nextButton.addActionListener((ActionEvent event) -> nextPressed());
-        lengthButton.addActionListener((ActionEvent event) -> lengthPressed());
-        straightButton.addActionListener((ActionEvent event) -> straightPressed());
-        widthButton.addActionListener((ActionEvent event) -> widthPressed());
-        loadButton.addActionListener((ActionEvent event) -> loadPressed());
-        saveButton.addActionListener((ActionEvent event) -> savePressed());
+        generateButton.addActionListener((ActionEvent e) -> generatePressed());
+        prevButton.addActionListener((ActionEvent e) -> prevPressed());
+        nextButton.addActionListener((ActionEvent e) -> nextPressed());
+        lengthButton.addActionListener((ActionEvent e) -> lengthPressed());
+        straightButton.addActionListener((ActionEvent e) -> straightPressed());
+        widthButton.addActionListener((ActionEvent e) -> widthPressed());
+        loadButton.addActionListener((ActionEvent e) -> loadPressed());
+        saveButton.addActionListener((ActionEvent e) -> savePressed());
     }
 
     private void generatePressed() {
@@ -437,7 +431,7 @@ public class MainWindow extends JFrame {
             parseParams();
             verifyParams();
         } catch (IllegalArgumentException e) {
-            showError(e.getMessage());
+            GUIUtility.showError(e.getMessage());
             return;
         }
         collection = new ImageCollection(params);
@@ -500,17 +494,5 @@ public class MainWindow extends JFrame {
         DistributionDialog dialog = new DistributionDialog(params.straightness);
         params.straightness = dialog.distribution;
         straightDisplay.setText(params.straightness.toString());
-    }
-
-    private void displayImage(BufferedImage image) {
-        double xScale = (double) IMAGE_DISPLAY_SIZE / image.getWidth();
-        double yScale = (double) IMAGE_DISPLAY_SIZE / image.getHeight();
-        double scale = Math.min(xScale, yScale);
-        BufferedImage scaled = ImageUtility.scale(image, scale, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-
-        Icon icon = new ImageIcon(scaled);
-        imageDisplay.setText(null);
-        imageDisplay.setIcon(icon);
-        pack();
     }
 }

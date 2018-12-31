@@ -10,8 +10,13 @@ class OptionPanel extends JPanel {
 
     private int y = 0;
 
-    OptionPanel(String borderText) {
+
+    OptionPanel() {
         super(new GridBagLayout());
+    }
+
+    OptionPanel(String borderText) {
+        this();
         setBorder(BorderFactory.createTitledBorder(borderText));
     }
 
@@ -38,6 +43,12 @@ class OptionPanel extends JPanel {
         JTextField field = new JTextField(FIELD_W);
         add(field, gbc);
         y++;
+        return field;
+    }
+
+    JTextField addReadOnlyField() {
+        JTextField field = addField();
+        field.setEditable(false);
         return field;
     }
 
