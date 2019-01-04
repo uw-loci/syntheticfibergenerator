@@ -14,7 +14,7 @@ public class CircleTest
     {
         Circle circle1 = new Circle(new Vector(0.0, 0.0), 10.0);
         Circle circle2 = new Circle(new Vector(0.0, 14.0), 8.0);
-        Vector intersect = Circle.circleCircleIntersect(circle1, circle2);
+        Vector intersect = Circle.circleCircleIntersect(circle1, circle2)[0];
         assertEquals(circle1.getCenter().distance(intersect), circle1.getRadius(), 1e-6);
         assertEquals(circle2.getCenter().distance(intersect), circle2.getRadius(), 1e-6);
     }

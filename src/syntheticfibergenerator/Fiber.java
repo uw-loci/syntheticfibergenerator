@@ -79,7 +79,7 @@ class Fiber implements Iterable<Segment> {
     }
 
 
-    void generate() {
+    void generate() throws ArithmeticException {
         points = RandomUtility.getRandomChain(params.start, params.end, params.nSegments, params.segmentLength);
 
         double width = params.startingWidth;

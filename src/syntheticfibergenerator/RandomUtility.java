@@ -49,10 +49,10 @@ public class RandomUtility
     }
 
 
-    static Vector getRandomPoint(double minX, double maxX, double minY, double maxY)
+    static Vector getRandomPoint(double xMin, double xMax, double yMin, double yMax)
     {
-        double x = getRandomDouble(minX, maxX);
-        double y = getRandomDouble(minY, maxY);
+        double x = getRandomDouble(xMin, xMax);
+        double y = getRandomDouble(yMin, yMax);
         return new Vector(x, y);
     }
 
@@ -114,7 +114,7 @@ public class RandomUtility
      * @param stepSize
      * @return
      */
-    static ArrayList<Vector> getRandomChain(Vector start, Vector end, int nSteps, double stepSize)
+    static ArrayList<Vector> getRandomChain(Vector start, Vector end, int nSteps, double stepSize) throws ArithmeticException
     {
         ArrayList<Vector> points = new ArrayList<>(Collections.nCopies(nSteps + 1, null));
         points.set(0, start);
@@ -132,7 +132,7 @@ public class RandomUtility
      * @param iEnd
      * @param stepSize
      */
-    private static void randomChainRecursive(ArrayList<Vector> points, int iStart, int iEnd, double stepSize)
+    private static void randomChainRecursive(ArrayList<Vector> points, int iStart, int iEnd, double stepSize) throws ArithmeticException
     {
         // Base case: the start and end points are the same or adjacent
         if (iEnd - iStart <= 1)
@@ -152,7 +152,8 @@ public class RandomUtility
         }
         else if (iBridge == iStart + 1 && iBridge == iEnd - 1)
         {
-            bridge = Circle.circleCircleIntersect(circle1, circle2);
+            Vector[] intersects = Circle.circleCircleIntersect(circle1, circle2);
+            bridge = RandomUtility.RNG.nextBoolean() ? intersects[0] : intersects[1];
         }
         else if (iBridge == iStart + 1)
         {

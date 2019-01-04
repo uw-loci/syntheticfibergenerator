@@ -17,13 +17,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class MainWindow extends JFrame {
 
-    // Constant definitions
-    private static final int IMAGE_DISPLAY_SIZE = 512;
-    private static final String DEFAULTS_FILE = "defaults.json";
-    private static final String DATA_PREFIX = "data";
-    private static final String IMAGE_PREFIX = "image";
-    private static final String IMAGE_EXT = "tiff";
-
     // Can be modified via the "Output location" button, therefore not final
     private String outFolder = "output" + File.separator;
 
@@ -91,19 +84,16 @@ public class MainWindow extends JFrame {
     private JCheckBox splineCheck;
     private JTextField splineField;
 
+    // Constant definitions
+    private static final int IMAGE_DISPLAY_SIZE = 512;
+    private static final String DEFAULTS_FILE = "defaults.json";
+    private static final String DATA_PREFIX = "data";
+    private static final String IMAGE_PREFIX = "image";
+    private static final String IMAGE_EXT = "tiff";
+
 
     public static void main(String[] args) {
         new MainWindow();
-    }
-
-    private static JLabel createImageDisplay() {
-        JLabel output = new JLabel("Press \"Generate\" to view images");
-        output.setHorizontalAlignment(JLabel.CENTER);
-        output.setForeground(Color.WHITE);
-        output.setBackground(Color.BLACK);
-        output.setOpaque(true);
-        output.setPreferredSize(new Dimension(IMAGE_DISPLAY_SIZE, IMAGE_DISPLAY_SIZE));
-        return output;
     }
 
     private MainWindow() {
@@ -134,7 +124,7 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = GUIUtility.newGBC();
+        GridBagConstraints gbc = Utility.newGBC();
 
         JPanel displayPanel = new JPanel(new GridBagLayout());
         gbc.gridheight = 2;
@@ -152,7 +142,7 @@ public class MainWindow extends JFrame {
         gbc.gridy++;
         add(generateButton, gbc);
 
-        gbc = GUIUtility.newGBC();
+        gbc = Utility.newGBC();
 
         JPanel generationPanel = new JPanel(new GridBagLayout());
         tabbedPane.addTab("Generation", null, generationPanel);
@@ -165,7 +155,7 @@ public class MainWindow extends JFrame {
         gbc.gridwidth = 2;
         displayPanel.add(imageDisplay, gbc);
 
-        gbc = GUIUtility.newGBC();
+        gbc = Utility.newGBC();
 
         prevButton = new JButton("Previous");
         gbc.anchor = GridBagConstraints.EAST;
@@ -180,7 +170,7 @@ public class MainWindow extends JFrame {
         nextButton.setPreferredSize(prevButton.getPreferredSize());
         displayPanel.add(nextButton, gbc);
 
-        gbc = GUIUtility.newGBC();
+        gbc = Utility.newGBC();
 
         OptionPanel session = new OptionPanel("Session");
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -218,8 +208,8 @@ public class MainWindow extends JFrame {
         loadButton = session.addButtonLine("Parameters:", "Open...");
         saveButton = session.addButtonLine("Output location:", "Open...");
         pathDisplay = session.addDisplayField();
-        nImagesField = session.addFieldLine(GUIUtility.guiName(params.nImages));
-        seedCheck = session.addCheckBox(GUIUtility.guiName(params.seed));
+        nImagesField = session.addFieldLine(Utility.guiName(params.nImages));
+        seedCheck = session.addCheckBox(Utility.guiName(params.seed));
         seedField = session.addField();
 
         lengthButton = distribution.addButtonLine("Length distribution:", "Modify...");
@@ -229,32 +219,32 @@ public class MainWindow extends JFrame {
         straightButton = distribution.addButtonLine("Straightness distribution:", "Modify...");
         straightDisplay = distribution.addDisplayField();
 
-        nFibersField = values.addFieldLine(GUIUtility.guiName(params.nFibers));
-        segmentField = values.addFieldLine(GUIUtility.guiName(params.segmentLength));
-        widthChangeField = values.addFieldLine(GUIUtility.guiName(params.widthChange));
-        alignmentField = values.addFieldLine(GUIUtility.guiName(params.alignment));
-        meanAngleField = values.addFieldLine(GUIUtility.guiName(params.meanAngle));
+        nFibersField = values.addFieldLine(Utility.guiName(params.nFibers));
+        segmentField = values.addFieldLine(Utility.guiName(params.segmentLength));
+        widthChangeField = values.addFieldLine(Utility.guiName(params.widthChange));
+        alignmentField = values.addFieldLine(Utility.guiName(params.alignment));
+        meanAngleField = values.addFieldLine(Utility.guiName(params.meanAngle));
 
-        imageWidthField = required.addFieldLine(GUIUtility.guiName(params.imageWidth));
-        imageHeightField = required.addFieldLine(GUIUtility.guiName(params.imageHeight));
-        imageBufferField = required.addFieldLine(GUIUtility.guiName(params.imageBuffer));
+        imageWidthField = required.addFieldLine(Utility.guiName(params.imageWidth));
+        imageHeightField = required.addFieldLine(Utility.guiName(params.imageHeight));
+        imageBufferField = required.addFieldLine(Utility.guiName(params.imageBuffer));
 
-        scaleCheck = optional.addCheckBox(GUIUtility.guiName(params.scale));
+        scaleCheck = optional.addCheckBox(Utility.guiName(params.scale));
         scaleField = optional.addField();
-        sampleCheck = optional.addCheckBox(GUIUtility.guiName(params.downsample));
+        sampleCheck = optional.addCheckBox(Utility.guiName(params.downsample));
         sampleField = optional.addField();
-        blurCheck = optional.addCheckBox(GUIUtility.guiName(params.blur));
+        blurCheck = optional.addCheckBox(Utility.guiName(params.blur));
         blurField = optional.addField();
-        noiseCheck = optional.addCheckBox(GUIUtility.guiName(params.noise));
+        noiseCheck = optional.addCheckBox(Utility.guiName(params.noise));
         noiseField = optional.addField();
-        distanceCheck = optional.addCheckBox(GUIUtility.guiName(params.distance));
+        distanceCheck = optional.addCheckBox(Utility.guiName(params.distance));
         distanceField = optional.addField();
 
-        bubbleCheck = smooth.addCheckBox(GUIUtility.guiName(params.bubble));
+        bubbleCheck = smooth.addCheckBox(Utility.guiName(params.bubble));
         bubbleField = smooth.addField();
-        swapCheck = smooth.addCheckBox(GUIUtility.guiName(params.swap));
+        swapCheck = smooth.addCheckBox(Utility.guiName(params.swap));
         swapField = smooth.addField();
-        splineCheck = smooth.addCheckBox(GUIUtility.guiName(params.spline));
+        splineCheck = smooth.addCheckBox(Utility.guiName(params.spline));
         splineField = smooth.addField();
 
         setupListeners();
@@ -365,11 +355,11 @@ public class MainWindow extends JFrame {
             params = deserializer.fromJson(reader, ImageCollection.Params.class);
             reader.close();
         } catch (FileNotFoundException e) {
-            GUIUtility.showError("File \"" + filename + "\" not found");
+            Utility.showError("File \"" + filename + "\" not found");
         } catch (IOException e) {
-            GUIUtility.showError("Error when reading \"" + filename + '\"');
+            Utility.showError("Error when reading \"" + filename + '\"');
         } catch (JsonParseException e) {
-            GUIUtility.showError("Malformed parameters file \"" + filename + '\"');
+            Utility.showError("Malformed parameters file \"" + filename + '\"');
         }
         params.setNames();
     }
@@ -391,7 +381,7 @@ public class MainWindow extends JFrame {
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            GUIUtility.showError("Error while writing \"" + filename + '\"');
+            Utility.showError("Error while writing \"" + filename + '\"');
         }
     }
 
@@ -400,7 +390,7 @@ public class MainWindow extends JFrame {
         try {
             ImageIO.write(image, IMAGE_EXT, new File(filename));
         } catch (IOException e) {
-            GUIUtility.showError("Error while writing \"" + filename + '\"');
+            Utility.showError("Error while writing \"" + filename + '\"');
         }
     }
 
@@ -431,11 +421,16 @@ public class MainWindow extends JFrame {
             parseParams();
             verifyParams();
         } catch (IllegalArgumentException e) {
-            GUIUtility.showError(e.getMessage());
+            Utility.showError(e.getMessage());
             return;
         }
         collection = new ImageCollection(params);
-        collection.generateFibers();
+        try {
+            collection.generateFibers();
+        } catch (ArithmeticException e) {
+            Utility.showError(e.getMessage());
+            return;
+        }
         writeResults();
         displayIndex = 0;
         displayImage(collection.get(displayIndex).getImage());
@@ -494,5 +489,15 @@ public class MainWindow extends JFrame {
         DistributionDialog dialog = new DistributionDialog(params.straightness);
         params.straightness = dialog.distribution;
         displayParams();
+    }
+
+    private static JLabel createImageDisplay() {
+        JLabel output = new JLabel("Press \"Generate\" to view images");
+        output.setHorizontalAlignment(JLabel.CENTER);
+        output.setForeground(Color.WHITE);
+        output.setBackground(Color.BLACK);
+        output.setOpaque(true);
+        output.setPreferredSize(new Dimension(IMAGE_DISPLAY_SIZE, IMAGE_DISPLAY_SIZE));
+        return output;
     }
 }

@@ -69,7 +69,7 @@ public class ImageCollection {
         this.params = params;
     }
 
-    void generateFibers() {
+    void generateFibers() throws ArithmeticException {
         try {
             if (params.seed.use) {
                 RandomUtility.RNG = new Random((long) params.seed.getValue());

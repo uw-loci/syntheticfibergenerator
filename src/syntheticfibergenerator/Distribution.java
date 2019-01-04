@@ -38,9 +38,9 @@ abstract class Distribution {
 
     abstract String getString();
 
-    abstract void setNames();
-
     abstract double sample();
+
+    abstract void setNames();
 }
 
 
@@ -66,11 +66,6 @@ class Gaussian extends Distribution {
         return String.format(getType() + ": \u03BC=%s, \u03C3=%s", mean.getString(), sigma.getString());
     }
 
-    void setNames() {
-        mean.setName("mean");
-        sigma.setName("sigma");
-    }
-
     public double sample() {
         double val;
         do {
@@ -78,6 +73,11 @@ class Gaussian extends Distribution {
         }
         while (val < lowerBound || val > upperBound);
         return val;
+    }
+
+    void setNames() {
+        mean.setName("mean");
+        sigma.setName("sigma");
     }
 }
 
@@ -104,12 +104,12 @@ class Uniform extends Distribution {
         return String.format(getType() + ": %s-%s", min.getString(), max.getString());
     }
 
+    public double sample() {
+        return RandomUtility.getRandomDouble(min.getValue(), max.getValue());
+    }
+
     void setNames() {
         min.setName("minimum");
         max.setName("maximum");
-    }
-
-    public double sample() {
-        return RandomUtility.getRandomDouble(min.getValue(), max.getValue());
     }
 }

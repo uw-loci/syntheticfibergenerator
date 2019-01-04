@@ -78,7 +78,7 @@ class FiberCollection implements Iterable<Fiber> {
     }
 
 
-    void generateFibers() {
+    void generateFibers() throws ArithmeticException {
         ArrayList<Vector> directions = generateDirections();
 
         for (int i = 0; i < params.nFibers.getValue(); i++) {

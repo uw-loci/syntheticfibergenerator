@@ -35,7 +35,7 @@ class DistributionDialog extends JDialog {
         setModal(true);
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = GUIUtility.newGBC();
+        GridBagConstraints gbc = Utility.newGBC();
 
         String[] options = {Gaussian.typename, Uniform.typename};
         comboBox = new JComboBox<>(options);
@@ -43,7 +43,7 @@ class DistributionDialog extends JDialog {
         gbc.gridwidth = 2;
         add(comboBox, gbc);
 
-        gbc = GUIUtility.newGBC();
+        gbc = Utility.newGBC();
 
         OptionPanel panel = new OptionPanel();
         gbc.gridwidth = 2;
@@ -59,7 +59,7 @@ class DistributionDialog extends JDialog {
         label2 = panel.addLabel("");
         field2 = panel.addField();
 
-        gbc = GUIUtility.newGBC();
+        gbc = Utility.newGBC();
 
         cancelButton = new JButton("Cancel");
         gbc.anchor = GridBagConstraints.WEST;
@@ -84,15 +84,15 @@ class DistributionDialog extends JDialog {
         comboBox.setSelectedItem(distribution.getType());
         if (distribution instanceof Gaussian) {
             Gaussian gaussian = (Gaussian) distribution;
-            label1.setText(GUIUtility.guiName(gaussian.mean));
+            label1.setText(Utility.guiName(gaussian.mean));
             field1.setText(gaussian.mean.getString());
-            label2.setText(GUIUtility.guiName(gaussian.sigma));
+            label2.setText(Utility.guiName(gaussian.sigma));
             field2.setText(gaussian.sigma.getString());
         } else if (distribution instanceof Uniform) {
             Uniform uniform = (Uniform) distribution;
-            label1.setText(GUIUtility.guiName(uniform.min));
+            label1.setText(Utility.guiName(uniform.min));
             field1.setText(uniform.min.getString());
-            label2.setText(GUIUtility.guiName(uniform.max));
+            label2.setText(Utility.guiName(uniform.max));
             field2.setText(uniform.max.getString());
         }
     }
@@ -119,7 +119,7 @@ class DistributionDialog extends JDialog {
 
     private void okayPressed() {
         if (comboBox.getSelectedItem() == null) {
-            GUIUtility.showError("No distribution type selected");
+            Utility.showError("No distribution type selected");
         } else {
             String selection = comboBox.getSelectedItem().toString();
             try {
@@ -134,7 +134,7 @@ class DistributionDialog extends JDialog {
                 }
                 dispose();
             } catch (IllegalArgumentException e) {
-                GUIUtility.showError(e.getMessage());
+                Utility.showError(e.getMessage());
             }
         }
     }

@@ -1,14 +1,16 @@
-package syntheticfibergenerator;
+package syntheticfibergenerator; // TODO: Cleaned up
 
 import javax.swing.*;
 import java.awt.*;
 
 class OptionPanel extends JPanel {
 
+    // The current row where new components will be placed
+    private int y = 0;
+
+    // Constant definitions
     private static final int FIELD_W = 5;
     private static final int INNER_BUFF = 5;
-
-    private int y = 0;
 
 
     OptionPanel() {
@@ -38,14 +40,6 @@ class OptionPanel extends JPanel {
         return addField();
     }
 
-    JTextField addField() {
-        GridBagConstraints gbc = gbcRight();
-        JTextField field = new JTextField(FIELD_W);
-        add(field, gbc);
-        y++;
-        return field;
-    }
-
     JTextField addReadOnlyField() {
         JTextField field = addField();
         field.setEditable(false);
@@ -62,6 +56,14 @@ class OptionPanel extends JPanel {
         field.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         field.setOpaque(false);
         field.setEditable(false);
+        add(field, gbc);
+        y++;
+        return field;
+    }
+
+    JTextField addField() {
+        GridBagConstraints gbc = gbcRight();
+        JTextField field = new JTextField(FIELD_W);
         add(field, gbc);
         y++;
         return field;

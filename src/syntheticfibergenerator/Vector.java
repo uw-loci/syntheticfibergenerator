@@ -41,4 +41,8 @@ public class Vector extends Vector2D {
         Vector yRotated = newYAxis.scalarMultiply(getY());
         return xRotated.add(yRotated);
     }
+
+    public double theta() {
+        return Math.atan2(getY(), getX());
+    }
 }

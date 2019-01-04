@@ -3,7 +3,7 @@ package syntheticfibergenerator;
 import javax.swing.*;
 import java.awt.*;
 
-class GUIUtility {
+class Utility {
 
     static GridBagConstraints newGBC() {
         GridBagConstraints gbc = new GridBagConstraints();
@@ -20,5 +20,9 @@ class GUIUtility {
         String name = param.getName();
         String uppercase = name.substring(0, 1).toUpperCase() + name.substring(1);
         return uppercase + ":";
+    }
+
+    static double sq(double val) {
+        return val * val;
     }
 }
