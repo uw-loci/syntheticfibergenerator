@@ -8,32 +8,34 @@ import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction;
 
 
-class FiberParams {
-    int nSegments;
-    double straightness;
-    double startingWidth;
-    double widthVariation;
-    double segmentLength;
-    Vector start;
-    Vector end;
-}
+class Fiber implements Iterable<Fiber.Segment> {
 
+    static class Params {
+        double segmentLength;
+        double widthChange;
 
-class Segment {
-    Vector start;
-    Vector end;
-    double width;
+        int nSegments;
+        double straightness;
+        double startingWidth;
 
-
-    Segment(Vector start, Vector end, double width) {
-        this.start = start;
-        this.end = end;
-        this.width = width;
+        Vector start;
+        Vector end;
     }
-}
 
 
-class Fiber implements Iterable<Segment> {
+    static class Segment {
+        Vector start;
+        Vector end;
+        double width;
+
+
+        Segment(Vector start, Vector end, double width) {
+            this.start = start;
+            this.end = end;
+            this.width = width;
+        }
+    }
+
 
     class SegmentIterator implements Iterator<Segment> {
         private Iterator<Vector> start;
@@ -62,12 +64,12 @@ class Fiber implements Iterable<Segment> {
     }
 
 
-    FiberParams params;
+    private Fiber.Params params;
     private ArrayList<Vector> points;
     private ArrayList<Double> widths;
 
 
-    Fiber(FiberParams params) {
+    Fiber(Fiber.Params params) {
         this.params = params;
         this.points = new ArrayList<>();
         this.widths = new ArrayList<>();
@@ -78,14 +80,13 @@ class Fiber implements Iterable<Segment> {
         return new SegmentIterator(points);
     }
 
-
     void generate() throws ArithmeticException {
         points = RandomUtility.getRandomChain(params.start, params.end, params.nSegments, params.segmentLength);
 
         double width = params.startingWidth;
         for (int i = 0; i < params.nSegments; i++) {
             widths.add(width);
-            double variability = Math.min(Math.abs(width), params.widthVariation);
+            double variability = Math.min(Math.abs(width), params.widthChange);
             width += RandomUtility.getRandomDouble(-variability, variability);
         }
     }
@@ -127,19 +128,16 @@ class Fiber implements Iterable<Segment> {
      */
     void bubbleSmooth(int bubblePasses) {
         // TODO: create a class which represents a list of points with toDiffs() and fromDiffs() methods
-        ArrayList<Vector> diffs = new ArrayList<>();
-        for (int i = 0; i < points.size() - 1; i++) {
-            diffs.add(points.get(i + 1).subtract(points.get(i)));
-        }
+        ArrayList<Vector> deltas = Utility.toDeltas(points);
 
         for (int i = 0; i < bubblePasses; i++) {
             boolean modified = false;
-            for (int j = 0; j < diffs.size() - 1; j++) {
-                double oldDiff = testSwap(diffs, j, j + 1);
-                Collections.swap(diffs, j, j + 1);
-                double newDiff = testSwap(diffs, j, j + 1);
+            for (int j = 0; j < deltas.size() - 1; j++) {
+                double oldDiff = testSwap(deltas, j, j + 1);
+                Collections.swap(deltas, j, j + 1);
+                double newDiff = testSwap(deltas, j, j + 1);
                 if (newDiff >= oldDiff) {
-                    Collections.swap(diffs, j, j + 1);
+                    Collections.swap(deltas, j, j + 1);
                 } else {
                     modified = true;
                 }
@@ -150,7 +148,7 @@ class Fiber implements Iterable<Segment> {
         }
 
         for (int i = 0; i < points.size() - 1; i++) {
-            points.set(i + 1, points.get(i).add(diffs.get(i)));
+            points.set(i + 1, points.get(i).add(deltas.get(i)));
         }
     }
 

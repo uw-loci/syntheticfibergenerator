@@ -299,7 +299,7 @@ public class MainWindow extends JFrame {
 
     private void parseParams() throws IllegalArgumentException {
         params.nImages.parse(nImagesField.getText(), Integer::parseInt);
-        params.seed.parse(seedCheck.isSelected(), seedField.getText(), Integer::parseInt);
+        params.seed.parse(seedCheck.isSelected(), seedField.getText(), Long::parseLong);
 
         params.nFibers.parse(nFibersField.getText(), Integer::parseInt);
         params.segmentLength.parse(segmentField.getText(), Double::parseDouble);
@@ -368,9 +368,9 @@ public class MainWindow extends JFrame {
         writeStringFile(outFolder + "params.json", serializer.toJson(params, ImageCollection.Params.class));
         for (int i = 0; i < collection.size(); i++) {
             String imagePrefix = outFolder + IMAGE_PREFIX + i;
-            writeImageFile(imagePrefix, collection.get(i).getImage());
+            writeImageFile(imagePrefix, collection.getImage(i));
             String dataFilename = outFolder + DATA_PREFIX + i + ".json";
-            writeStringFile(dataFilename, serializer.toJson(collection.get(i), FiberCollection.class));
+            writeStringFile(dataFilename, serializer.toJson(collection.get(i), FiberImage.class));
         }
     }
 
@@ -426,27 +426,27 @@ public class MainWindow extends JFrame {
         }
         collection = new ImageCollection(params);
         try {
-            collection.generateFibers();
+            collection.generateImages();
         } catch (ArithmeticException e) {
-            Utility.showError(e.getMessage());
+            Utility.showError("Unable to construct fibers - change parameters and try again");
             return;
         }
         writeResults();
         displayIndex = 0;
-        displayImage(collection.get(displayIndex).getImage());
+        displayImage(collection.getImage(displayIndex));
     }
 
     private void prevPressed() {
         if (!collection.isEmpty() && displayIndex > 0) {
             displayIndex--;
-            displayImage(collection.get(displayIndex).getImage());
+            displayImage(collection.getImage(displayIndex));
         }
     }
 
     private void nextPressed() {
         if (!collection.isEmpty() && displayIndex < collection.size() - 1) {
             displayIndex++;
-            displayImage(collection.get(displayIndex).getImage());
+            displayImage(collection.getImage(displayIndex));
         }
     }
 

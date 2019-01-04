@@ -44,7 +44,7 @@ public class Circle {
     private Vector choosePoint(double minTheta, double maxTheta) {
         double theta = RandomUtility.getRandomDouble(minTheta, maxTheta);
         Vector dir = new Vector(Math.cos(theta), Math.sin(theta));
-        return center.add(dir).scalarMultiply(radius);
+        return center.add(dir.scalarMultiply(radius));
     }
 
     /**
@@ -90,11 +90,11 @@ public class Circle {
         }
 
         // Determine the range of valid angles on the circle's border
+        Vector axis = disk.center.subtract(circle.center).normalize();
         Vector[] points = circleCircleIntersect(disk, circle);
-        double min = Math.min(points[0].theta(), points[1].theta());
-        double max = Math.max(points[0].theta(), points[1].theta());
+        double delta = axis.angleWith(points[0].subtract(circle.center));
 
-        return circle.choosePoint(min, max);
+        return circle.choosePoint(axis.theta() - delta, axis.theta() + delta);
     }
 
     /**

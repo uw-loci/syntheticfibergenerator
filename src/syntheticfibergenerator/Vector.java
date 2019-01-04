@@ -4,6 +4,10 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 
 public class Vector extends Vector2D {
 
+    Vector() {
+        super(0.0, 0.0);
+    }
+
     Vector(double x, double y) {
         super(x, y);
     }

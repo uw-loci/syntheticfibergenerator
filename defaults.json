@@ -54,7 +54,7 @@
     "type": "Gaussian"
   },
   "seed": {
-    "use": false,
+    "use": true,
     "value": 1.0
   },
   "scale": {

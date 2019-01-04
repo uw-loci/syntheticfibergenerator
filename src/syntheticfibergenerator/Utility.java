@@ -2,6 +2,7 @@ package syntheticfibergenerator;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 class Utility {
 
@@ -24,5 +25,13 @@ class Utility {
 
     static double sq(double val) {
         return val * val;
+    }
+
+    static ArrayList<Vector> toDeltas(ArrayList<Vector> points) {
+        ArrayList<Vector> deltas = new ArrayList<>();
+        for (int i = 0; i < points.size() - 1; i++) {
+            deltas.add(points.get(i + 1).subtract(points.get(i)));
+        }
+        return deltas;
     }
 }
