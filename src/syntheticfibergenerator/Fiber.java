@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,28 +39,23 @@ class Fiber implements Iterable<Fiber.Segment> {
     }
 
 
-    static class SegmentIterator implements Iterator<Segment> {
+    class SegmentIterator implements Iterator<Segment> {
 
-        private Iterator<Vector> start;
-        private Iterator<Vector> end;
-        private Iterator<Double> width;
+        int curr = 0;
 
-
-        private SegmentIterator(ArrayList<Vector> points, ArrayList<Double> widths) {
-            start = points.iterator();
-            end = points.iterator();
-            if (end.hasNext()) {
-                end.next();
-            }
-            width = widths.iterator();
-        }
 
         public Segment next() {
-            return hasNext() ? new Segment(start.next(), end.next(), width.next()) : null;
+            if (hasNext()) {
+                Segment output = new Segment(points.get(curr), points.get(curr + 1), widths.get(curr));
+                curr++;
+                return output;
+            } else {
+                return null;
+            }
         }
 
         public boolean hasNext() {
-            return end.hasNext();
+            return curr < points.size() - 1;
         }
     }
 
@@ -78,38 +73,37 @@ class Fiber implements Iterable<Fiber.Segment> {
 
     @Override
     public Iterator<Segment> iterator() {
-        return new SegmentIterator(points, widths);
+        return new SegmentIterator();
     }
 
     void generate() throws ArithmeticException {
-        points = RandomUtility.getRandomChain(params.start, params.end, params.nSegments, params.segmentLength);
-
+        points = RngUtility.randomChain(params.start, params.end, params.nSegments, params.segmentLength);
         double width = params.startWidth;
         for (int i = 0; i < params.nSegments; i++) {
             widths.add(width);
             double variability = Math.min(Math.abs(width), params.widthChange);
-            width += RandomUtility.getRandomDouble(-variability, variability);
+            width += RngUtility.randomDouble(-variability, variability);
         }
     }
 
     void bubbleSmooth(int passes) {
-        ArrayList<Vector> deltas = Utility.toDeltas(points);
+        ArrayList<Vector> deltas = MiscUtility.toDeltas(points);
         for (int i = 0; i < passes; i++) {
             for (int j = 0; j < deltas.size() - 1; j++) {
                 trySwap(deltas, j, j + 1);
             }
         }
-        points = Utility.fromDeltas(deltas, points.get(0));
+        points = MiscUtility.fromDeltas(deltas, points.get(0));
     }
 
     void swapSmooth(int ratio) {
-        ArrayList<Vector> deltas = Utility.toDeltas(points);
+        ArrayList<Vector> deltas = MiscUtility.toDeltas(points);
         for (int j = 0; j < ratio * deltas.size(); j++) {
-            int u = RandomUtility.RNG.nextInt(deltas.size());
-            int v = RandomUtility.RNG.nextInt(deltas.size());
+            int u = RngUtility.rng.nextInt(deltas.size());
+            int v = RngUtility.rng.nextInt(deltas.size());
             trySwap(deltas, u, v);
         }
-        points = Utility.fromDeltas(deltas, points.get(0));
+        points = MiscUtility.fromDeltas(deltas, points.get(0));
     }
 
     void splineSmooth(int splineRatio) {

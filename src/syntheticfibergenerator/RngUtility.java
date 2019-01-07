@@ -1,0 +1,60 @@
+package syntheticfibergenerator;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
+
+
+class RngUtility {
+
+    static Random rng = new Random();
+
+
+    static Vector randomPoint(double xMin, double xMax, double yMin, double yMax) {
+        double x = randomDouble(xMin, xMax);
+        double y = randomDouble(yMin, yMax);
+        return new Vector(x, y);
+    }
+
+    static double randomDouble(double min, double max) {
+        if (min > max) {
+            throw new IllegalArgumentException("Random bounds are inverted");
+        }
+        return min + rng.nextDouble() * (max - min);
+    }
+
+    static ArrayList<Vector> randomChain(Vector start, Vector end, int nSteps, double stepSize)
+            throws ArithmeticException {
+        ArrayList<Vector> points = new ArrayList<>(Collections.nCopies(nSteps + 1, null));
+        points.set(0, start);
+        points.set(nSteps, end);
+        randomChainRecursive(points, 0, nSteps, stepSize);
+        return points;
+    }
+
+    private static void randomChainRecursive(ArrayList<Vector> points, int iStart, int iEnd, double stepSize)
+            throws ArithmeticException {
+        if (iEnd - iStart <= 1) {
+            return;
+        }
+
+        int iBridge = (iStart + iEnd) / 2;
+        Circle circle1 = new Circle(points.get(iStart), stepSize * (iBridge - iStart));
+        Circle circle2 = new Circle(points.get(iEnd), stepSize * (iEnd - iBridge));
+        Vector bridge;
+        if (iBridge > iStart + 1 && iBridge < iEnd - 1) {
+            bridge = Circle.diskDiskIntersect(circle1, circle2);
+        } else if (iBridge == iStart + 1 && iBridge == iEnd - 1) {
+            Vector[] intersects = Circle.circleCircleIntersect(circle1, circle2);
+            bridge = RngUtility.rng.nextBoolean() ? intersects[0] : intersects[1];
+        } else if (iBridge == iStart + 1) {
+            bridge = Circle.diskCircleIntersect(circle2, circle1);
+        } else {
+            bridge = Circle.diskCircleIntersect(circle1, circle2);
+        }
+        points.set(iBridge, bridge);
+
+        randomChainRecursive(points, iStart, iBridge, stepSize);
+        randomChainRecursive(points, iBridge, iEnd, stepSize);
+    }
+}

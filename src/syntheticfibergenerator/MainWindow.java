@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -125,7 +125,7 @@ public class MainWindow extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = Utility.newGBC();
+        GridBagConstraints gbc = MiscUtility.newGBC();
 
         JPanel displayPanel = new JPanel(new GridBagLayout());
         gbc.gridheight = 2;
@@ -143,7 +143,7 @@ public class MainWindow extends JFrame {
         gbc.gridy++;
         add(generateButton, gbc);
 
-        gbc = Utility.newGBC();
+        gbc = MiscUtility.newGBC();
 
         JPanel generationPanel = new JPanel(new GridBagLayout());
         tabbedPane.addTab("Generation", null, generationPanel);
@@ -156,7 +156,7 @@ public class MainWindow extends JFrame {
         gbc.gridwidth = 2;
         displayPanel.add(imageDisplay, gbc);
 
-        gbc = Utility.newGBC();
+        gbc = MiscUtility.newGBC();
 
         prevButton = new JButton("Previous");
         gbc.anchor = GridBagConstraints.EAST;
@@ -171,7 +171,7 @@ public class MainWindow extends JFrame {
         nextButton.setPreferredSize(prevButton.getPreferredSize());
         displayPanel.add(nextButton, gbc);
 
-        gbc = Utility.newGBC();
+        gbc = MiscUtility.newGBC();
 
         OptionPanel session = new OptionPanel("Session");
         gbc.anchor = GridBagConstraints.NORTHWEST;
@@ -209,8 +209,8 @@ public class MainWindow extends JFrame {
         loadButton = session.addButtonLine("Parameters:", "Open...");
         saveButton = session.addButtonLine("Output location:", "Open...");
         pathDisplay = session.addDisplayField();
-        nImagesField = session.addFieldLine(Utility.guiName(params.nImages));
-        seedCheck = session.addCheckBox(Utility.guiName(params.seed));
+        nImagesField = session.addFieldLine(MiscUtility.guiName(params.nImages));
+        seedCheck = session.addCheckBox(MiscUtility.guiName(params.seed));
         seedField = session.addField();
 
         lengthButton = distribution.addButtonLine("Length distribution:", "Modify...");
@@ -220,32 +220,32 @@ public class MainWindow extends JFrame {
         straightButton = distribution.addButtonLine("Straightness distribution:", "Modify...");
         straightDisplay = distribution.addDisplayField();
 
-        nFibersField = values.addFieldLine(Utility.guiName(params.nFibers));
-        segmentField = values.addFieldLine(Utility.guiName(params.segmentLength));
-        widthChangeField = values.addFieldLine(Utility.guiName(params.widthChange));
-        alignmentField = values.addFieldLine(Utility.guiName(params.alignment));
-        meanAngleField = values.addFieldLine(Utility.guiName(params.meanAngle));
+        nFibersField = values.addFieldLine(MiscUtility.guiName(params.nFibers));
+        segmentField = values.addFieldLine(MiscUtility.guiName(params.segmentLength));
+        widthChangeField = values.addFieldLine(MiscUtility.guiName(params.widthChange));
+        alignmentField = values.addFieldLine(MiscUtility.guiName(params.alignment));
+        meanAngleField = values.addFieldLine(MiscUtility.guiName(params.meanAngle));
 
-        imageWidthField = required.addFieldLine(Utility.guiName(params.imageWidth));
-        imageHeightField = required.addFieldLine(Utility.guiName(params.imageHeight));
-        imageBufferField = required.addFieldLine(Utility.guiName(params.imageBuffer));
+        imageWidthField = required.addFieldLine(MiscUtility.guiName(params.imageWidth));
+        imageHeightField = required.addFieldLine(MiscUtility.guiName(params.imageHeight));
+        imageBufferField = required.addFieldLine(MiscUtility.guiName(params.imageBuffer));
 
-        scaleCheck = optional.addCheckBox(Utility.guiName(params.scale));
+        scaleCheck = optional.addCheckBox(MiscUtility.guiName(params.scale));
         scaleField = optional.addField();
-        sampleCheck = optional.addCheckBox(Utility.guiName(params.downSample));
+        sampleCheck = optional.addCheckBox(MiscUtility.guiName(params.downSample));
         sampleField = optional.addField();
-        blurCheck = optional.addCheckBox(Utility.guiName(params.blur));
+        blurCheck = optional.addCheckBox(MiscUtility.guiName(params.blur));
         blurField = optional.addField();
-        noiseCheck = optional.addCheckBox(Utility.guiName(params.noise));
+        noiseCheck = optional.addCheckBox(MiscUtility.guiName(params.noise));
         noiseField = optional.addField();
-        distanceCheck = optional.addCheckBox(Utility.guiName(params.distance));
+        distanceCheck = optional.addCheckBox(MiscUtility.guiName(params.distance));
         distanceField = optional.addField();
 
-        bubbleCheck = smooth.addCheckBox(Utility.guiName(params.bubble));
+        bubbleCheck = smooth.addCheckBox(MiscUtility.guiName(params.bubble));
         bubbleField = smooth.addField();
-        swapCheck = smooth.addCheckBox(Utility.guiName(params.swap));
+        swapCheck = smooth.addCheckBox(MiscUtility.guiName(params.swap));
         swapField = smooth.addField();
-        splineCheck = smooth.addCheckBox(Utility.guiName(params.spline));
+        splineCheck = smooth.addCheckBox(MiscUtility.guiName(params.spline));
         splineField = smooth.addField();
 
         setupListeners();
@@ -324,30 +324,29 @@ public class MainWindow extends JFrame {
     }
 
     private void verifyParams() throws IllegalArgumentException {
-        params.nImages.verifyGreater(0);
+        params.nImages.verify(0, Param::greater);
 
-        params.nFibers.verifyGreater(0);
-        params.segmentLength.verifyGreater(0.0);
-        params.widthChange.verifyGreaterEq(0.0);
-        params.alignment.verifyGreaterEq(0.0);
-        params.alignment.verifyLessEq(1.0);
-        params.meanAngle.verifyGreaterEq(0.0);
-        params.meanAngle.verifyLessEq(180.0);
+        params.nFibers.verify(0, Param::greater);
+        params.segmentLength.verify(0.0, Param::greater);
+        params.widthChange.verify(0.0, Param::greaterEq);
+        params.alignment.verify(0.0, Param::greaterEq);
+        params.alignment.verify(1.0, Param::lessEq);
+        params.meanAngle.verify(0.0, Param::greaterEq);
+        params.meanAngle.verify(180.0, Param::lessEq);
 
-        params.imageWidth.verifyGreater(0);
-        params.imageHeight.verifyGreater(0);
-        params.imageBuffer.verifyGreater(0);
-        // TODO: Handle image buffer which is too large when choosing fiber positions
+        params.imageWidth.verify(0, Param::greater);
+        params.imageHeight.verify(0, Param::greater);
+        params.imageBuffer.verify(0, Param::greater);
 
-        params.scale.verifyGreater(0.0);
-        params.downSample.verifyGreater(0.0);
-        params.blur.verifyGreater(0.0);
-        params.noise.verifyGreater(0.0);
-        params.distance.verifyGreater(0.0);
+        params.scale.verify(0.0, Param::greater);
+        params.downSample.verify(0.0, Param::greater);
+        params.blur.verify(0.0, Param::greater);
+        params.noise.verify(0.0, Param::greater);
+        params.distance.verify(0.0, Param::greater);
 
-        params.bubble.verifyGreater(0);
-        params.swap.verifyGreater(0);
-        params.spline.verifyGreater(0);
+        params.bubble.verify(0, Param::greater);
+        params.swap.verify(0, Param::greater);
+        params.spline.verify(0, Param::greater);
     }
 
     private void readParamsFile(String filename) {
@@ -356,11 +355,11 @@ public class MainWindow extends JFrame {
             params = deserializer.fromJson(reader, ImageCollection.Params.class);
             reader.close();
         } catch (FileNotFoundException e) {
-            Utility.showError("File \"" + filename + "\" not found");
+            MiscUtility.showError("File \"" + filename + "\" not found");
         } catch (IOException e) {
-            Utility.showError("Error when reading \"" + filename + '\"');
+            MiscUtility.showError("Error when reading \"" + filename + '\"');
         } catch (JsonParseException e) {
-            Utility.showError("Malformed parameters file \"" + filename + '\"');
+            MiscUtility.showError("Malformed parameters file \"" + filename + '\"');
         }
         params.setNames();
     }
@@ -382,7 +381,7 @@ public class MainWindow extends JFrame {
             writer.flush();
             writer.close();
         } catch (IOException e) {
-            Utility.showError("Error while writing \"" + filename + '\"');
+            MiscUtility.showError("Error while writing \"" + filename + '\"');
         }
     }
 
@@ -391,7 +390,7 @@ public class MainWindow extends JFrame {
         try {
             ImageIO.write(image, IMAGE_EXT, new File(filename));
         } catch (IOException e) {
-            Utility.showError("Error while writing \"" + filename + '\"');
+            MiscUtility.showError("Error while writing \"" + filename + '\"');
         }
     }
 
@@ -422,14 +421,14 @@ public class MainWindow extends JFrame {
             parseParams();
             verifyParams();
         } catch (Exception e) {
-            Utility.showError(e.getMessage());
+            MiscUtility.showError(e.getMessage());
             return;
         }
         collection = new ImageCollection(params);
         try {
             collection.generateImages();
         } catch (ArithmeticException e) {
-            Utility.showError("Unable to construct fibers - change parameters and try again");
+            MiscUtility.showError("Unable to construct fibers - change parameters and try again");
             return;
         }
         writeResults();

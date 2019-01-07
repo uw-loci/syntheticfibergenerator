@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,14 +25,6 @@ class OptionPanel extends JPanel {
     JButton addButtonLine(String labelText, String buttonText) {
         addLabel(labelText);
         return addButton(buttonText);
-    }
-
-    JButton addButton(String labelText) {
-        GridBagConstraints gbc = gbcRight();
-        JButton button = new JButton(labelText);
-        add(button, gbc);
-        y++;
-        return button;
     }
 
     JTextField addFieldLine(String labelText) {
@@ -81,6 +73,14 @@ class OptionPanel extends JPanel {
         JCheckBox box = new JCheckBox(checkBoxText);
         add(box, gbc);
         return box;
+    }
+
+    private JButton addButton(String labelText) {
+        GridBagConstraints gbc = gbcRight();
+        JButton button = new JButton(labelText);
+        add(button, gbc);
+        y++;
+        return button;
     }
 
     private GridBagConstraints gbcLeft() {

@@ -1,8 +1,9 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.text.ParseException;
 
 
 class DistributionDialog extends JDialog {
@@ -35,7 +36,7 @@ class DistributionDialog extends JDialog {
         setModal(true);
         setLayout(new GridBagLayout());
 
-        GridBagConstraints gbc = Utility.newGBC();
+        GridBagConstraints gbc = MiscUtility.newGBC();
 
         String[] options = {Gaussian.typename, Uniform.typename};
         comboBox = new JComboBox<>(options);
@@ -43,7 +44,7 @@ class DistributionDialog extends JDialog {
         gbc.gridwidth = 2;
         add(comboBox, gbc);
 
-        gbc = Utility.newGBC();
+        gbc = MiscUtility.newGBC();
 
         OptionPanel panel = new OptionPanel();
         gbc.gridwidth = 2;
@@ -59,7 +60,7 @@ class DistributionDialog extends JDialog {
         label2 = panel.addLabel("");
         field2 = panel.addField();
 
-        gbc = Utility.newGBC();
+        gbc = MiscUtility.newGBC();
 
         cancelButton = new JButton("Cancel");
         gbc.anchor = GridBagConstraints.WEST;
@@ -84,15 +85,15 @@ class DistributionDialog extends JDialog {
         comboBox.setSelectedItem(distribution.getType());
         if (distribution instanceof Gaussian) {
             Gaussian gaussian = (Gaussian) distribution;
-            label1.setText(Utility.guiName(gaussian.mean));
+            label1.setText(MiscUtility.guiName(gaussian.mean));
             field1.setText(gaussian.mean.getString());
-            label2.setText(Utility.guiName(gaussian.sigma));
+            label2.setText(MiscUtility.guiName(gaussian.sigma));
             field2.setText(gaussian.sigma.getString());
         } else if (distribution instanceof Uniform) {
             Uniform uniform = (Uniform) distribution;
-            label1.setText(Utility.guiName(uniform.min));
+            label1.setText(MiscUtility.guiName(uniform.min));
             field1.setText(uniform.min.getString());
-            label2.setText(Utility.guiName(uniform.max));
+            label2.setText(MiscUtility.guiName(uniform.max));
             field2.setText(uniform.max.getString());
         }
     }
@@ -119,7 +120,7 @@ class DistributionDialog extends JDialog {
 
     private void okayPressed() {
         if (comboBox.getSelectedItem() == null) {
-            Utility.showError("No distribution type selected");
+            MiscUtility.showError("No distribution type selected");
         } else {
             String selection = comboBox.getSelectedItem().toString();
             try {
@@ -133,8 +134,8 @@ class DistributionDialog extends JDialog {
                     uniform.max.parse(field2.getText(), Double::parseDouble);
                 }
                 dispose();
-            } catch (IllegalArgumentException e) {
-                Utility.showError(e.getMessage());
+            } catch (ParseException e) {
+                MiscUtility.showError(e.getMessage());
             }
         }
     }

@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 
 public class Circle {
@@ -42,7 +42,7 @@ public class Circle {
     }
 
     private Vector choosePoint(double minTheta, double maxTheta) {
-        double theta = RandomUtility.getRandomDouble(minTheta, maxTheta);
+        double theta = RngUtility.randomDouble(minTheta, maxTheta);
         Vector dir = new Vector(Math.cos(theta), Math.sin(theta));
         return center.add(dir.scalarMultiply(radius));
     }
@@ -69,8 +69,8 @@ public class Circle {
         }
 
         // a: distance to the center of the lens, h: distance from axis to intersection point
-        double a = (Utility.sq(circle1.radius) - Utility.sq(circle2.radius) + Utility.sq(d)) / (2 * d);
-        double h = Math.sqrt(Utility.sq(circle1.radius) - Utility.sq(a));
+        double a = (MiscUtility.sq(circle1.radius) - MiscUtility.sq(circle2.radius) + MiscUtility.sq(d)) / (2 * d);
+        double h = Math.sqrt(MiscUtility.sq(circle1.radius) - MiscUtility.sq(a));
 
         // Return both intersection points
         Vector axis = circle2.center.subtract(circle1.center).normalize();
@@ -114,7 +114,7 @@ public class Circle {
 
             Vector result;
             do {
-                result = RandomUtility.getRandomPoint(xMin, xMax, yMin, yMax);
+                result = RngUtility.randomPoint(xMin, xMax, yMin, yMax);
             } while (!inner.contains(result));
             return result;
         }
@@ -128,7 +128,7 @@ public class Circle {
         Vector axis = disk2.center.subtract(disk1.center).normalize();
         Vector result;
         do {
-            Vector delta = RandomUtility.getRandomPoint(boxLeft, boxRight, -boxHeight, boxHeight);
+            Vector delta = RngUtility.randomPoint(boxLeft, boxRight, -boxHeight, boxHeight);
             result = disk1.center.add(delta.rotate(axis));
         } while (!disk1.contains(result) || !disk2.contains(result));
         return result;

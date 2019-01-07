@@ -1,20 +1,27 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import java.text.ParseException;
 
 
-class Param<Type extends Comparable<Type>> { // TODO: Change serialization/deserialization to flatten value field
+/**
+ * TODO: Change serialization/deserialization to flatten value field
+ */
+class Param<T extends Comparable<T>> {
 
-    interface Parser<Type> {
-        Type parse(String s) throws ParseException;
+    interface Parser<U> {
+        U parse(String s) throws ParseException;
+    }
+
+    interface Verifier<U extends Comparable<U>> {
+        void verify(U value, U bound) throws IllegalArgumentException;
     }
 
 
-    private Type value;
+    private T value;
     private transient String name;
 
 
-    Type getValue() {
+    T getValue() {
         return value;
     }
 
@@ -30,54 +37,66 @@ class Param<Type extends Comparable<Type>> { // TODO: Change serialization/deser
         return name;
     }
 
-    @SuppressWarnings("unused")
-    void verifyLess(Type max) {
-        if (getValue().compareTo(max) >= 0) {
-            throw new IllegalArgumentException("Error: " + name + " must be less than " + max);
-        }
-    }
-
-    void verifyGreater(Type min) {
-        if (getValue().compareTo(min) <= 0) {
-            throw new IllegalArgumentException("Error: " + name + " must be greater than than " + min);
-        }
-    }
-
-    void verifyLessEq(Type max) {
-        if (getValue().compareTo(max) > 0) {
-            throw new IllegalArgumentException("Error: " + name + " must be less than or equal to " + max);
-        }
-    }
-
-    void verifyGreaterEq(@SuppressWarnings("SameParameterValue") Type min) {
-        if (getValue().compareTo(min) < 0) {
-            throw new IllegalArgumentException("Error: " + name + " must be greater than or equal to " + min);
-        }
-    }
-
-    void parse(String s, Parser<Type> p) throws ParseException {
-        if (s.replaceAll("\\s+","").isEmpty()) {
+    void parse(String s, Parser<T> p) throws ParseException {
+        if (s.replaceAll("\\s+", "").isEmpty()) {
             throw new ParseException("Value of \"" + name + "\" must be non-empty", 0);
         }
         try {
             value = p.parse(s);
         } catch (ParseException e) {
-            throw new ParseException("Unable to parse value \"" + s + "\" for parameter \"" + name + '\"',
-                    e.getErrorOffset());
+            throw new ParseException(
+                    "Unable to parse value \"" + s + "\" for parameter \"" + name + '\"', e.getErrorOffset());
+        }
+    }
+
+    void verify(T bound, Verifier<T> verifier) throws IllegalArgumentException {
+        try {
+            verifier.verify(value, bound);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Value of " + name + e.getMessage());
+        }
+    }
+
+    static <U extends Comparable<U>> void less(U value, U max) {
+        if (value.compareTo(max) >= 0) {
+            throw new IllegalArgumentException("must be less than");
+        }
+    }
+    static <U extends Comparable<U>> void greater(U value, U min) {
+        if (value.compareTo(min) <= 0) {
+            throw new IllegalArgumentException("must be greater than");
+        }
+    }
+
+    static <U extends Comparable<U>> void lessEq(U value, U max) {
+        if (value.compareTo(max) > 0) {
+            throw new IllegalArgumentException("must be less than or equal to");
+        }
+    }
+
+    static <U extends Comparable<U>> void greaterEq(U value, U min) {
+        if (value.compareTo(min) < 0) {
+            throw new IllegalArgumentException("must be greater than or equal to");
         }
     }
 }
 
 
-class Optional<Type extends Comparable<Type>> extends Param<Type> {
+class Optional<T extends Comparable<T>> extends Param<T> {
 
     boolean use;
 
 
-    void parse(boolean use, String s, Parser<Type> p) throws ParseException {
+    void parse(boolean use, String s, Parser<T> p) throws ParseException {
         this.use = use;
         if (use) {
             super.parse(s, p);
+        }
+    }
+
+    void verify(T bound, Verifier<T> verifier) throws IllegalArgumentException {
+        if (use) {
+            super.verify(bound, verifier);
         }
     }
 }

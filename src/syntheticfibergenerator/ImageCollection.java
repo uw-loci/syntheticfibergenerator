@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
@@ -30,9 +30,7 @@ class ImageCollection {
 
     void generateImages() throws ArithmeticException {
         if (params.seed.use) {
-            RandomUtility.RNG = new Random(params.seed.getValue());
-        } else {
-            RandomUtility.RNG = new Random();
+            RngUtility.rng = new Random(params.seed.getValue());
         }
 
         imageStack.clear();

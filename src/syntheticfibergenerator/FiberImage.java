@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import org.apache.commons.math3.distribution.PoissonDistribution;
 
@@ -77,7 +77,8 @@ class FiberImage implements Iterable<Fiber> {
     FiberImage(ImageCollection.Params params) {
         this.params = params;
         this.fibers = new ArrayList<>(this.params.nFibers.getValue());
-        this.image = new BufferedImage(params.imageWidth.getValue(), params.imageHeight.getValue(), BufferedImage.TYPE_BYTE_GRAY);
+        this.image = new BufferedImage(
+                params.imageWidth.getValue(), params.imageHeight.getValue(), BufferedImage.TYPE_BYTE_GRAY);
     }
 
     @Override
@@ -164,8 +165,8 @@ class FiberImage implements Iterable<Fiber> {
         Vector sumDirection = new Vector(Math.cos(sumAngle * 2.0), Math.sin(sumAngle * 2.0));
         Vector sum = sumDirection.scalarMultiply(params.alignment.getValue() * params.nFibers.getValue());
 
-        ArrayList<Vector> chain = RandomUtility.getRandomChain(new Vector(), sum, params.nFibers.getValue(), 1.0);
-        ArrayList<Vector> directions = Utility.toDeltas(chain);
+        ArrayList<Vector> chain = RngUtility.randomChain(new Vector(), sum, params.nFibers.getValue(), 1.0);
+        ArrayList<Vector> directions = MiscUtility.toDeltas(chain);
 
         ArrayList<Vector> output = new ArrayList<>();
         for (Vector direction : directions) {
@@ -222,9 +223,9 @@ class FiberImage implements Iterable<Fiber> {
 
     private void addNoise() {
 
-        // Sequence of poisson seeds depends on the initial RNG seed
+        // Sequence of poisson seeds depends on the initial rng seed
         PoissonDistribution noise = new PoissonDistribution(params.noise.getValue());
-        noise.reseedRandomGenerator(RandomUtility.RNG.nextInt());
+        noise.reseedRandomGenerator(RngUtility.rng.nextInt());
 
         WritableRaster raster = image.getRaster();
         int[] pixel = new int[1];
@@ -238,14 +239,18 @@ class FiberImage implements Iterable<Fiber> {
     }
 
     private static double findStart(double length, int dimension, int buffer) {
-        if (length > dimension) {
-            return RandomUtility.getRandomDouble(dimension - length, 0);
+        double min, max;
+        buffer = (int) Math.max(length / 2, buffer);
+        if (Math.abs(length) > dimension) {
+            min = Math.min(dimension - length, dimension);
+            max = Math.max(0, -length);
+            return RngUtility.randomDouble(min, max);
         }
-        if (length > dimension - buffer) {
+        if (Math.abs(length) > dimension - 2 * buffer) {
             buffer = 0;
         }
-        double min = Math.max(buffer, buffer - length);
-        double max = Math.min(dimension - buffer, dimension - buffer - length);
-        return RandomUtility.getRandomDouble(min, max);
+        min = Math.max(buffer, buffer - length);
+        max = Math.min(dimension - buffer - length, dimension - buffer);
+        return RngUtility.randomDouble(min, max);
     }
 }

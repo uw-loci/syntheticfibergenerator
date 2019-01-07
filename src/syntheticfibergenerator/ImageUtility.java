@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -53,7 +53,7 @@ class ImageUtility {
     }
 
     private static double backgroundDist(Raster raster, int x, int y) {
-        int rMax = (int) Math.sqrt(Utility.sq(raster.getWidth()) + Utility.sq(raster.getHeight())) + 1;
+        int rMax = (int) Math.sqrt(MiscUtility.sq(raster.getWidth()) + MiscUtility.sq(raster.getHeight())) + 1;
         boolean found = false;
         double minDist = Double.POSITIVE_INFINITY;
         for (int r = DIST_SEARCH_STEP; r < rMax && !found; r += DIST_SEARCH_STEP) {
@@ -63,10 +63,10 @@ class ImageUtility {
             int yMax = Math.min(raster.getHeight(), y + r);
             for (int yIn = yMin; yIn < yMax; yIn++) {
                 for (int xIn = xMin; xIn < xMax; xIn++) {
-                    if (getPixel(raster, xIn, yIn) >0) {
+                    if (getPixel(raster, xIn, yIn) > 0) {
                         continue;
                     }
-                    double dist = Math.sqrt(Utility.sq(xIn - x) + Utility.sq(yIn - y));
+                    double dist = Math.sqrt(MiscUtility.sq(xIn - x) + MiscUtility.sq(yIn - y));
                     if (dist <= r && dist < minDist) {
                         found = true;
                         minDist = dist;
@@ -92,12 +92,13 @@ class ImageUtility {
         double sigma = radius / 3.0;
         int size = (int) Math.ceil(radius);
         size -= size % 2 - 1;
-        float[] weightMatrix = new float[Utility.sq(size)];
+        float[] weightMatrix = new float[MiscUtility.sq(size)];
         int center = size / 2;
         double normConst = 0.0;
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
-                double gauss = Math.exp(-(Utility.sq(i - center) + Utility.sq(j - center)) / (2 * Utility.sq(sigma)));
+                double gauss = Math.exp(
+                        -(MiscUtility.sq(i - center) + MiscUtility.sq(j - center)) / (2 * MiscUtility.sq(sigma)));
                 weightMatrix[i + j * size] = (float) gauss;
                 normConst += gauss;
             }

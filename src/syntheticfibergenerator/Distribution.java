@@ -1,4 +1,4 @@
-package syntheticfibergenerator; // TODO: Cleaned up
+package syntheticfibergenerator;
 
 import com.google.gson.*;
 
@@ -10,7 +10,8 @@ abstract class Distribution {
     static class Serializer implements JsonDeserializer<Distribution> {
 
         @Override
-        public Distribution deserialize(JsonElement element, Type type, JsonDeserializationContext context) throws JsonParseException {
+        public Distribution deserialize(JsonElement element, Type type, JsonDeserializationContext context)
+                throws JsonParseException {
             JsonObject object = element.getAsJsonObject();
             String className = object.get("type").getAsString();
             if (className.equals(Gaussian.typename)) {
@@ -69,7 +70,7 @@ class Gaussian extends Distribution {
     public double sample() {
         double val;
         do {
-            val = RandomUtility.RNG.nextGaussian() * sigma.getValue() + mean.getValue();
+            val = RngUtility.rng.nextGaussian() * sigma.getValue() + mean.getValue();
         }
         while (val < lowerBound || val > upperBound);
         return val;
@@ -105,7 +106,7 @@ class Uniform extends Distribution {
     }
 
     public double sample() {
-        return RandomUtility.getRandomDouble(min.getValue(), max.getValue());
+        return RngUtility.randomDouble(min.getValue(), max.getValue());
     }
 
     void setNames() {

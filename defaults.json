@@ -61,7 +61,7 @@
     "use": false,
     "value": 5.0
   },
-  "downsample": {
+  "downSample": {
     "use": false,
     "value": 0.5
   },
