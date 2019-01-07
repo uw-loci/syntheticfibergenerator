@@ -10,6 +10,7 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.io.IOException;
+import java.text.ParseException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -231,7 +232,7 @@ public class MainWindow extends JFrame {
 
         scaleCheck = optional.addCheckBox(Utility.guiName(params.scale));
         scaleField = optional.addField();
-        sampleCheck = optional.addCheckBox(Utility.guiName(params.downsample));
+        sampleCheck = optional.addCheckBox(Utility.guiName(params.downSample));
         sampleField = optional.addField();
         blurCheck = optional.addCheckBox(Utility.guiName(params.blur));
         blurField = optional.addField();
@@ -280,8 +281,8 @@ public class MainWindow extends JFrame {
 
         scaleCheck.setSelected(params.scale.use);
         scaleField.setText(params.scale.getString());
-        sampleCheck.setSelected(params.downsample.use);
-        sampleField.setText(params.downsample.getString());
+        sampleCheck.setSelected(params.downSample.use);
+        sampleField.setText(params.downSample.getString());
         blurCheck.setSelected(params.blur.use);
         blurField.setText(params.blur.getString());
         noiseCheck.setSelected(params.noise.use);
@@ -297,7 +298,7 @@ public class MainWindow extends JFrame {
         splineField.setText(params.spline.getString());
     }
 
-    private void parseParams() throws IllegalArgumentException {
+    private void parseParams() throws ParseException {
         params.nImages.parse(nImagesField.getText(), Integer::parseInt);
         params.seed.parse(seedCheck.isSelected(), seedField.getText(), Long::parseLong);
 
@@ -312,7 +313,7 @@ public class MainWindow extends JFrame {
         params.imageBuffer.parse(imageBufferField.getText(), Integer::parseInt);
 
         params.scale.parse(scaleCheck.isSelected(), scaleField.getText(), Double::parseDouble);
-        params.downsample.parse(sampleCheck.isSelected(), sampleField.getText(), Double::parseDouble);
+        params.downSample.parse(sampleCheck.isSelected(), sampleField.getText(), Double::parseDouble);
         params.blur.parse(blurCheck.isSelected(), blurField.getText(), Double::parseDouble);
         params.noise.parse(noiseCheck.isSelected(), noiseField.getText(), Double::parseDouble);
         params.distance.parse(distanceCheck.isSelected(), distanceField.getText(), Double::parseDouble);
@@ -339,7 +340,7 @@ public class MainWindow extends JFrame {
         // TODO: Handle image buffer which is too large when choosing fiber positions
 
         params.scale.verifyGreater(0.0);
-        params.downsample.verifyGreater(0.0);
+        params.downSample.verifyGreater(0.0);
         params.blur.verifyGreater(0.0);
         params.noise.verifyGreater(0.0);
         params.distance.verifyGreater(0.0);
@@ -420,7 +421,7 @@ public class MainWindow extends JFrame {
         try {
             parseParams();
             verifyParams();
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             Utility.showError(e.getMessage());
             return;
         }

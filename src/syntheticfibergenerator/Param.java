@@ -1,10 +1,18 @@
-package syntheticfibergenerator;
+package syntheticfibergenerator; // TODO: Cleaned up
 
-// TODO: Change serialization/deserialization to flatten value field
-class Param<Type extends Comparable<Type>> {
+import java.text.ParseException;
 
-    private transient String name;
+
+class Param<Type extends Comparable<Type>> { // TODO: Change serialization/deserialization to flatten value field
+
+    interface Parser<Type> {
+        Type parse(String s) throws ParseException;
+    }
+
+
     private Type value;
+    private transient String name;
+
 
     Type getValue() {
         return value;
@@ -18,29 +26,20 @@ class Param<Type extends Comparable<Type>> {
         this.name = name;
     }
 
-    void setValue(Type value) {
-        this.value = value;
-    }
-
     String getName() {
         return name;
     }
 
-    void verifyGreater(Type min) {
-        if (getValue().compareTo(min) <= 0) {
-            throw new IllegalArgumentException("Error: " + name + " must be greater than than " + min); // TODO: Use better exception
-        }
-    }
-
+    @SuppressWarnings("unused")
     void verifyLess(Type max) {
         if (getValue().compareTo(max) >= 0) {
             throw new IllegalArgumentException("Error: " + name + " must be less than " + max);
         }
     }
 
-    void verifyGreaterEq(Type min) {
-        if (getValue().compareTo(min) < 0) {
-            throw new IllegalArgumentException("Error: " + name + " must be greater than or equal to " + min);
+    void verifyGreater(Type min) {
+        if (getValue().compareTo(min) <= 0) {
+            throw new IllegalArgumentException("Error: " + name + " must be greater than than " + min);
         }
     }
 
@@ -50,27 +49,32 @@ class Param<Type extends Comparable<Type>> {
         }
     }
 
-    void parse(String s, Parser<Type> p) {
+    void verifyGreaterEq(@SuppressWarnings("SameParameterValue") Type min) {
+        if (getValue().compareTo(min) < 0) {
+            throw new IllegalArgumentException("Error: " + name + " must be greater than or equal to " + min);
+        }
+    }
+
+    void parse(String s, Parser<Type> p) throws ParseException {
         if (s.replaceAll("\\s+","").isEmpty()) {
-            throw new IllegalArgumentException("Value of \"" + name + "\" must be non-empty");
+            throw new ParseException("Value of \"" + name + "\" must be non-empty", 0);
         }
         try {
             value = p.parse(s);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to parse value \"" + s + "\" for parameter \"" + name + '\"'); // TODO: Use better exception
+        } catch (ParseException e) {
+            throw new ParseException("Unable to parse value \"" + s + "\" for parameter \"" + name + '\"',
+                    e.getErrorOffset());
         }
     }
 }
 
-interface Parser<Type> {
-    Type parse(String s);
-}
 
 class Optional<Type extends Comparable<Type>> extends Param<Type> {
 
     boolean use;
 
-    void parse(boolean use, String s, Parser<Type> p) {
+
+    void parse(boolean use, String s, Parser<Type> p) throws ParseException {
         this.use = use;
         if (use) {
             super.parse(s, p);

@@ -26,11 +26,11 @@ class FiberImage implements Iterable<Fiber> {
         Param<Integer> imageBuffer = new Param<>();
 
         Distribution length = new Uniform(0, Double.POSITIVE_INFINITY);
-        Distribution straightness = new Uniform(0, 1);
         Distribution width = new Uniform(0, Double.POSITIVE_INFINITY);
+        Distribution straightness = new Uniform(0, 1);
 
         Optional<Double> scale = new Optional<>();
-        Optional<Double> downsample = new Optional<>();
+        Optional<Double> downSample = new Optional<>();
         Optional<Double> blur = new Optional<>();
         Optional<Double> noise = new Optional<>();
         Optional<Double> distance = new Optional<>();
@@ -53,7 +53,7 @@ class FiberImage implements Iterable<Fiber> {
             width.setNames();
 
             scale.setName("scale");
-            downsample.setName("downsample");
+            downSample.setName("down sample");
             blur.setName("blur");
             noise.setName("noise");
             distance.setName("distance");
@@ -96,7 +96,7 @@ class FiberImage implements Iterable<Fiber> {
 
             fiberParams.nSegments = (int) Math.round(params.length.sample() / params.segmentLength.getValue());
             fiberParams.straightness = params.straightness.sample();
-            fiberParams.startingWidth = params.width.sample();
+            fiberParams.startWidth = params.width.sample();
 
             double endDistance = fiberParams.nSegments * fiberParams.segmentLength * fiberParams.straightness;
             fiberParams.start = findFiberStart(endDistance, direction);
@@ -150,7 +150,7 @@ class FiberImage implements Iterable<Fiber> {
         if (params.scale.use) {
             drawScaleBar();
         }
-        if (params.downsample.use) {
+        if (params.downSample.use) {
             image = ImageUtility.scale(image, params.scale.getValue(), AffineTransformOp.TYPE_BILINEAR);
         }
     }
