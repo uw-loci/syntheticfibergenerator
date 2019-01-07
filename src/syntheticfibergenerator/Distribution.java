@@ -42,6 +42,8 @@ abstract class Distribution {
     abstract double sample();
 
     abstract void setNames();
+
+    abstract void setHints();
 }
 
 
@@ -57,6 +59,7 @@ class Gaussian extends Distribution {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
         setNames();
+        setHints();
     }
 
     public String getType() {
@@ -80,6 +83,11 @@ class Gaussian extends Distribution {
         mean.setName("mean");
         sigma.setName("sigma");
     }
+
+    void setHints() {
+        mean.setHint("Mean of the Gaussian");
+        sigma.setHint("Standard deviation of the Gaussian");
+    }
 }
 
 
@@ -95,6 +103,7 @@ class Uniform extends Distribution {
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
         setNames();
+        setHints();
     }
 
     public String getType() {
@@ -112,5 +121,10 @@ class Uniform extends Distribution {
     void setNames() {
         min.setName("minimum");
         max.setName("maximum");
+    }
+
+    void setHints() {
+        min.setHint("Minimum of the uniform distribution (inclusive)");
+        max.setHint("Maximum of the uniform distribution (inclusive)");
     }
 }

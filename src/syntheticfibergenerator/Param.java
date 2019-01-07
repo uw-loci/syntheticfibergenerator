@@ -19,6 +19,7 @@ class Param<T extends Comparable<T>> {
 
     private T value;
     private transient String name;
+    private transient String hint;
 
 
     T getValue() {
@@ -35,6 +36,14 @@ class Param<T extends Comparable<T>> {
 
     String getName() {
         return name;
+    }
+
+    void setHint(String hint) {
+        this.hint = hint;
+    }
+
+    String getHint() {
+        return hint;
     }
 
     void parse(String s, Parser<T> p) throws ParseException {
@@ -57,6 +66,7 @@ class Param<T extends Comparable<T>> {
         }
     }
 
+    @SuppressWarnings("unused")
     static <U extends Comparable<U>> void less(U value, U max) {
         if (value.compareTo(max) >= 0) {
             throw new IllegalArgumentException("must be less than");

@@ -51,13 +51,13 @@ class DistributionDialog extends JDialog {
         gbc.gridy = 1;
         add(panel, gbc);
 
-        panel.addLabel("Lower bound:");
+        panel.addLabel("Lower bound:", "Minimum allowed value (inclusive)");
         panel.addReadOnlyField().setText(Double.toString(distribution.lowerBound));
-        panel.addLabel("Upper bound:");
+        panel.addLabel("Upper bound:", "Maximum allowed value (inclusive)");
         panel.addReadOnlyField().setText(Double.toString(distribution.upperBound));
-        label1 = panel.addLabel("");
+        label1 = panel.addLabel("", "");
         field1 = panel.addField();
-        label2 = panel.addLabel("");
+        label2 = panel.addLabel("", "");
         field2 = panel.addField();
 
         gbc = MiscUtility.newGBC();
@@ -86,14 +86,18 @@ class DistributionDialog extends JDialog {
         if (distribution instanceof Gaussian) {
             Gaussian gaussian = (Gaussian) distribution;
             label1.setText(MiscUtility.guiName(gaussian.mean));
+            label1.setToolTipText(gaussian.mean.getHint());
             field1.setText(gaussian.mean.getString());
             label2.setText(MiscUtility.guiName(gaussian.sigma));
+            label2.setToolTipText(gaussian.sigma.getHint());
             field2.setText(gaussian.sigma.getString());
         } else if (distribution instanceof Uniform) {
             Uniform uniform = (Uniform) distribution;
             label1.setText(MiscUtility.guiName(uniform.min));
+            label1.setToolTipText(uniform.min.getHint());
             field1.setText(uniform.min.getString());
             label2.setText(MiscUtility.guiName(uniform.max));
+            label2.setToolTipText(uniform.max.getHint());
             field2.setText(uniform.max.getString());
         }
     }

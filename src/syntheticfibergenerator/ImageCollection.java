@@ -17,6 +17,12 @@ class ImageCollection {
             nImages.setName("number of images");
             seed.setName("seed");
         }
+
+        void setHints() {
+            super.setHints();
+            nImages.setHint("The number of images to generate");
+            seed.setHint("Check to fix the random seed; value is the seed");
+        }
     }
 
     private Params params;

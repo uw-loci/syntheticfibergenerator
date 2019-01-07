@@ -206,46 +206,50 @@ public class MainWindow extends JFrame {
         gbc.gridy++;
         appearancePanel.add(smooth, gbc);
 
-        loadButton = session.addButtonLine("Parameters:", "Open...");
-        saveButton = session.addButtonLine("Output location:", "Open...");
+        loadButton = session.addButtonLine(
+                "Parameters:", "Choose parameters file to restore a previous session", "Open...");
+        saveButton = session.addButtonLine("Output location:", "Choose directory for output", "Open...");
         pathDisplay = session.addDisplayField();
-        nImagesField = session.addFieldLine(MiscUtility.guiName(params.nImages));
-        seedCheck = session.addCheckBox(MiscUtility.guiName(params.seed));
+        nImagesField = session.addFieldLine(params.nImages);
+        seedCheck = session.addCheckBox(params.seed);
         seedField = session.addField();
 
-        lengthButton = distribution.addButtonLine("Length distribution:", "Modify...");
+        lengthButton = distribution.addButtonLine(
+                "Length distribution:", "Distribution of fiber lengths in pixels", "Modify...");
         lengthDisplay = distribution.addDisplayField();
-        widthButton = distribution.addButtonLine("Width distribution:", "Modify...");
+        widthButton = distribution.addButtonLine(
+                "Width distribution:", "Distribution of starting widths in pixels", "Modify...");
         widthDisplay = distribution.addDisplayField();
-        straightButton = distribution.addButtonLine("Straightness distribution:", "Modify...");
+        straightButton = distribution.addButtonLine(
+                "Straightness distribution:", "Distribution of fiber straightnesses", "Modify...");
         straightDisplay = distribution.addDisplayField();
 
-        nFibersField = values.addFieldLine(MiscUtility.guiName(params.nFibers));
-        segmentField = values.addFieldLine(MiscUtility.guiName(params.segmentLength));
-        widthChangeField = values.addFieldLine(MiscUtility.guiName(params.widthChange));
-        alignmentField = values.addFieldLine(MiscUtility.guiName(params.alignment));
-        meanAngleField = values.addFieldLine(MiscUtility.guiName(params.meanAngle));
+        nFibersField = values.addFieldLine(params.nFibers);
+        segmentField = values.addFieldLine(params.segmentLength);
+        widthChangeField = values.addFieldLine(params.widthChange);
+        alignmentField = values.addFieldLine(params.alignment);
+        meanAngleField = values.addFieldLine(params.meanAngle);
 
-        imageWidthField = required.addFieldLine(MiscUtility.guiName(params.imageWidth));
-        imageHeightField = required.addFieldLine(MiscUtility.guiName(params.imageHeight));
-        imageBufferField = required.addFieldLine(MiscUtility.guiName(params.imageBuffer));
+        imageWidthField = required.addFieldLine(params.imageWidth);
+        imageHeightField = required.addFieldLine(params.imageHeight);
+        imageBufferField = required.addFieldLine(params.imageBuffer);
 
-        scaleCheck = optional.addCheckBox(MiscUtility.guiName(params.scale));
+        scaleCheck = optional.addCheckBox(params.scale);
         scaleField = optional.addField();
-        sampleCheck = optional.addCheckBox(MiscUtility.guiName(params.downSample));
+        sampleCheck = optional.addCheckBox(params.downSample);
         sampleField = optional.addField();
-        blurCheck = optional.addCheckBox(MiscUtility.guiName(params.blur));
+        blurCheck = optional.addCheckBox(params.blur);
         blurField = optional.addField();
-        noiseCheck = optional.addCheckBox(MiscUtility.guiName(params.noise));
+        noiseCheck = optional.addCheckBox(params.noise);
         noiseField = optional.addField();
-        distanceCheck = optional.addCheckBox(MiscUtility.guiName(params.distance));
+        distanceCheck = optional.addCheckBox(params.distance);
         distanceField = optional.addField();
 
-        bubbleCheck = smooth.addCheckBox(MiscUtility.guiName(params.bubble));
+        bubbleCheck = smooth.addCheckBox(params.bubble);
         bubbleField = smooth.addField();
-        swapCheck = smooth.addCheckBox(MiscUtility.guiName(params.swap));
+        swapCheck = smooth.addCheckBox(params.swap);
         swapField = smooth.addField();
-        splineCheck = smooth.addCheckBox(MiscUtility.guiName(params.spline));
+        splineCheck = smooth.addCheckBox(params.spline);
         splineField = smooth.addField();
 
         setupListeners();
@@ -362,6 +366,7 @@ public class MainWindow extends JFrame {
             MiscUtility.showError("Malformed parameters file \"" + filename + '\"');
         }
         params.setNames();
+        params.setHints();
     }
 
     private void writeResults() {

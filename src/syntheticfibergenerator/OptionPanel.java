@@ -22,13 +22,13 @@ class OptionPanel extends JPanel {
         setBorder(BorderFactory.createTitledBorder(borderText));
     }
 
-    JButton addButtonLine(String labelText, String buttonText) {
-        addLabel(labelText);
+    JButton addButtonLine(String labelText, String hintText, String buttonText) {
+        addLabel(labelText, hintText);
         return addButton(buttonText);
     }
 
-    JTextField addFieldLine(String labelText) {
-        addLabel(labelText);
+    JTextField addFieldLine(Param param) {
+        addLabel(MiscUtility.guiName(param), param.getHint());
         return addField();
     }
 
@@ -61,16 +61,18 @@ class OptionPanel extends JPanel {
         return field;
     }
 
-    JLabel addLabel(String labelText) {
+    JLabel addLabel(String labelText, String hintText) {
         GridBagConstraints gbc = gbcLeft();
         JLabel label = new JLabel(labelText);
+        label.setToolTipText(hintText);
         add(label, gbc);
         return label;
     }
 
-    JCheckBox addCheckBox(String checkBoxText) {
+    JCheckBox addCheckBox(Optional option) {
         GridBagConstraints gbc = gbcLeft();
-        JCheckBox box = new JCheckBox(checkBoxText);
+        JCheckBox box = new JCheckBox(MiscUtility.guiName(option));
+        box.setToolTipText(option.getHint());
         add(box, gbc);
         return box;
     }

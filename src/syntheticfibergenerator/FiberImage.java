@@ -61,6 +61,30 @@ class FiberImage implements Iterable<Fiber> {
             swap.setName("swap");
             spline.setName("spline");
         }
+
+        void setHints() {
+            nFibers.setHint("The number of fibers per image to generate");
+            segmentLength.setHint("The length in pixels of fiber segments");
+            alignment.setHint("A value between 0 and 1 indicating how close fibers are to the mean angle on average");
+            meanAngle.setHint("The average fiber angle in degrees");
+            widthChange.setHint("The maximum segment-to-segment width change of a fiber (in pixels)");
+            imageWidth.setHint("The width of the saved image in pixels");
+            imageHeight.setHint("The height of the saved image in pixels");
+            imageBuffer.setHint("The size of the empty border around the edge of the image");
+
+            length.setHints();
+            straightness.setHints();
+            width.setHints();
+
+            scale.setHint("Check to draw a scale bar on the image; value is the number of pixels per micron");
+            downSample.setHint("Check to enable down sampling; value is the ratio of final size to original size");
+            blur.setHint("Check to enable Gaussian blurring; value is the radius of the blur");
+            noise.setHint("Check to add Poisson noise; value is the Poisson mean on a scale of 0-255");
+            distance.setHint("Check to apply a distance filter; value controls the sharpness of the intensity falloff");
+            bubble.setHint("Check to apply \"bubble smoothing\"; value is the number of passes");
+            swap.setHint("Check to apply \"swap smoothing\"; number of swaps is this value times number of segments");
+            spline.setHint("Check to enable spline smoothing; value is the number of interpolated points per segment");
+        }
     }
 
 
