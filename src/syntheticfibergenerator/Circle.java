@@ -27,6 +27,10 @@ public class Circle {
         return radius;
     }
 
+    boolean contains(Vector point) {
+        return center.subtract(point).getNorm() <= radius + BUFF;
+    }
+
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof Circle)) {
@@ -34,11 +38,6 @@ public class Circle {
         }
         Circle circle = (Circle) other;
         return this.center.equals(circle.center) && (this.radius == circle.radius);
-    }
-
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    private boolean contains(Vector point) {
-        return center.subtract(point).getNorm() <= radius + BUFF;
     }
 
     private Vector choosePoint(double minTheta, double maxTheta) {

@@ -16,6 +16,10 @@ class RngUtility {
         return new Vector(x, y);
     }
 
+    /**
+     * Due to the behavior of Random.nextDouble, min is inclusive but max is inclusive. In practice this doesn't matter,
+     * as the exact min is only generated ~1/2^54 times.
+     */
     static double randomDouble(double min, double max) {
         if (min > max) {
             throw new IllegalArgumentException("Random bounds are inverted");

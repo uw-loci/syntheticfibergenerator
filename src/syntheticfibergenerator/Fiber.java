@@ -60,12 +60,12 @@ class Fiber implements Iterable<Fiber.Segment> {
     }
 
 
-    private Fiber.Params params;
+    private Params params;
     private ArrayList<Vector> points;
     private ArrayList<Double> widths;
 
 
-    Fiber(Fiber.Params params) {
+    Fiber(Params params) {
         this.params = params;
         this.points = new ArrayList<>();
         this.widths = new ArrayList<>();

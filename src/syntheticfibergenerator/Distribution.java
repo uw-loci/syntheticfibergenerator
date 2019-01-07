@@ -70,6 +70,9 @@ class Gaussian extends Distribution {
         return String.format(getType() + ": \u03BC=%s, \u03C3=%s", mean.getString(), sigma.getString());
     }
 
+    /**
+     * Note that lowerBound and upperBound are inclusive.
+     */
     public double sample() {
         double val;
         do {
@@ -115,7 +118,9 @@ class Uniform extends Distribution {
     }
 
     public double sample() {
-        return RngUtility.randomDouble(min.getValue(), max.getValue());
+        double trimMin = Math.max(lowerBound, min.getValue());
+        double trimMax = Math.min(upperBound, max.getValue());
+        return RngUtility.randomDouble(trimMin, trimMax);
     }
 
     void setNames() {
