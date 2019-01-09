@@ -3,6 +3,7 @@ package syntheticfibergenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -68,16 +69,49 @@ class FiberTest {
 
     @Test
     void testBubbleSmooth() {
-
+        fiber.generate();
+        double oldSum = angleChangeSum(fiber);
+        for (int i = 0; i < 10; i++) {
+            fiber.bubbleSmooth(1);
+            double newSum = angleChangeSum(fiber);
+            assertTrue(newSum <= oldSum);
+            oldSum = newSum;
+        }
     }
 
     @Test
     void testSwapSmooth() {
-
+        fiber.generate();
+        double oldSum = angleChangeSum(fiber);
+        for (int i = 0; i < 10; i++) {
+            fiber.swapSmooth(1);
+            double newSum = angleChangeSum(fiber);
+            assertTrue(newSum <= oldSum);
+            oldSum = newSum;
+        }
     }
 
     @Test
     void testSplineSmooth() {
+        int smoothRatio = 4;
+        fiber.generate();
+        ArrayList<Vector> oldPoints = fiber.getPoints();
+        fiber.splineSmooth(smoothRatio);
+        ArrayList<Vector> newPoints = fiber.getPoints();
+        assertEquals(newPoints.size(), (oldPoints.size() - 1) * smoothRatio + 1);
+        for (int i = 0; i < newPoints.size(); i++) {
+            if (i % smoothRatio == 0) {
+                assertEquals(newPoints.get(i), oldPoints.get(i / smoothRatio));
+            }
+        }
+    }
 
+    private double angleChangeSum(Fiber fiber) {
+        ArrayList<Vector> deltas = MiscUtility.toDeltas(fiber.getPoints());
+        double sum = 0.0;
+        for (int i = 0; i < deltas.size() - 1; i++) {
+            sum += deltas.get(i).angleWith(deltas.get(i + 1));
+        }
+        return sum;
     }
 }

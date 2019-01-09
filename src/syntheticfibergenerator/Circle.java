@@ -19,11 +19,11 @@ public class Circle {
     /**
      * Note that Vector instances are guaranteed to be immutable.
      */
-    Vector getCenter() {
+    Vector center() {
         return center;
     }
 
-    double getRadius() {
+    double radius() {
         return radius;
     }
 
@@ -121,8 +121,8 @@ public class Circle {
         // Determine the dimensions of the "lens" bounding box
         Vector[] points = circleCircleIntersect(disk1, disk2);
         double boxHeight = points[0].subtract(points[1]).getNorm();
-        double boxLeft = d - disk2.radius;
-        double boxRight = disk1.radius;
+        double boxLeft = Math.min(d - disk2.radius, disk1.radius);
+        double boxRight = Math.max(d - disk2.radius, disk1.radius);
 
         Vector axis = disk2.center.subtract(disk1.center).normalize();
         Vector result;

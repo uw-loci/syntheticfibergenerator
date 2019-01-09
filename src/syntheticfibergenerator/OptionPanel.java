@@ -28,7 +28,7 @@ class OptionPanel extends JPanel {
     }
 
     JTextField addFieldLine(Param param) {
-        addLabel(MiscUtility.guiName(param), param.getHint());
+        addLabel(MiscUtility.guiName(param), param.hint());
         return addField();
     }
 
@@ -72,7 +72,7 @@ class OptionPanel extends JPanel {
     JCheckBox addCheckBox(Optional option) {
         GridBagConstraints gbc = gbcLeft();
         JCheckBox box = new JCheckBox(MiscUtility.guiName(option));
-        box.setToolTipText(option.getHint());
+        box.setToolTipText(option.hint());
         add(box, gbc);
         return box;
     }

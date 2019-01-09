@@ -15,6 +15,9 @@ class ImageUtility {
      * to "falloff" times the 2-norm distance to the closest background pixel.
      */
     static BufferedImage distanceFunction(BufferedImage image, double falloff) {
+        if (image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+            throw new IllegalArgumentException("Image must be TYPE_BYTE_GRAY");
+        }
         BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         Raster inRaster = image.getRaster();
         WritableRaster outRaster = output.getRaster();
@@ -49,7 +52,9 @@ class ImageUtility {
         AffineTransform transform = new AffineTransform();
         transform.scale(ratio, ratio);
         AffineTransformOp scaleOp = new AffineTransformOp(transform, interpolationType);
-        return scaleOp.filter(image, null);
+        BufferedImage output = scaleOp.createCompatibleDestImage(image, image.getColorModel());
+        scaleOp.filter(image, output);
+        return output;
     }
 
     private static double backgroundDist(Raster raster, int x, int y) {

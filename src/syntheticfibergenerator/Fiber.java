@@ -76,6 +76,14 @@ class Fiber implements Iterable<Fiber.Segment> {
         return new SegmentIterator();
     }
 
+    ArrayList<Vector> getPoints() {
+        return new ArrayList<>(points);
+    }
+
+    Vector getDirection() {
+        return params.end.subtract(params.start).normalize();
+    }
+
     void generate() throws ArithmeticException {
         points = RngUtility.randomChain(params.start, params.end, params.nSegments, params.segmentLength);
         double width = params.startWidth;

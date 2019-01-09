@@ -15,7 +15,10 @@ class MiscUtility {
     }
 
     static String guiName(Param param) {
-        String name = param.getName();
+        if (param.name().length() == 0) {
+            return ":";
+        }
+        String name = param.name();
         String uppercase = name.substring(0, 1).toUpperCase() + name.substring(1);
         return uppercase + ":";
     }
@@ -44,7 +47,7 @@ class MiscUtility {
         ArrayList<Vector> points = new ArrayList<>();
         points.add(start);
         for (int i = 0; i < deltas.size(); i++) {
-            points.set(i + 1, points.get(i).add(deltas.get(i)));
+            points.add(i + 1, points.get(i).add(deltas.get(i)));
         }
         return points;
     }

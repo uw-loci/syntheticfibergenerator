@@ -262,9 +262,9 @@ public class MainWindow extends JFrame {
         pathDisplay.setText(outFolder);
         pathDisplay.setToolTipText(outFolder);
 
-        nImagesField.setText(params.nImages.getString());
+        nImagesField.setText(params.nImages.string());
         seedCheck.setSelected(params.seed.use);
-        seedField.setText(params.seed.getString());
+        seedField.setText(params.seed.string());
 
         lengthDisplay.setPreferredSize(lengthDisplay.getSize());
         lengthDisplay.setText(params.length.getString());
@@ -273,33 +273,33 @@ public class MainWindow extends JFrame {
         straightDisplay.setPreferredSize(straightDisplay.getSize());
         straightDisplay.setText(params.straightness.getString());
 
-        nFibersField.setText(params.nFibers.getString());
-        segmentField.setText(params.segmentLength.getString());
-        widthChangeField.setText(params.widthChange.getString());
-        alignmentField.setText(params.alignment.getString());
-        meanAngleField.setText(params.meanAngle.getString());
+        nFibersField.setText(params.nFibers.string());
+        segmentField.setText(params.segmentLength.string());
+        widthChangeField.setText(params.widthChange.string());
+        alignmentField.setText(params.alignment.string());
+        meanAngleField.setText(params.meanAngle.string());
 
-        imageWidthField.setText(params.imageWidth.getString());
-        imageHeightField.setText(params.imageHeight.getString());
-        imageBufferField.setText(params.imageBuffer.getString());
+        imageWidthField.setText(params.imageWidth.string());
+        imageHeightField.setText(params.imageHeight.string());
+        imageBufferField.setText(params.imageBuffer.string());
 
         scaleCheck.setSelected(params.scale.use);
-        scaleField.setText(params.scale.getString());
+        scaleField.setText(params.scale.string());
         sampleCheck.setSelected(params.downSample.use);
-        sampleField.setText(params.downSample.getString());
+        sampleField.setText(params.downSample.string());
         blurCheck.setSelected(params.blur.use);
-        blurField.setText(params.blur.getString());
+        blurField.setText(params.blur.string());
         noiseCheck.setSelected(params.noise.use);
-        noiseField.setText(params.noise.getString());
+        noiseField.setText(params.noise.string());
         distanceCheck.setSelected(params.distance.use);
-        distanceField.setText(params.distance.getString());
+        distanceField.setText(params.distance.string());
 
         bubbleCheck.setSelected(params.bubble.use);
-        bubbleField.setText(params.bubble.getString());
+        bubbleField.setText(params.bubble.string());
         swapCheck.setSelected(params.swap.use);
-        swapField.setText(params.swap.getString());
+        swapField.setText(params.swap.string());
         splineCheck.setSelected(params.spline.use);
-        splineField.setText(params.spline.getString());
+        splineField.setText(params.spline.string());
     }
 
     private void parseParams() throws ParseException {

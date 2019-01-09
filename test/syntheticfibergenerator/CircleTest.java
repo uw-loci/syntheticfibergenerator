@@ -27,7 +27,7 @@ class CircleTest {
         Circle circle1 = new Circle(new Vector(0, 1.23), 4.56);
         Circle circle2 = new Circle(new Vector(0, 1.23), 4.56);
         Circle circle3 = new Circle(new Vector(0, 1.22), 4.56);
-        assertEquals(circle1, circle2);
+        assertEquals(circle1, circle2); // TODO: Ensure that assertEquals arguments are in the correct order
         assertNotEquals(circle1, circle3);
     }
 
@@ -36,10 +36,10 @@ class CircleTest {
         Circle circle1 = new Circle(new Vector(0.0, 0.0), 10.0);
         Circle circle2 = new Circle(new Vector(0.0, 14.0), 8.0);
         Vector[] intersects = Circle.circleCircleIntersect(circle1, circle2);
-        assertEquals(circle1.getCenter().distance(intersects[0]), circle1.getRadius(), 1e-6);
-        assertEquals(circle1.getCenter().distance(intersects[1]), circle1.getRadius(), 1e-6);
-        assertEquals(circle2.getCenter().distance(intersects[0]), circle2.getRadius(), 1e-6);
-        assertEquals(circle2.getCenter().distance(intersects[1]), circle2.getRadius(), 1e-6);
+        assertEquals(circle1.center().distance(intersects[0]), circle1.radius(), 1e-6);
+        assertEquals(circle1.center().distance(intersects[1]), circle1.radius(), 1e-6);
+        assertEquals(circle2.center().distance(intersects[0]), circle2.radius(), 1e-6);
+        assertEquals(circle2.center().distance(intersects[1]), circle2.radius(), 1e-6);
     }
 
     @Test
@@ -49,7 +49,7 @@ class CircleTest {
         for (int i = 0; i < 100; i++) {
             Vector intersect = Circle.diskCircleIntersect(disk, circle);
             assertTrue(disk.contains(intersect));
-            assertEquals(circle.getCenter().distance(intersect), circle.getRadius(), 1e-6);
+            assertEquals(circle.center().distance(intersect), circle.radius(), 1e-6);
         }
     }
 

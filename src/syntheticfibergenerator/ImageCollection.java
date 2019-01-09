@@ -36,11 +36,11 @@ class ImageCollection {
 
     void generateImages() throws ArithmeticException {
         if (params.seed.use) {
-            RngUtility.rng = new Random(params.seed.getValue());
+            RngUtility.rng = new Random(params.seed.value());
         }
 
         imageStack.clear();
-        for (int i = 0; i < params.nImages.getValue(); i++) {
+        for (int i = 0; i < params.nImages.value(); i++) {
             FiberImage image = new FiberImage(params);
             image.generateFibers();
             image.smooth();

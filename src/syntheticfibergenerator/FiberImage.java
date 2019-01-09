@@ -98,11 +98,11 @@ class FiberImage implements Iterable<Fiber> {
     private static final double BUFF_RATIO = 0.015;
 
 
-    FiberImage(ImageCollection.Params params) {
+    FiberImage(Params params) {
         this.params = params;
-        this.fibers = new ArrayList<>(this.params.nFibers.getValue());
+        this.fibers = new ArrayList<>(this.params.nFibers.value());
         this.image = new BufferedImage(
-                params.imageWidth.getValue(), params.imageHeight.getValue(), BufferedImage.TYPE_BYTE_GRAY);
+                params.imageWidth.value(), params.imageHeight.value(), BufferedImage.TYPE_BYTE_GRAY);
     }
 
     @Override
@@ -116,10 +116,10 @@ class FiberImage implements Iterable<Fiber> {
         for (Vector direction : directions) {
             Fiber.Params fiberParams = new Fiber.Params();
 
-            fiberParams.segmentLength = params.segmentLength.getValue();
-            fiberParams.widthChange = params.widthChange.getValue();
+            fiberParams.segmentLength = params.segmentLength.value();
+            fiberParams.widthChange = params.widthChange.value();
 
-            fiberParams.nSegments = (int) Math.round(params.length.sample() / params.segmentLength.getValue());
+            fiberParams.nSegments = (int) Math.round(params.length.sample() / params.segmentLength.value());
             fiberParams.straightness = params.straightness.sample();
             fiberParams.startWidth = params.width.sample();
 
@@ -136,13 +136,13 @@ class FiberImage implements Iterable<Fiber> {
     void smooth() {
         for (Fiber fiber : fibers) {
             if (params.bubble.use) {
-                fiber.bubbleSmooth(params.bubble.getValue());
+                fiber.bubbleSmooth(params.bubble.value());
             }
             if (params.swap.use) {
-                fiber.swapSmooth(params.swap.getValue());
+                fiber.swapSmooth(params.swap.value());
             }
             if (params.spline.use) {
-                fiber.splineSmooth(params.spline.getValue());
+                fiber.splineSmooth(params.spline.value());
             }
         }
     }
@@ -164,19 +164,19 @@ class FiberImage implements Iterable<Fiber> {
 
     void applyEffects() {
         if (params.distance.use) {
-            image = ImageUtility.distanceFunction(image, params.distance.getValue());
+            image = ImageUtility.distanceFunction(image, params.distance.value());
         }
         if (params.noise.use) {
             addNoise();
         }
         if (params.blur.use) {
-            image = ImageUtility.gaussianBlur(image, params.blur.getValue());
+            image = ImageUtility.gaussianBlur(image, params.blur.value());
         }
         if (params.scale.use) {
             drawScaleBar();
         }
         if (params.downSample.use) {
-            image = ImageUtility.scale(image, params.scale.getValue(), AffineTransformOp.TYPE_BILINEAR);
+            image = ImageUtility.scale(image, params.downSample.value(), AffineTransformOp.TYPE_BILINEAR);
         }
     }
 
@@ -185,11 +185,11 @@ class FiberImage implements Iterable<Fiber> {
     }
 
     private ArrayList<Vector> generateDirections() {
-        double sumAngle = Math.toRadians(-params.meanAngle.getValue());
+        double sumAngle = Math.toRadians(-params.meanAngle.value());
         Vector sumDirection = new Vector(Math.cos(sumAngle * 2.0), Math.sin(sumAngle * 2.0));
-        Vector sum = sumDirection.scalarMultiply(params.alignment.getValue() * params.nFibers.getValue());
+        Vector sum = sumDirection.scalarMultiply(params.alignment.value() * params.nFibers.value());
 
-        ArrayList<Vector> chain = RngUtility.randomChain(new Vector(), sum, params.nFibers.getValue(), 1.0);
+        ArrayList<Vector> chain = RngUtility.randomChain(new Vector(), sum, params.nFibers.value(), 1.0);
         ArrayList<Vector> directions = MiscUtility.toDeltas(chain);
 
         ArrayList<Vector> output = new ArrayList<>();
@@ -203,15 +203,15 @@ class FiberImage implements Iterable<Fiber> {
     private Vector findFiberStart(double length, Vector direction) {
         double xLength = direction.normalize().getX() * length;
         double yLength = direction.normalize().getY() * length;
-        double x = findStart(xLength, params.imageWidth.getValue(), params.imageBuffer.getValue());
-        double y = findStart(yLength, params.imageHeight.getValue(), params.imageBuffer.getValue());
+        double x = findStart(xLength, params.imageWidth.value(), params.imageBuffer.value());
+        double y = findStart(yLength, params.imageHeight.value(), params.imageBuffer.value());
         return new Vector(x, y);
     }
 
     private void drawScaleBar() {
 
         // Determine the size in microns of the scale bar
-        double targetSize = TARGET_SCALE_SIZE * image.getWidth() / params.scale.getValue();
+        double targetSize = TARGET_SCALE_SIZE * image.getWidth() / params.scale.value();
         double floorPow = Math.floor(Math.log10(targetSize));
         double[] options = {Math.pow(10, floorPow), 5 * Math.pow(10, floorPow), Math.pow(10, floorPow + 1)};
         double bestSize = options[0];
@@ -234,7 +234,7 @@ class FiberImage implements Iterable<Fiber> {
         int xBuff = (int) (BUFF_RATIO * image.getWidth());
         int yBuff = (int) (BUFF_RATIO * image.getHeight());
         int scaleHeight = image.getHeight() - yBuff - capSize;
-        int scaleRight = xBuff + (int) (bestSize * params.scale.getValue());
+        int scaleRight = xBuff + (int) (bestSize * params.scale.value());
 
         // Draw the scale bar and label
         Graphics2D graphics = image.createGraphics();
@@ -248,7 +248,7 @@ class FiberImage implements Iterable<Fiber> {
     private void addNoise() {
 
         // Sequence of poisson seeds depends on the initial rng seed
-        PoissonDistribution noise = new PoissonDistribution(params.noise.getValue());
+        PoissonDistribution noise = new PoissonDistribution(params.noise.value());
         noise.reseedRandomGenerator(RngUtility.rng.nextInt());
 
         WritableRaster raster = image.getRaster();

@@ -22,11 +22,11 @@ class Param<T extends Comparable<T>> {
     private transient String hint;
 
 
-    T getValue() {
+    T value() {
         return value;
     }
 
-    String getString() {
+    String string() {
         return value == null ? "" : value.toString();
     }
 
@@ -34,7 +34,7 @@ class Param<T extends Comparable<T>> {
         this.name = name;
     }
 
-    String getName() {
+    String name() {
         return name;
     }
 
@@ -42,7 +42,7 @@ class Param<T extends Comparable<T>> {
         this.hint = hint;
     }
 
-    String getHint() {
+    String hint() {
         return hint;
     }
 

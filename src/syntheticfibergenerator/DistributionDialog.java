@@ -86,19 +86,19 @@ class DistributionDialog extends JDialog {
         if (distribution instanceof Gaussian) {
             Gaussian gaussian = (Gaussian) distribution;
             label1.setText(MiscUtility.guiName(gaussian.mean));
-            label1.setToolTipText(gaussian.mean.getHint());
-            field1.setText(gaussian.mean.getString());
+            label1.setToolTipText(gaussian.mean.hint());
+            field1.setText(gaussian.mean.string());
             label2.setText(MiscUtility.guiName(gaussian.sigma));
-            label2.setToolTipText(gaussian.sigma.getHint());
-            field2.setText(gaussian.sigma.getString());
+            label2.setToolTipText(gaussian.sigma.hint());
+            field2.setText(gaussian.sigma.string());
         } else if (distribution instanceof Uniform) {
             Uniform uniform = (Uniform) distribution;
             label1.setText(MiscUtility.guiName(uniform.min));
-            label1.setToolTipText(uniform.min.getHint());
-            field1.setText(uniform.min.getString());
+            label1.setToolTipText(uniform.min.hint());
+            field1.setText(uniform.min.string());
             label2.setText(MiscUtility.guiName(uniform.max));
-            label2.setToolTipText(uniform.max.getHint());
-            field2.setText(uniform.max.getString());
+            label2.setToolTipText(uniform.max.hint());
+            field2.setText(uniform.max.string());
         }
     }
 

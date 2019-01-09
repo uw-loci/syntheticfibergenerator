@@ -67,7 +67,7 @@ class Gaussian extends Distribution {
     }
 
     public String getString() {
-        return String.format(getType() + ": \u03BC=%s, \u03C3=%s", mean.getString(), sigma.getString());
+        return String.format(getType() + ": \u03BC=%s, \u03C3=%s", mean.string(), sigma.string());
     }
 
     /**
@@ -76,7 +76,7 @@ class Gaussian extends Distribution {
     public double sample() {
         double val;
         do {
-            val = RngUtility.rng.nextGaussian() * sigma.getValue() + mean.getValue();
+            val = RngUtility.rng.nextGaussian() * sigma.value() + mean.value();
         }
         while (val < lowerBound || val > upperBound);
         return val;
@@ -114,12 +114,12 @@ class Uniform extends Distribution {
     }
 
     public String getString() {
-        return String.format(getType() + ": %s-%s", min.getString(), max.getString());
+        return String.format(getType() + ": %s-%s", min.string(), max.string());
     }
 
     public double sample() {
-        double trimMin = Math.max(lowerBound, min.getValue());
-        double trimMax = Math.min(upperBound, max.getValue());
+        double trimMin = Math.max(lowerBound, min.value());
+        double trimMax = Math.min(upperBound, max.value());
         return RngUtility.randomDouble(trimMin, trimMax);
     }
 
