@@ -138,7 +138,7 @@ class DistributionDialog extends JDialog {
                     uniform.max.parse(field2.getText(), Double::parseDouble);
                 }
                 dispose();
-            } catch (ParseException e) {
+            } catch (IllegalArgumentException e) {
                 MiscUtility.showError(e.getMessage());
             }
         }

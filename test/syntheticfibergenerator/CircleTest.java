@@ -31,6 +31,8 @@ class CircleTest {
         assertNotEquals(circle1, circle3);
     }
 
+    // TODO: Test the case where circles don't intersect
+
     @Test
     void testCircleCircleIntersect() {
         Circle circle1 = new Circle(new Vector(0.0, 0.0), 10.0);

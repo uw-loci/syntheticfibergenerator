@@ -10,6 +10,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DistributionTest {
 
+    /**
+     * Fix the random seed so we get consistent tests.
+     */
     @BeforeEach
     void setUp() {
         RngUtility.rng = new Random(1);

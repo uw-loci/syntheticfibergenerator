@@ -29,6 +29,12 @@ class RngUtility {
 
     static ArrayList<Vector> randomChain(Vector start, Vector end, int nSteps, double stepSize)
             throws ArithmeticException {
+        if (nSteps <= 0) {
+            throw new IllegalArgumentException("Must have at least one step");
+        }
+        if (stepSize <= 0.0) {
+            throw new IllegalArgumentException("Step size must be positive");
+        }
         ArrayList<Vector> points = new ArrayList<>(Collections.nCopies(nSteps + 1, null));
         points.set(0, start);
         points.set(nSteps, end);
