@@ -4,95 +4,105 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.awt.image.BufferedImage;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class FiberImageTest
-{
-    private FiberImage.Params params;
-    private FiberImage image;
+class FiberImageTest {
+
+    private static final int N_LOOPS = 100;
+    private static final double DELTA = 1e-6;
 
 
+    /**
+     * Fix the random seed so we get consistent tests.
+     */
     @BeforeEach
     void setUp() {
-        params = new FiberImage.Params();
+        RngUtility.rng = new Random(1);
+    }
+
+    @Test
+    void testAlignment() {
+        for (int i = 0; i < N_LOOPS; i++) {
+            FiberImage.Params params = randomParams();
+            FiberImage image = new FiberImage(params);
+            image.generateFibers();
+            assertEquals(params.alignment.value(), TestUtility.alignment(image, params), DELTA);
+        }
+    }
+
+    @Test
+    void testMeanAngle() {
+        for (int i = 0; i < N_LOOPS; i++) {
+            FiberImage.Params params = randomParams();
+            FiberImage image = new FiberImage(params);
+            image.generateFibers();
+            assertEquals(params.meanAngle.value(), TestUtility.meanAngle(image, params), DELTA);
+        }
+    }
+
+    @Test
+    void testImageProperties() {
+        for (int i = 0; i < N_LOOPS; i++) {
+            FiberImage.Params params = randomParams();
+            FiberImage image = new FiberImage(params);
+            image.generateFibers();
+            image.drawFibers();
+            assertEquals((int) params.imageWidth.value(), image.getImage().getWidth());
+            assertEquals((int) params.imageHeight.value(), image.getImage().getHeight());
+        }
+    }
+
+    @Test
+    void testDownSample() {
+        for (int i = 0; i < N_LOOPS; i++) {
+            FiberImage.Params params = randomParams();
+            FiberImage image = new FiberImage(params);
+            image.generateFibers();
+            image.drawFibers();
+            image.applyEffects();
+            BufferedImage buffImage = image.getImage();
+            assertEquals(params.imageWidth.value() * params.downSample.value(), buffImage.getWidth(), 1.0);
+            assertEquals(params.imageHeight.value() * params.downSample.value(), buffImage.getHeight(), 1.0);
+        }
+    }
+
+    /**
+     * TODO: Choose the bounds on values more systematically
+     */
+    private static FiberImage.Params randomParams() {
+        FiberImage.Params params = new FiberImage.Params();
         try {
-            params.nFibers.parse("10", Integer::parseInt);
-            params.segmentLength.parse("5.0", Double::parseDouble);
-            params.alignment.parse("0.8", Double::parseDouble);
-            params.meanAngle.parse("70.0", Double::parseDouble);
-            params.widthChange.parse("0.5", Double::parseDouble);
-            params.imageWidth.parse("256", Integer::parseInt);
-            params.imageHeight.parse("256", Integer::parseInt);
-            params.imageBuffer.parse("16", Integer::parseInt);
+            // Generate at least 2 fibers because alignment for a single fiber is always 1.0
+            params.nFibers = TestUtility.fromValue(RngUtility.nextInt(2, 100), Integer::parseInt);
+            params.segmentLength = TestUtility.fromValue(RngUtility.nextDouble(0.1, 100.0), Double::parseDouble);
+            params.alignment = TestUtility.fromValue(RngUtility.nextDouble(0.0, 1.0), Double::parseDouble);
+            params.meanAngle = TestUtility.fromValue(RngUtility.nextDouble(0.0, 180.0), Double::parseDouble);
+            params.widthChange = TestUtility.fromValue(RngUtility.nextDouble(0.0, 10.0), Double::parseDouble);
+            params.imageWidth = TestUtility.fromValue(RngUtility.nextInt(8, 1024), Integer::parseInt);
+            params.imageHeight = TestUtility.fromValue(RngUtility.nextInt(8, 1024), Integer::parseInt);
+            params.imageBuffer = TestUtility.fromValue(RngUtility.nextInt(0, 32), Integer::parseInt);
             Uniform length = new Uniform(params.length.lowerBound, params.length.upperBound);
-            length.min.parse("20.0", Double::parseDouble);
-            length.max.parse("100.0", Double::parseDouble);
+            length.min = TestUtility.fromValue(RngUtility.nextDouble(0.1, 1000.0), Double::parseDouble);
+            length.max = TestUtility.fromValue(RngUtility.nextDouble(length.min.value(), 1000.0), Double::parseDouble);
             params.length = length;
             Uniform width = new Uniform(params.width.lowerBound, params.width.upperBound);
-            width.min.parse("1.0", Double::parseDouble);
-            width.max.parse("5.0", Double::parseDouble);
+            width.min = TestUtility.fromValue(RngUtility.nextDouble(0.1, 5.0), Double::parseDouble);
+            width.max = TestUtility.fromValue(RngUtility.nextDouble(width.min.value(), 5.0), Double::parseDouble);
             params.width = width;
             Uniform straightness = new Uniform(params.straightness.lowerBound, params.straightness.upperBound);
-            straightness.min.parse("0.7", Double::parseDouble);
-            straightness.max.parse("1.0", Double::parseDouble);
+            straightness.min = TestUtility.fromValue(RngUtility.nextDouble(0.0, 1.0), Double::parseDouble);
+            straightness.max = TestUtility.fromValue(RngUtility.nextDouble(straightness.min.value(), 1.0), Double::parseDouble);
             params.straightness = straightness;
             params.downSample.use = true;
-            params.downSample.parse("0.625", Double::parseDouble);
+            params.downSample.parse(Double.toString(RngUtility.nextDouble(0.01, 20.0)), Double::parseDouble);
         } catch (Exception e) {
             fail(e.getMessage());
         }
         params.setNames();
         params.setHints();
-        image = new FiberImage(params);
-    }
-
-    @Test
-    void testAlignment() {
-        image.generateFibers();
-        assertEquals(params.alignment.value(), alignment(image), 1e-6);
-    }
-
-    @Test
-    void testMeanAngle() {
-        image.generateFibers();
-        assertEquals(params.meanAngle.value(), meanAngle(image), 1e-6);
-    }
-
-    @Test
-    void testImageProperties() {
-        image.generateFibers();
-        image.drawFibers();
-        assertEquals((int) params.imageWidth.value(), image.getImage().getWidth());
-        assertEquals((int) params.imageHeight.value(), image.getImage().getHeight());
-    }
-
-    @Test
-    void testDownSample() {
-        image.generateFibers();
-        image.drawFibers();
-        image.applyEffects();
-        BufferedImage buff = image.getImage();
-        assertEquals(params.imageWidth.value() * params.downSample.value(), buff.getWidth());
-        assertEquals(params.imageHeight.value() * params.downSample.value(), image.getImage().getHeight());
-    }
-
-    private double alignment(FiberImage image) {
-        return complexMean(image).getNorm();
-    }
-
-    private double meanAngle(FiberImage image) {
-        return -complexMean(image).theta() * 90 / Math.PI;
-    }
-
-    private Vector complexMean(FiberImage image) {
-        Vector sum = new Vector();
-        for (Fiber fiber : image) {
-            double theta = fiber.getDirection().theta();
-            Vector direction = new Vector(Math.cos(2.0 * theta), Math.sin(2.0 * theta));
-            sum = sum.add(direction);
-        }
-        return sum.scalarMultiply(1.0 / params.nFibers.value());
+        return params;
     }
 }

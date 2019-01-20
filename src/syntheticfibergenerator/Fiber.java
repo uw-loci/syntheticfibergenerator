@@ -90,7 +90,7 @@ class Fiber implements Iterable<Fiber.Segment> {
         for (int i = 0; i < params.nSegments; i++) {
             widths.add(width);
             double variability = Math.min(Math.abs(width), params.widthChange);
-            width += RngUtility.randomDouble(-variability, variability);
+            width += RngUtility.nextDouble(-variability, variability);
         }
     }
 
@@ -132,15 +132,20 @@ class Fiber implements Iterable<Fiber.Segment> {
         PolynomialSplineFunction xFunc = interpolator.interpolate(tPoints, xPoints);
         PolynomialSplineFunction yFunc = interpolator.interpolate(tPoints, yPoints);
 
-        int nPoints = points.size();
-        points.clear();
+        ArrayList<Vector> newPoints = new ArrayList<>();
         ArrayList<Double> newWidths = new ArrayList<>();
-        for (double t = 0; t <= (double) nPoints - 1; t += 1 / (double) splineRatio) {
-            points.add(new Vector(xFunc.value(t), yFunc.value(t)));
-            if (t + 1 / (double) splineRatio <= (double) nPoints - 1) {
-                newWidths.add(widths.get((int) t));
+        for (int i = 0; i < (points.size() - 1) * splineRatio + 1; i++) {
+            if (i % splineRatio == 0) {
+                newPoints.add(points.get(i / splineRatio));
+            } else {
+                double t = (double) i / splineRatio;
+                newPoints.add(new Vector(xFunc.value(t), yFunc.value(t)));
+            }
+            if (i < (points.size() - 1) * splineRatio) {
+                newWidths.add(widths.get(i / splineRatio));
             }
         }
+        points = newPoints;
         widths = newWidths;
     }
 

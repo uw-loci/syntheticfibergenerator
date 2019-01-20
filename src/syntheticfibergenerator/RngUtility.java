@@ -10,17 +10,30 @@ class RngUtility {
     static Random rng = new Random();
 
 
-    static Vector randomPoint(double xMin, double xMax, double yMin, double yMax) {
-        double x = randomDouble(xMin, xMax);
-        double y = randomDouble(yMin, yMax);
+    static Vector nextPoint(double xMin, double xMax, double yMin, double yMax) {
+        double x = nextDouble(xMin, xMax);
+        double y = nextDouble(yMin, yMax);
         return new Vector(x, y);
     }
 
     /**
-     * Due to the behavior of Random.nextDouble, min is inclusive but max is inclusive. In practice this doesn't matter,
+     * @return A random integer between min, inclusive, and max, exclusive. Thus an IllegalArgumentException is thrown
+     * if min >= max.
+     */
+    static int nextInt(int min, int max) {
+        if (min > max) {
+            throw new IllegalArgumentException("Random bounds are inverted");
+        } else if (min == max) {
+            throw new IllegalArgumentException("Random range must have nonzero size");
+        }
+        return min + rng.nextInt(max - min);
+    }
+
+    /**
+     * Due to the behavior of Random.nextDouble, min is inclusive but max is exclusive. In practice this doesn't matter,
      * as the exact min is only generated ~1/2^54 times.
      */
-    static double randomDouble(double min, double max) {
+    static double nextDouble(double min, double max) {
         if (min > max) {
             throw new IllegalArgumentException("Random bounds are inverted");
         }

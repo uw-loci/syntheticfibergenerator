@@ -41,7 +41,7 @@ public class Circle {
     }
 
     private Vector choosePoint(double minTheta, double maxTheta) {
-        double theta = RngUtility.randomDouble(minTheta, maxTheta);
+        double theta = RngUtility.nextDouble(minTheta, maxTheta);
         Vector dir = new Vector(Math.cos(theta), Math.sin(theta));
         return center.add(dir.scalarMultiply(radius));
     }
@@ -113,7 +113,7 @@ public class Circle {
 
             Vector result;
             do {
-                result = RngUtility.randomPoint(xMin, xMax, yMin, yMax);
+                result = RngUtility.nextPoint(xMin, xMax, yMin, yMax);
             } while (!inner.contains(result));
             return result;
         }
@@ -127,7 +127,7 @@ public class Circle {
         Vector axis = disk2.center.subtract(disk1.center).normalize();
         Vector result;
         do {
-            Vector delta = RngUtility.randomPoint(boxLeft, boxRight, -boxHeight, boxHeight);
+            Vector delta = RngUtility.nextPoint(boxLeft, boxRight, -boxHeight, boxHeight);
             result = disk1.center.add(delta.rotate(axis));
         } while (!disk1.contains(result) || !disk2.contains(result));
         return result;

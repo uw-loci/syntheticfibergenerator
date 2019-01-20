@@ -25,9 +25,9 @@ class FiberImage implements Iterable<Fiber> {
         Param<Integer> imageHeight = new Param<>();
         Param<Integer> imageBuffer = new Param<>();
 
-        Distribution length = new Uniform(0, Double.POSITIVE_INFINITY);
-        Distribution width = new Uniform(0, Double.POSITIVE_INFINITY);
-        Distribution straightness = new Uniform(0, 1);
+        Distribution length = new Uniform(0.0, Double.POSITIVE_INFINITY);
+        Distribution width = new Uniform(0.0, Double.POSITIVE_INFINITY);
+        Distribution straightness = new Uniform(0.0, 1.0);
 
         Optional<Double> scale = new Optional<>();
         Optional<Double> downSample = new Optional<>();
@@ -67,7 +67,7 @@ class FiberImage implements Iterable<Fiber> {
             segmentLength.setHint("The length in pixels of fiber segments");
             alignment.setHint("A value between 0 and 1 indicating how close fibers are to the mean angle on average");
             meanAngle.setHint("The average fiber angle in degrees");
-            widthChange.setHint("The maximum segment-to-segment width change of a fiber (in pixels)");
+            widthChange.setHint("The maximum segment-to-segment width change of a fiber in pixels");
             imageWidth.setHint("The width of the saved image in pixels");
             imageHeight.setHint("The height of the saved image in pixels");
             imageBuffer.setHint("The size of the empty border around the edge of the image");
@@ -120,6 +120,7 @@ class FiberImage implements Iterable<Fiber> {
             fiberParams.widthChange = params.widthChange.value();
 
             fiberParams.nSegments = (int) Math.round(params.length.sample() / params.segmentLength.value());
+            fiberParams.nSegments = Math.max(1, fiberParams.nSegments);
             fiberParams.straightness = params.straightness.sample();
             fiberParams.startWidth = params.width.sample();
 
@@ -268,13 +269,13 @@ class FiberImage implements Iterable<Fiber> {
         if (Math.abs(length) > dimension) {
             min = Math.min(dimension - length, dimension);
             max = Math.max(0, -length);
-            return RngUtility.randomDouble(min, max);
+            return RngUtility.nextDouble(min, max);
         }
         if (Math.abs(length) > dimension - 2 * buffer) {
             buffer = 0;
         }
         min = Math.max(buffer, buffer - length);
         max = Math.min(dimension - buffer - length, dimension - buffer);
-        return RngUtility.randomDouble(min, max);
+        return RngUtility.nextDouble(min, max);
     }
 }

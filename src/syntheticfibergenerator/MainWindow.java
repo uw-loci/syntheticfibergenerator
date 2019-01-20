@@ -10,7 +10,6 @@ import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.io.IOException;
-import java.text.ParseException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -302,7 +301,7 @@ public class MainWindow extends JFrame {
         splineField.setText(params.spline.string());
     }
 
-    private void parseParams() throws ParseException {
+    private void parseParams() throws IllegalArgumentException {
         params.nImages.parse(nImagesField.getText(), Integer::parseInt);
         params.seed.parse(seedCheck.isSelected(), seedField.getText(), Long::parseLong);
 

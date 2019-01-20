@@ -10,6 +10,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CircleTest {
 
+    private static final double DELTA = 1e-6;
+
+
+    /**
+     * Fix the random seed so we get consistent tests.
+     */
     @BeforeEach
     void setUp() {
         RngUtility.rng = new Random(1);
@@ -27,21 +33,27 @@ class CircleTest {
         Circle circle1 = new Circle(new Vector(0, 1.23), 4.56);
         Circle circle2 = new Circle(new Vector(0, 1.23), 4.56);
         Circle circle3 = new Circle(new Vector(0, 1.22), 4.56);
-        assertEquals(circle1, circle2); // TODO: Ensure that assertEquals arguments are in the correct order
+        assertEquals(circle1, circle2);
         assertNotEquals(circle1, circle3);
     }
-
-    // TODO: Test the case where circles don't intersect
 
     @Test
     void testCircleCircleIntersect() {
         Circle circle1 = new Circle(new Vector(0.0, 0.0), 10.0);
         Circle circle2 = new Circle(new Vector(0.0, 14.0), 8.0);
         Vector[] intersects = Circle.circleCircleIntersect(circle1, circle2);
-        assertEquals(circle1.center().distance(intersects[0]), circle1.radius(), 1e-6);
-        assertEquals(circle1.center().distance(intersects[1]), circle1.radius(), 1e-6);
-        assertEquals(circle2.center().distance(intersects[0]), circle2.radius(), 1e-6);
-        assertEquals(circle2.center().distance(intersects[1]), circle2.radius(), 1e-6);
+        assertEquals(circle1.center().distance(intersects[0]), circle1.radius(), DELTA);
+        assertEquals(circle1.center().distance(intersects[1]), circle1.radius(), DELTA);
+        assertEquals(circle2.center().distance(intersects[0]), circle2.radius(), DELTA);
+        assertEquals(circle2.center().distance(intersects[1]), circle2.radius(), DELTA);
+    }
+
+    @Test
+    void testNoCircleIntersect() {
+        Circle circle1 = new Circle(new Vector(0.0, 0.0), 10.0);
+        Circle circle2 = new Circle(new Vector(0.0, 19.0), 8.0);
+        assertThrows(ArithmeticException.class, () ->
+                Circle.circleCircleIntersect(circle1, circle2));
     }
 
     @Test
@@ -51,7 +63,7 @@ class CircleTest {
         for (int i = 0; i < 100; i++) {
             Vector intersect = Circle.diskCircleIntersect(disk, circle);
             assertTrue(disk.contains(intersect));
-            assertEquals(circle.center().distance(intersect), circle.radius(), 1e-6);
+            assertEquals(circle.radius(), circle.center().distance(intersect), DELTA);
         }
     }
 

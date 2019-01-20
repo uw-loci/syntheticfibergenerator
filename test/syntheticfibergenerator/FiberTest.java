@@ -12,26 +12,25 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class FiberTest {
 
-    private Fiber.Params params;
-    private Fiber fiber;
+    private static final int N_LOOPS = 50;
+    private static final double DELTA = 1e-6;
 
+    private static final int SMOOTH = 10;
+    private static final int MAX_SPLINE = 20;
+
+
+    /**
+     * Fix the random seed so we get consistent tests.
+     */
     @BeforeEach
     void setUp() {
         RngUtility.rng = new Random(1);
-        Fiber.Params params = new Fiber.Params();
-        params.segmentLength = 3.0;
-        params.widthChange = 1.0;
-        params.nSegments = 18;
-        params.startWidth = 5.0;
-        params.straightness = 0.9;
-        params.start = new Vector();
-        params.end = new Vector(2.0, 1.0).normalize().scalarMultiply(48.6);
-        this.params = params;
-        fiber = new Fiber(params);
     }
 
     @Test
     void testIterator() {
+        Fiber.Params params = randomParams();
+        Fiber fiber = new Fiber(params);
         fiber.generate();
         Iterator<Fiber.Segment> iterator = fiber.iterator();
         for (int i = 0; i < params.nSegments; i++) {
@@ -43,75 +42,101 @@ class FiberTest {
 
     @Test
     void testPointGeneration() {
-        fiber.generate();
-        Vector prevEnd = params.start;
-        for (Fiber.Segment segment : fiber) {
-            assertEquals(segment.start.distance(segment.end), params.segmentLength, 1e-6);
-            assertEquals(prevEnd, segment.start);
-            prevEnd = segment.end;
+        for (int i = 0; i < N_LOOPS; i++) {
+            Fiber.Params params = randomParams();
+            Fiber fiber = new Fiber(params);
+            fiber.generate();
+            Vector prevEnd = params.start;
+            for (Fiber.Segment segment : fiber) {
+                assertEquals(params.segmentLength, segment.start.distance(segment.end), DELTA);
+                assertEquals(prevEnd, segment.start);
+                prevEnd = segment.end;
+            }
+            assertEquals(params.end, prevEnd);
         }
-        assertEquals(prevEnd, params.end);
     }
 
     @Test
     void testWidthGeneration() {
-        fiber.generate();
-        Iterator<Fiber.Segment> iterator = fiber.iterator();
-        Fiber.Segment first = iterator.next();
-        assertEquals(first.width, params.startWidth);
-        double prevWidth = params.startWidth;
-        for (Fiber.Segment segment : fiber) {
-            assertTrue(Math.abs(segment.width - prevWidth) <= params.widthChange);
-            assertTrue(segment.width > 0.0);
-            prevWidth = segment.width;
+        for (int i = 0; i < N_LOOPS; i++) {
+            Fiber.Params params = randomParams();
+            Fiber fiber = new Fiber(params);
+            fiber.generate();
+            Iterator<Fiber.Segment> iterator = fiber.iterator();
+            Fiber.Segment first = iterator.next();
+            assertEquals(params.startWidth, first.width);
+            double prevWidth = params.startWidth;
+            for (Fiber.Segment segment : fiber) {
+                assertTrue(Math.abs(segment.width - prevWidth) <= params.widthChange);
+                assertTrue(segment.width >= 0.0);
+                prevWidth = segment.width;
+            }
         }
     }
 
     @Test
     void testBubbleSmooth() {
-        fiber.generate();
-        double oldSum = angleChangeSum(fiber);
-        for (int i = 0; i < 10; i++) {
-            fiber.bubbleSmooth(1);
-            double newSum = angleChangeSum(fiber);
-            assertTrue(newSum <= oldSum);
-            oldSum = newSum;
+        for (int i = 0; i < N_LOOPS; i++) {
+            Fiber fiber = new Fiber(randomParams());
+            fiber.generate();
+            double oldSum = TestUtility.angleChangeSum(fiber);
+            for (int j = 0; j < SMOOTH; j++) {
+                fiber.bubbleSmooth(1);
+                double newSum = TestUtility.angleChangeSum(fiber);
+                assertTrue(newSum <= oldSum + DELTA);
+                oldSum = newSum;
+            }
         }
     }
 
     @Test
     void testSwapSmooth() {
-        fiber.generate();
-        double oldSum = angleChangeSum(fiber);
-        for (int i = 0; i < 10; i++) {
-            fiber.swapSmooth(1);
-            double newSum = angleChangeSum(fiber);
-            assertTrue(newSum <= oldSum);
-            oldSum = newSum;
+        for (int i = 0; i < N_LOOPS; i++) {
+            Fiber fiber = new Fiber(randomParams());
+            fiber.generate();
+            double oldSum = TestUtility.angleChangeSum(fiber);
+            for (int j = 0; j < SMOOTH; j++) {
+                fiber.swapSmooth(1);
+                double newSum = TestUtility.angleChangeSum(fiber);
+                assertTrue(newSum <= oldSum + DELTA);
+                oldSum = newSum;
+            }
         }
     }
 
     @Test
     void testSplineSmooth() {
-        int smoothRatio = 4;
-        fiber.generate();
-        ArrayList<Vector> oldPoints = fiber.getPoints();
-        fiber.splineSmooth(smoothRatio);
-        ArrayList<Vector> newPoints = fiber.getPoints();
-        assertEquals(newPoints.size(), (oldPoints.size() - 1) * smoothRatio + 1);
-        for (int i = 0; i < newPoints.size(); i++) {
-            if (i % smoothRatio == 0) {
-                assertEquals(newPoints.get(i), oldPoints.get(i / smoothRatio));
+        for (int i = 0; i < N_LOOPS; i++) {
+            int smoothRatio = 1 + RngUtility.rng.nextInt(MAX_SPLINE);
+            Fiber fiber = new Fiber(randomParams());
+            fiber.generate();
+            ArrayList<Vector> oldPoints = fiber.getPoints();
+            fiber.splineSmooth(smoothRatio);
+            ArrayList<Vector> newPoints = fiber.getPoints();
+            assertEquals((oldPoints.size() - 1) * smoothRatio + 1, newPoints.size());
+            for (int j = 0; j < newPoints.size(); j++) {
+                if (i % smoothRatio == 0) {
+                    assertTrue(TestUtility.vectorsEquals(newPoints.get(i), oldPoints.get(i / smoothRatio), DELTA));
+                }
             }
         }
     }
 
-    private double angleChangeSum(Fiber fiber) {
-        ArrayList<Vector> deltas = MiscUtility.toDeltas(fiber.getPoints());
-        double sum = 0.0;
-        for (int i = 0; i < deltas.size() - 1; i++) {
-            sum += deltas.get(i).angleWith(deltas.get(i + 1));
-        }
-        return sum;
+    /**
+     * TODO: Choose the bounds on values more systematically
+     */
+    private static Fiber.Params randomParams() {
+        Fiber.Params params = new Fiber.Params();
+        params.segmentLength = RngUtility.nextDouble(0.1, 100.0);
+        params.widthChange = RngUtility.nextDouble(0.0, 10.0);
+        params.nSegments = (int) RngUtility.nextDouble(1.0, 1000.0);
+        params.startWidth = RngUtility.nextDouble(0.1, 5.0);
+        params.straightness = RngUtility.nextDouble(0.0, 1.0);
+        params.start = new Vector();
+        double angle = RngUtility.nextDouble(0.0, 2 * Math.PI);
+        params.start = new Vector();
+        double length = params.segmentLength * params.nSegments * params.straightness;
+        params.end = new Vector(Math.cos(angle), Math.sin(angle)).scalarMultiply(length);
+        return params;
     }
 }

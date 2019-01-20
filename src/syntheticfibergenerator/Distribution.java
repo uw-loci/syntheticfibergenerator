@@ -117,10 +117,13 @@ class Uniform extends Distribution {
         return String.format(getType() + ": %s-%s", min.string(), max.string());
     }
 
+    /**
+     * Note that min is inclusive but max is exclusive.
+     */
     public double sample() {
         double trimMin = Math.max(lowerBound, min.value());
         double trimMax = Math.min(upperBound, max.value());
-        return RngUtility.randomDouble(trimMin, trimMax);
+        return RngUtility.nextDouble(trimMin, trimMax);
     }
 
     void setNames() {

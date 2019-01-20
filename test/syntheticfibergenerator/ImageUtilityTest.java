@@ -14,68 +14,54 @@ class ImageUtilityTest {
 
     private BufferedImage image;
 
+    private static final int FALLOFF = 64;
+
 
     /**
      * Creates a non-empty image by drawing some text and shapes.
      */
     @BeforeEach
     void setUp() {
-        image = new BufferedImage(512, 640, BufferedImage.TYPE_BYTE_GRAY);
+        image = new BufferedImage(1024, 1024, BufferedImage.TYPE_BYTE_GRAY);
         Graphics graphics = image.getGraphics();
         graphics.drawString("Hello, world!", 100, 100);
-        graphics.drawOval(300, 300, 12, 6);
-        graphics.drawLine(10, 450, 500, 10);
+        graphics.drawOval(512, 512, 100, 100);
+        graphics.drawLine(10, 1014, 1014, 10);
     }
 
     @Test
     void testDistanceFunction() {
-        assertTrue(sizeTypeMatch(ImageUtility.distanceFunction(image, 64), image));
+        assertTrue(TestUtility.sizeTypeMatch(ImageUtility.distanceFunction(image, FALLOFF), image));
     }
 
+    /**
+     * Because pixel value is background distance * falloff with maximum 255, a falloff of 1000 will set background
+     * pixels to 0 and all others to 255.
+     */
     @Test
     void testHighFalloff() {
-        assertTrue(pixelWiseEqual(ImageUtility.distanceFunction(image, 4096), image));
+        assertTrue(TestUtility.pixelWiseEqual(image, ImageUtility.distanceFunction(image, 1000)));
     }
 
     @Test
     void testInvalidImage() {
-        BufferedImage badImage = new BufferedImage(512, 640, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage badImage = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
         assertThrows(IllegalArgumentException.class, () ->
-            ImageUtility.distanceFunction(badImage, 64));
+                ImageUtility.distanceFunction(badImage, FALLOFF));
     }
 
     @Test
     void testGaussianBlur() {
-        assertTrue(sizeTypeMatch(ImageUtility.gaussianBlur(image, 8), image));
+        assertTrue(TestUtility.sizeTypeMatch(image, ImageUtility.gaussianBlur(image, 8)));
     }
 
     @Test
     void testScale() {
-        double scale = 0.01;
-        BufferedImage output = ImageUtility.scale(image, scale, AffineTransformOp.TYPE_BILINEAR);
-        assertEquals((double) output.getWidth(), image.getWidth() * scale, 1.0);
-        assertEquals((double) output.getHeight(), image.getHeight() * scale, 1.0);
-        assertEquals(output.getType(), image.getType());
-    }
-
-    private boolean sizeTypeMatch(BufferedImage image1, BufferedImage image2) {
-        return
-            image1.getWidth() == image2.getWidth() &&
-            image1.getHeight() == image2.getHeight() &&
-            image1.getType() == image2.getType();
-    }
-
-    private boolean pixelWiseEqual(BufferedImage image1, BufferedImage image2) {
-        if (!sizeTypeMatch(image1, image2)) {
-            return false;
+        for (double scale = 0.01; scale <= 20.0; scale *= 2) {
+            BufferedImage output = ImageUtility.scale(image, scale, AffineTransformOp.TYPE_BILINEAR);
+            assertEquals(image.getWidth() * scale, output.getWidth(), 1.0);
+            assertEquals(image.getHeight() * scale, output.getHeight(), 1.0);
+            assertEquals(image.getType(), output.getType());
         }
-        for (int y = 0; y < image1.getHeight(); y++) {
-            for (int x = 0; x < image1.getWidth(); x++) {
-                if (image1.getRGB(x, y) != image2.getRGB(x, y)) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 }

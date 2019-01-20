@@ -1,5 +1,6 @@
 package syntheticfibergenerator;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -9,36 +10,50 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MiscUtilityTest {
 
+    private static final double DELTA = 1e-6;
+
+    private static final double MIN_VAL = -1e6;
+    private static final double MAX_VAL = 1e6;
+
+
+    /**
+     * Fix the random seed so we get consistent tests.
+     */
+    @BeforeEach
+    void setUp() {
+        RngUtility.rng.setSeed(1);
+    }
+
     @Test
     void testGuiName() {
         Param<Integer> testParam = new Param<>();
         testParam.setName("ordinary name");
-        assertEquals(MiscUtility.guiName(testParam), "Ordinary name:");
+        assertEquals("Ordinary name:", MiscUtility.guiName(testParam));
     }
 
     @Test
     void testEmptyGuiName() {
         Param<Integer> testParam = new Param<>();
         testParam.setName("");
-        assertEquals(MiscUtility.guiName(testParam), ":");
+        assertEquals(":", MiscUtility.guiName(testParam));
     }
 
     @Test
     void testNonAlphaGuiName() {
         Param<Integer> testParam = new Param<>();
-        testParam.setName("$weird name");
-        assertEquals(MiscUtility.guiName(testParam), "$weird name:");
+        testParam.setName("$other name");
+        assertEquals("$other name:", MiscUtility.guiName(testParam));
     }
 
     @Test
     void testToFromDeltas() {
         ArrayList<Vector> points = new ArrayList<>();
-        points.add(new Vector(0.0, 0.0));
-        points.add(new Vector(1.0, 2.0));
-        points.add(new Vector(-3.0, 3.0));
-        points.add(new Vector(1.5, 0.0));
+        int nPoints = 100;
+        for (int i = 0; i < nPoints; i++) {
+            points.add(RngUtility.nextPoint(MIN_VAL, MAX_VAL, MIN_VAL, MAX_VAL));
+        }
         ArrayList<Vector> recon = MiscUtility.fromDeltas(MiscUtility.toDeltas(points), points.get(0));
-        assertEquals(points, recon);
+        assertTrue(TestUtility.elementWiseEqual(points, recon, DELTA));
     }
 
     @Test
@@ -53,7 +68,9 @@ class MiscUtilityTest {
         ArrayList<Vector> deltas = new ArrayList<>();
         Vector start = new Vector(-1.0, 2.0);
         ArrayList<Vector> points = MiscUtility.fromDeltas(deltas, start);
-        assertEquals(points.size(), 1);
-        assertEquals(points.get(0), start);
+        assertEquals(1, points.size());
+        assertEquals(start, points.get(0));
     }
+
+
 }
