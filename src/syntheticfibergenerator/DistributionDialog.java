@@ -1,13 +1,26 @@
+/*
+ * Written for the Laboratory for Optical and Computational Instrumentation, UW-Madison
+ *
+ * Author: Matthew Dutson
+ * Email: dutson@wisc.edu, mattdutson@icloud.com
+ * GitHub: https://github.com/uw-loci/syntheticfibergenerator
+ *
+ * Copyright (c) 2019, Board of Regents of the University of Wisconsin-Madison
+ */
+
 package syntheticfibergenerator;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.text.ParseException;
 
 
+/**
+ * A GUI dialog which allows the user to select a distribution type and specify its parameters.
+ */
 class DistributionDialog extends JDialog {
 
+    // The current distribution selected
     Distribution distribution;
 
     // Saves the original distribution in case "Cancel" is pressed
@@ -23,6 +36,10 @@ class DistributionDialog extends JDialog {
     private JButton cancelButton;
 
 
+    /**
+     * @param distribution The distribution to display initially. The {@code distribution} member reverts to this if
+     *                     "Cancel" is pressed.
+     */
     DistributionDialog(Distribution distribution) {
         super();
         this.original = distribution;
@@ -32,8 +49,14 @@ class DistributionDialog extends JDialog {
         setVisible(true);
     }
 
+    /**
+     * Sets up GUI components and behavior.
+     */
     private void initGUI() {
+
+        // Pause the caller until this window is disposed
         setModal(true);
+
         setLayout(new GridBagLayout());
 
         GridBagConstraints gbc = MiscUtility.newGBC();
@@ -81,6 +104,9 @@ class DistributionDialog extends JDialog {
         pack();
     }
 
+    /**
+     * Refreshes the GUI to reflect the state of the {@code distribution} member.
+     */
     private void displayDistribution() {
         comboBox.setSelectedItem(distribution.getType());
         if (distribution instanceof Gaussian) {
@@ -102,12 +128,18 @@ class DistributionDialog extends JDialog {
         }
     }
 
+    /**
+     * Sets listeners for the distribution combo box, "Okay" button, and "Cancel" button.
+     */
     private void setupListeners() {
         comboBox.addActionListener((ActionEvent e) -> selectionChanged());
         okayButton.addActionListener((ActionEvent e) -> okayPressed());
         cancelButton.addActionListener((ActionEvent e) -> cancelPressed());
     }
 
+    /**
+     * If the distribution type has changed, the {@code distribution} member is modified and a GUI refresh is triggered.
+     */
     private void selectionChanged() {
         if (comboBox.getSelectedItem() != null) {
             String selection = comboBox.getSelectedItem().toString();
@@ -122,6 +154,10 @@ class DistributionDialog extends JDialog {
         }
     }
 
+    /**
+     * If "Okay" is pressed, modify the {@code distribution} member (for the caller to read) and dispose of the window.
+     * This resumes execution of the caller.
+     */
     private void okayPressed() {
         if (comboBox.getSelectedItem() == null) {
             MiscUtility.showError("No distribution type selected");
@@ -144,6 +180,10 @@ class DistributionDialog extends JDialog {
         }
     }
 
+    /**
+     * If "Cancel" is pressed, reset {@code distribution} to its original value and dispose of the window. This resumes
+     * execution of the caller.
+     */
     private void cancelPressed() {
         this.distribution = original;
         dispose();

@@ -1,3 +1,13 @@
+/*
+ * Written for the Laboratory for Optical and Computational Instrumentation, UW-Madison
+ *
+ * Author: Matthew Dutson
+ * Email: dutson@wisc.edu, mattdutson@icloud.com
+ * GitHub: https://github.com/uw-loci/syntheticfibergenerator
+ *
+ * Copyright (c) 2019, Board of Regents of the University of Wisconsin-Madison
+ */
+
 package syntheticfibergenerator;
 
 import com.google.gson.Gson;
@@ -15,6 +25,9 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 
+/**
+ * The main GUI which displays on startup.
+ */
 public class MainWindow extends JFrame {
 
     // Can be modified via the "Output location" button, therefore not final
@@ -24,9 +37,13 @@ public class MainWindow extends JFrame {
     private Gson serializer;
     private Gson deserializer;
 
-    // Current parameters, generated data, and index of displayed image
+    // Current parameters
     private ImageCollection.Params params;
+
+    // Current image stack
     private ImageCollection collection;
+
+    // Index of the currently displayed image
     private int displayIndex;
 
     // Elements of the display panel
@@ -84,18 +101,32 @@ public class MainWindow extends JFrame {
     private JCheckBox splineCheck;
     private JTextField splineField;
 
-    // Constant definitions
+    // Size of the GUI image display label
     private static final int IMAGE_DISPLAY_SIZE = 512;
+
+    // Where to look for the defaults file
     private static final String DEFAULTS_FILE = "defaults.json";
+
+    // Starting portion of name for data files
     private static final String DATA_PREFIX = "data";
+
+    // Starting portion of name for image files
     private static final String IMAGE_PREFIX = "image";
+
+    // Image filename extension
     private static final String IMAGE_EXT = "tiff";
 
 
+    /**
+     * Starts the main window.
+     */
     public static void main(String[] args) {
         new MainWindow();
     }
 
+    /**
+     * Reads parameters from the defaults file and initializes the GUI.
+     */
     private MainWindow() {
         super("Fiber Generator");
         initParams();
@@ -104,6 +135,9 @@ public class MainWindow extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Sets up the JSON serializer/deserializer and attempts to read parameters from the defaults file.
+     */
     private void initParams() {
         serializer = new GsonBuilder()
                 .setPrettyPrinting()
@@ -120,6 +154,9 @@ public class MainWindow extends JFrame {
         params.width.setBounds(0, Double.POSITIVE_INFINITY);
     }
 
+    /**
+     * Sets up GUI components and behavior.
+     */
     private void initGUI() {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
@@ -256,6 +293,9 @@ public class MainWindow extends JFrame {
         pack();
     }
 
+    /**
+     * Updates the GUI to reflect the program's logical state.
+     */
     private void displayParams() {
         pathDisplay.setPreferredSize(pathDisplay.getSize());
         pathDisplay.setText(outFolder);
@@ -301,6 +341,11 @@ public class MainWindow extends JFrame {
         splineField.setText(params.spline.string());
     }
 
+    /**
+     * Attempts to parse parameters from the GUI and store them in {@code params}.
+     *
+     * @throws IllegalArgumentException If parsing fails for any parameters
+     */
     private void parseParams() throws IllegalArgumentException {
         params.nImages.parse(nImagesField.getText(), Integer::parseInt);
         params.seed.parse(seedCheck.isSelected(), seedField.getText(), Long::parseLong);
@@ -326,6 +371,11 @@ public class MainWindow extends JFrame {
         params.spline.parse(splineCheck.isSelected(), splineField.getText(), Integer::parseInt);
     }
 
+    /**
+     * Checks that all parsed parameters have valid values.
+     *
+     * @throws IllegalArgumentException If verification fails for any parameters
+     */
     private void verifyParams() throws IllegalArgumentException {
         params.nImages.verify(0, Param::greater);
 
@@ -352,6 +402,11 @@ public class MainWindow extends JFrame {
         params.spline.verify(0, Param::greater);
     }
 
+    /**
+     * Attempts to read and deserialize a JSON file into the {@code params} member. Shows an error dialog on failure.
+     *
+     * @param filename The path of the JSON file to deserialize
+     */
     private void readParamsFile(String filename) {
         try {
             FileReader reader = new FileReader(filename);
@@ -368,6 +423,10 @@ public class MainWindow extends JFrame {
         params.setHints();
     }
 
+    /**
+     * Writes an image and JSON data file for each {@code FiberImage} in the stack. Also records the current set of
+     * {@code ImageCollection.Params} in JSON file.
+     */
     private void writeResults() {
         writeStringFile(outFolder + "params.json", serializer.toJson(params, ImageCollection.Params.class));
         for (int i = 0; i < collection.size(); i++) {
@@ -378,6 +437,12 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Writes a string to a file. Shows an error dialog on failure.
+     *
+     * @param filename The name of the file to write
+     * @param contents The contents of the file
+     */
     private void writeStringFile(String filename, String contents) {
         try {
             FileWriter writer = new FileWriter(filename);
@@ -389,6 +454,13 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Writes a {@code BufferedImage} to a file. The image format is given by {@code IMAGE_EXT}. Shows an error dialog
+     * on failure.
+     *
+     * @param prefix The filename up to, but not including the extension
+     * @param image  The {@code BufferedImage} to write
+     */
     private void writeImageFile(String prefix, BufferedImage image) {
         String filename = prefix + '.' + IMAGE_EXT;
         try {
@@ -398,6 +470,11 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Displays the input image to the fixed-size element {@code imageDisplay}.
+     *
+     * @param image The image to display
+     */
     private void displayImage(BufferedImage image) {
         double xScale = (double) IMAGE_DISPLAY_SIZE / image.getWidth();
         double yScale = (double) IMAGE_DISPLAY_SIZE / image.getHeight();
@@ -409,6 +486,9 @@ public class MainWindow extends JFrame {
         imageDisplay.setIcon(icon);
     }
 
+    /**
+     * Sets listeners for all buttons
+     */
     private void setupListeners() {
         generateButton.addActionListener((ActionEvent e) -> generatePressed());
         prevButton.addActionListener((ActionEvent e) -> prevPressed());
@@ -420,6 +500,9 @@ public class MainWindow extends JFrame {
         saveButton.addActionListener((ActionEvent e) -> savePressed());
     }
 
+    /**
+     * Parsers and verifies parameters, generates images, and saves output. Shows an error dialog on failure.
+     */
     private void generatePressed() {
         try {
             parseParams();
@@ -440,6 +523,10 @@ public class MainWindow extends JFrame {
         displayImage(collection.getImage(displayIndex));
     }
 
+    /**
+     * Decreases {@code displayIndex} by one and updates the image display. No action is taken if the index is zero or
+     * the image stack is empty.
+     */
     private void prevPressed() {
         if (!collection.isEmpty() && displayIndex > 0) {
             displayIndex--;
@@ -447,6 +534,10 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Increases {@code displayIndex} by one and updates the image display. No action is taken if the index points to
+     * the last image in the stack or the image stack is empty.
+     */
     private void nextPressed() {
         if (!collection.isEmpty() && displayIndex < collection.size() - 1) {
             displayIndex++;
@@ -454,6 +545,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Prompts the user for a parameters file and then loads those parameters into the GUI.
+     */
     private void loadPressed() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new FileNameExtensionFilter("JSON files", "json"));
@@ -463,6 +557,9 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Prompts the user for a directory where output will be saved.
+     */
     private void savePressed() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -477,24 +574,36 @@ public class MainWindow extends JFrame {
         }
     }
 
+    /**
+     * Allows the user to modify the {@code length} distribution via a {@code DistributionDialog}.
+     */
     private void lengthPressed() {
         DistributionDialog dialog = new DistributionDialog(params.length);
         params.length = dialog.distribution;
         displayParams();
     }
 
+    /**
+     * Allows the user to modify the {@code width} distribution via a {@code DistributionDialog}.
+     */
     private void widthPressed() {
         DistributionDialog dialog = new DistributionDialog(params.width);
         params.width = dialog.distribution;
         displayParams();
     }
 
+    /**
+     * Allows the user to modify the {@code straightness} distribution via a {@code DistributionDialog}.
+     */
     private void straightPressed() {
         DistributionDialog dialog = new DistributionDialog(params.straightness);
         params.straightness = dialog.distribution;
         displayParams();
     }
 
+    /**
+     * @return A {@code JLabel} where fiber images can be displayed
+     */
     private static JLabel createImageDisplay() {
         JLabel output = new JLabel("Press \"Generate\" to view images");
         output.setHorizontalAlignment(JLabel.CENTER);

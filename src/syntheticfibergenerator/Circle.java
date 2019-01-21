@@ -1,36 +1,71 @@
+/*
+ * Written for the Laboratory for Optical and Computational Instrumentation, UW-Madison
+ *
+ * Author: Matthew Dutson
+ * Email: dutson@wisc.edu, mattdutson@icloud.com
+ * GitHub: https://github.com/uw-loci/syntheticfibergenerator
+ *
+ * Copyright (c) 2019, Board of Regents of the University of Wisconsin-Madison
+ */
+
 package syntheticfibergenerator;
 
 
+/**
+ * Class representing a circle in 2D.
+ */
 public class Circle {
 
     /* Sometimes we'll have two circles that should be touching but are actually some very small distance apart because
      * of floating-point limitations. In this case we can try widening both by some small amount BUFF. */
     private static final double BUFF = 1e-10;
 
+    // The circle's center in 2D space
     private Vector center;
+
+    // The circle's radius
     private double radius;
 
 
+    /**
+     * @param center The circle's center
+     * @param radius The circle's radius
+     */
     Circle(Vector center, double radius) {
         this.center = center;
         this.radius = radius;
     }
 
     /**
-     * Note that Vector instances are guaranteed to be immutable.
+     * Note that Vector instances are guaranteed to be immutable, hence returning a reference to the member is safe.
+     *
+     * @return A reference to the circle's center
      */
     Vector center() {
         return center;
     }
 
+    /**
+     * @return The circle's radius
+     */
     double radius() {
         return radius;
     }
 
+    /**
+     * @param point A point in 2D space
+     * @return {@code true} if the point lies on the circle's interior or within {@code BUFF} of its border; {@code
+     * false} otherwise
+     */
     boolean contains(Vector point) {
         return center.subtract(point).getNorm() <= radius + BUFF;
     }
 
+    /**
+     * @param other The object being tested for equality with this circle
+     * @return {@code true} if {@code other} is an instance of {@code Circle} and has the same center and radius; {@code
+     * false} otherwise
+     */
     @Override
     public boolean equals(Object other) {
         if (!(other instanceof Circle)) {
@@ -40,6 +75,12 @@ public class Circle {
         return this.center.equals(circle.center) && (this.radius == circle.radius);
     }
 
+    /**
+     * @param minTheta The lower bound in radians (inclusive)
+     * @param maxTheta The upper bound in radians (exclusive)
+     * @return A random point on the boundary whose angle with respect to the center is within the given bounds. The
+     * positive x-axis has an angle of zero.
+     */
     private Vector choosePoint(double minTheta, double maxTheta) {
         double theta = RngUtility.nextDouble(minTheta, maxTheta);
         Vector dir = new Vector(Math.cos(theta), Math.sin(theta));
@@ -47,8 +88,9 @@ public class Circle {
     }
 
     /**
-     * Returns two points representing the intersection of the two circles. In the degenerate case, these two points are
-     * the same.
+     * @return Two points at the intersection of the two circles. In the degenerate case these two points are the same.
+     * @throws ArithmeticException If the circles are nested or the the distance between their boundaries is greater
+     *                             than {@code 2*BUFF} (they're too far to intersect within a small margin of error)
      */
     static Vector[] circleCircleIntersect(Circle circle1, Circle circle2) throws ArithmeticException {
 
@@ -75,11 +117,18 @@ public class Circle {
         Vector axis = circle2.center.subtract(circle1.center).normalize();
         @SuppressWarnings("UnnecessaryLocalVariable")
         Vector[] points = {
-                circle1.center.add(new Vector(a, h).rotate(axis)),
-                circle1.center.add(new Vector(a, -h).rotate(axis))};
+                circle1.center.add(new Vector(a, h).unRotate(axis)),
+                circle1.center.add(new Vector(a, -h).unRotate(axis))};
         return points;
     }
 
+    /**
+     * @param disk   The disk; points are allowed anywhere in its interior or on its boundary
+     * @param circle The circle; points are only allowed on its boundary
+     * @return A random point which on the circle and within the disk
+     * @throws ArithmeticException If the boundary of the circle doesn't intersect the disk within some small margin of
+     *                             error ({@code 2*BUFF})
+     */
     static Vector diskCircleIntersect(Circle disk, Circle circle) throws ArithmeticException {
 
         // Check the special case where the circle is entirely within the disk
@@ -97,8 +146,12 @@ public class Circle {
     }
 
     /**
-     * Random choice. Repeatedly generates points in a box bounding the "lens" (intersection of the two circles) until
-     * one is found which is within both circles.
+     * Note that there is no upper bound on the number of tries this method can when choosing a point - it's possible
+     * for it to get stuck in an effectively infinite loop.
+     *
+     * @return A random point which lies on both disks (boundary or interior)
+     * @throws ArithmeticException If the distance between the two disks is greater than {@code 2*BUFF} (i.e. they don't
+     *                             intersect within some small margin of error)
      */
     static Vector diskDiskIntersect(Circle disk1, Circle disk2) throws ArithmeticException {
 
@@ -128,7 +181,7 @@ public class Circle {
         Vector result;
         do {
             Vector delta = RngUtility.nextPoint(boxLeft, boxRight, -boxHeight, boxHeight);
-            result = disk1.center.add(delta.rotate(axis));
+            result = disk1.center.add(delta.unRotate(axis));
         } while (!disk1.contains(result) || !disk2.contains(result));
         return result;
     }
