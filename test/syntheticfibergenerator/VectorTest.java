@@ -105,7 +105,7 @@ class VectorTest {
     @Test
     void testRotate() {
         Vector vec = new Vector(1, 0);
-        vec = vec.rotate(new Vector(0, 1));
+        vec = vec.unRotate(new Vector(0, 1));
         assertEquals(new Vector(0, 1), vec);
     }
 
@@ -113,6 +113,6 @@ class VectorTest {
     void testRotateZeroAxis() {
         Vector vec = new Vector(1.0, 0.0);
         assertThrows(ArithmeticException.class, () ->
-                vec.rotate(new Vector(0.0, 0.0)));
+                vec.unRotate(new Vector(0.0, 0.0)));
     }
 }

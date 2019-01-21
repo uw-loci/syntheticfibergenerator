@@ -1,3 +1,13 @@
+/*
+ * Written for the Laboratory for Optical and Computational Instrumentation, UW-Madison
+ *
+ * Author: Matthew Dutson
+ * Email: dutson@wisc.edu, mattdutson@icloud.com
+ * GitHub: https://github.com/uw-loci/syntheticfibergenerator
+ *
+ * Copyright (c) 2019, Board of Regents of the University of Wisconsin-Madison
+ */
+
 package syntheticfibergenerator;
 
 import java.util.ArrayList;
@@ -5,11 +15,22 @@ import java.util.Collections;
 import java.util.Random;
 
 
+/**
+ * A wrapper for a static Random object and associated utility methods.
+ */
 class RngUtility {
 
+    // The static Random member
     static Random rng = new Random();
 
 
+    /**
+     * @param xMin The minimum x-value (inclusive)
+     * @param xMax The maximum x-value (exclusive)
+     * @param yMin The minimum y-value (inclusive)
+     * @param yMax The maximum x-value (exclusive)
+     * @return A random point ({@code Vector}) in 2D space within the specified bounds
+     */
     static Vector nextPoint(double xMin, double xMax, double yMin, double yMax) {
         double x = nextDouble(xMin, xMax);
         double y = nextDouble(yMin, yMax);
@@ -17,8 +38,10 @@ class RngUtility {
     }
 
     /**
-     * @return A random integer between min, inclusive, and max, exclusive. Thus an IllegalArgumentException is thrown
-     * if min >= max.
+     * @param min The minimum value (inclusive)
+     * @param max The maximum value (exclusive)
+     * @return A random integer within the specified bounds
+     * @throws IllegalArgumentException If {@code min >= max}
      */
     static int nextInt(int min, int max) {
         if (min > max) {
@@ -30,8 +53,13 @@ class RngUtility {
     }
 
     /**
-     * Due to the behavior of Random.nextDouble, min is inclusive but max is exclusive. In practice this doesn't matter,
-     * as the exact min is only generated ~1/2^54 times.
+     * Due to the behavior of {@code Random.nextDouble()}, {@code min} is inclusive but {@code max} is exclusive. In
+     * practice this doesn't matter as the exact minimum value is only generated ~1/2^54 times.
+     *
+     * @param min The minimum value (inclusive)
+     * @param max The maximum value (exclusive)
+     * @return A random double within the specified bounds
+     * @throws IllegalArgumentException If {@code min > max}
      */
     static double nextDouble(double min, double max) {
         if (min > max) {
@@ -40,6 +68,17 @@ class RngUtility {
         return min + rng.nextDouble() * (max - min);
     }
 
+    /**
+     * Constructs a 2D pseudo-random walk between the specified starting and ending points.
+     *
+     * @param start    The 2D starting point
+     * @param end      The 2D ending point
+     * @param nSteps   The number of steps in the walk
+     * @param stepSize The distance (2-norm) covered by each step
+     * @return The generated random chain
+     * @throws ArithmeticException If no path exists (i.e. the distance between {@code start} and {@code end} is greater
+     *                             than {@code nSteps*stepSize}
+     */
     static ArrayList<Vector> randomChain(Vector start, Vector end, int nSteps, double stepSize)
             throws ArithmeticException {
         if (nSteps <= 0) {
@@ -55,6 +94,15 @@ class RngUtility {
         return points;
     }
 
+    /**
+     * Recursive helper for {@code randomChain}.
+     *
+     * @param points   The data structure where points are being stored
+     * @param iStart   The beginning of the current section of the path under consideration
+     * @param iEnd     The end of the current section of the path under consideration
+     * @param stepSize The distance (2-norm) covered by each step
+     * @throws ArithmeticException If no path exists between the points at {@code iStart} and {@code iEnd}
+     */
     private static void randomChainRecursive(ArrayList<Vector> points, int iStart, int iEnd, double stepSize)
             throws ArithmeticException {
         if (iEnd - iStart <= 1) {
