@@ -45,8 +45,13 @@ class Fiber implements Iterable<Fiber.Segment> {
      */
     static class Segment {
 
+        // Segment starting point
         Vector start;
+
+        // Segment ending point
         Vector end;
+
+        // Segment width
         double width;
 
 
@@ -122,14 +127,14 @@ class Fiber implements Iterable<Fiber.Segment> {
     }
 
     /**
-     * @return A copy of the fiber's points array
+     * @return A copy of this fiber's points array
      */
     ArrayList<Vector> getPoints() {
         return new ArrayList<>(points);
     }
 
     /**
-     * @return A unit vector pointing in the direction of the fiber
+     * @return A unit vector pointing in the direction of this fiber
      */
     Vector getDirection() {
         return params.end.subtract(params.start).normalize();
