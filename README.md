@@ -16,7 +16,7 @@ SynFiber is distributed as ZIP archive - visit the [Releases](https://github.com
   - `defaults.json`: The default parameters file - this can be modified by the user
   - `output/`: The default output location
 
-The JAR comes bundled with all dependencies, so the only prerequisite for running is an installation of the Java Runtime Environment (v10 or newer), which can be downloaded [here](http://www.java.com). SynFiber can be run simply by double-clicking `syn_fiber.jar` or from the command-line by navigating to the extracted directory and typing `java -jar syn_fiber.jar`
+The JAR comes bundled with all dependencies, so the only prerequisite for running is an installation of the Java Runtime Environment (v1.8 or newer), which can be downloaded [here](http://www.java.com). SynFiber can be run simply by double-clicking `syn_fiber.jar` or from the command-line by navigating to the extracted directory and typing `java -jar syn_fiber.jar`
 
 ## Downloading the Source
 

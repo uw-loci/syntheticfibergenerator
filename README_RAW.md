@@ -27,7 +27,7 @@ directory contains the following:
  * `output/`: The default output location
 
 The JAR comes bundled with all dependencies, so the only prerequisite for running is an installation of the Java Runtime
-Environment (v10 or newer), which can be downloaded [here](http://www.java.com). SynFiber can be run simply by
+Environment (v1.8 or newer), which can be downloaded [here](http://www.java.com). SynFiber can be run simply by
 double-clicking `syn_fiber.jar` or from the command-line by navigating to the extracted directory and typing `java -jar
 syn_fiber.jar`
 
