@@ -114,7 +114,7 @@ public class MainWindow extends JFrame {
     private static final String IMAGE_PREFIX = "image";
 
     // Image filename extension
-    private static final String IMAGE_EXT = "tiff";
+    private static final String IMAGE_EXT = "png";
 
 
     /**
