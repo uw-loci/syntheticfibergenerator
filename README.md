@@ -93,21 +93,21 @@ By default, image and data files are written to `output/` in the working directo
   - Alignment: Let there be ![n](https://latex.codecogs.com/svg.latex?n "n") fibers in an image with each having angle ![\\theta\_i](https://latex.codecogs.com/svg.latex?%5Ctheta_i "\\theta_i"). The alignment of the image is given by:   
     ![
     \\text{mag}\\left(
-      \\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i)}
+      \\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i}
     \\right)
-    ](https://latex.codecogs.com/svg.latex?%0A%5Ctext%7Bmag%7D%5Cleft%28%0A%20%20%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%29%7D%0A%5Cright%29%0A "
+    ](https://latex.codecogs.com/svg.latex?%0A%5Ctext%7Bmag%7D%5Cleft%28%0A%20%20%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%7D%0A%5Cright%29%0A "
     \\text{mag}\\left(
-      \\sum_{i = 0}^n e^{2i \\cdot \\theta_i)}
+      \\sum_{i = 0}^n e^{2i \\cdot \\theta_i}
     \\right)
     ")  
   - Mean angle: Again let there be ![n](https://latex.codecogs.com/svg.latex?n "n") fibers with angles ![\\theta\_i](https://latex.codecogs.com/svg.latex?%5Ctheta_i "\\theta_i"). The mean angle of the image is given by:   
     ![
     \\text{arg}\\left(
-      \\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i)}
+      \\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i}
     \\right)
-    ](https://latex.codecogs.com/svg.latex?%0A%5Ctext%7Barg%7D%5Cleft%28%0A%20%20%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%29%7D%0A%5Cright%29%0A "
+    ](https://latex.codecogs.com/svg.latex?%0A%5Ctext%7Barg%7D%5Cleft%28%0A%20%20%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%7D%0A%5Cright%29%0A "
     \\text{arg}\\left(
-      \\sum_{i = 0}^n e^{2i \\cdot \\theta_i)}
+      \\sum_{i = 0}^n e^{2i \\cdot \\theta_i}
     \\right)
     ")  
      For two or more fibers it’s always possible to choose a set of fiber directions satisfying a given alignment and mean angle.
