@@ -127,7 +127,8 @@ By default, image and data files are written to `output/` in the working directo
   - Scale: Check to show a scale bar in the lower-left corner of the image. The parameter value gives the number of pixels per micron.
   - Down sample: Check to scale the image by the specified factor. A bilinear interpolation is used. Note that this option can be used to scale the image both down and up.
   - Blur: Check to apply a Gaussian blur to the image. The parameter value gives the height and width of the blurring kernel in pixels.
-  - Noise: Check to add Poisson noise. The parameter value gives the Poisson mean. Each pixel has a brightness from 0 to 255. The value sampled from the Poisson distribution is added to this (capping the pixel brightness at 255). Therefore noise rates in the range 0-255 are typical.
+  - Noise: Check to add Poisson noise. The parameter value gives the Poisson mean. Each pixel has a brightness from 0 to
+    255. The value sampled from the Poisson distribution is added to this (capping the pixel brightness at 255). Therefore noise rates in the range 0-255 are typical.
   - Distance: Check to apply a distance filter. Let `falloff` be the parameter value. The intensity (0-255) of each pixel in the output image is equal to `falloff` times the distance to the nearest black background pixel.
 
 ![Optional panel](readme_assets/OptionalPanel.png)
