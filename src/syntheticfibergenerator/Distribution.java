@@ -24,7 +24,7 @@ abstract class Distribution {
     /**
      * Determines the context for the JSON deserialization of a {@code Distribution} based on the {@code "type"} field.
      */
-    static class Serializer implements JsonDeserializer<Distribution> {
+    static class Deserializer implements JsonDeserializer<Distribution>  {
 
         @Override
         public Distribution deserialize(JsonElement element, Type type, JsonDeserializationContext context)
@@ -38,6 +38,19 @@ abstract class Distribution {
             } else {
                 throw new JsonParseException("Unknown distribution typename: " + className);
             }
+        }
+    }
+
+    /**
+     * Includes the {@code getType} string with the output JSON.
+     */
+    static class Serializer implements JsonSerializer<Distribution> {
+
+        @Override
+        public JsonElement serialize(Distribution distribution, Type type, JsonSerializationContext context) {
+            JsonElement output = context.serialize(distribution);
+            output.getAsJsonObject().addProperty("type", distribution.getType());
+            return output;
         }
     }
 

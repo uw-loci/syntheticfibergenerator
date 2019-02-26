@@ -142,16 +142,13 @@ public class MainWindow extends JFrame {
         serializer = new GsonBuilder()
                 .setPrettyPrinting()
                 .serializeSpecialFloatingPointValues()
+                .registerTypeAdapter(Distribution.class, new Distribution.Serializer())
                 .create();
         deserializer = new GsonBuilder()
-                .registerTypeAdapter(Distribution.class, new Distribution.Serializer())
+                .registerTypeAdapter(Distribution.class, new Distribution.Deserializer())
                 .create();
 
         readParamsFile(DEFAULTS_FILE);
-
-        params.length.setBounds(0, Double.POSITIVE_INFINITY);
-        params.straightness.setBounds(0, 1);
-        params.width.setBounds(0, Double.POSITIVE_INFINITY);
     }
 
     /**
@@ -419,6 +416,9 @@ public class MainWindow extends JFrame {
         } catch (JsonParseException e) {
             MiscUtility.showError("Malformed parameters file \"" + filename + '\"');
         }
+        params.length.setBounds(0, Double.POSITIVE_INFINITY);
+        params.straightness.setBounds(0, 1);
+        params.width.setBounds(0, Double.POSITIVE_INFINITY);
         params.setNames();
         params.setHints();
     }
@@ -549,26 +549,29 @@ public class MainWindow extends JFrame {
      * Prompts the user for a parameters file and then loads those parameters into the GUI.
      */
     private void loadPressed() {
-        JFileChooser chooser = new JFileChooser();
+        File workingDirectory = new File(System.getProperty("user.dir"));
+        JFileChooser chooser = new JFileChooser(workingDirectory);
         chooser.setFileFilter(new FileNameExtensionFilter("JSON files", "json"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             readParamsFile(chooser.getSelectedFile().getAbsolutePath());
         }
+        displayParams();
     }
 
     /**
      * Prompts the user for a directory where output will be saved.
      */
     private void savePressed() {
-        JFileChooser chooser = new JFileChooser();
+        File workingDirectory = new File(System.getProperty("user.dir"));
+        JFileChooser chooser = new JFileChooser(workingDirectory);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         int returnVal = chooser.showSaveDialog(null);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             if (chooser.getSelectedFile().isDirectory()) {
-                outFolder = chooser.getSelectedFile().getAbsolutePath();
+                outFolder = chooser.getSelectedFile().getAbsolutePath() + File.separator;
             } else {
-                outFolder = chooser.getCurrentDirectory().getAbsolutePath();
+                outFolder = chooser.getCurrentDirectory().getAbsolutePath() + File.separator;
             }
             displayParams();
         }
