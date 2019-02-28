@@ -65,6 +65,11 @@ abstract class Distribution {
 
 
     /**
+     * @return A deep copy of this object
+     */
+    public abstract Object clone();
+
+    /**
      * @param lowerBound The lower bound for this distribution
      * @param upperBound The upper bound for this distribution
      */
@@ -126,6 +131,16 @@ class Gaussian extends Distribution {
         this.upperBound = upperBound;
         setNames();
         setHints();
+    }
+
+    /**
+     * @return A deep copy of this object
+     */
+    public Object clone() {
+        Gaussian clone = new Gaussian(this.lowerBound, this.upperBound);
+        clone.mean.parse(this.mean.string(), Double::parseDouble);
+        clone.sigma.parse(this.sigma.string(), Double::parseDouble);
+        return clone;
     }
 
     /**
@@ -199,6 +214,16 @@ class Uniform extends Distribution {
         this.upperBound = upperBound;
         setNames();
         setHints();
+    }
+
+    /**
+     * @return A deep copy of this object
+     */
+    public Object clone() {
+        Uniform clone = new Uniform(this.lowerBound, this.upperBound);
+        clone.min.parse(this.min.string(), Double::parseDouble);
+        clone.max.parse(this.max.string(), Double::parseDouble);
+        return clone;
     }
 
     /**

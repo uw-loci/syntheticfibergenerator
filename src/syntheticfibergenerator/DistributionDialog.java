@@ -12,7 +12,7 @@ package syntheticfibergenerator;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
+import java.awt.event.*;
 
 
 /**
@@ -42,7 +42,7 @@ class DistributionDialog extends JDialog {
      */
     DistributionDialog(Distribution distribution) {
         super();
-        this.original = distribution;
+        this.original = (Distribution) distribution.clone();
         this.distribution = distribution;
         initGUI();
         displayDistribution();
@@ -57,6 +57,7 @@ class DistributionDialog extends JDialog {
         // Pause the caller until this window is disposed
         setModal(true);
 
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
         setLayout(new GridBagLayout());
 
         GridBagConstraints gbc = MiscUtility.newGBC();
@@ -135,6 +136,12 @@ class DistributionDialog extends JDialog {
         comboBox.addActionListener((ActionEvent e) -> selectionChanged());
         okayButton.addActionListener((ActionEvent e) -> okayPressed());
         cancelButton.addActionListener((ActionEvent e) -> cancelPressed());
+        this.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                cancelPressed();
+            }
+        });
     }
 
     /**
@@ -172,6 +179,10 @@ class DistributionDialog extends JDialog {
                     Uniform uniform = (Uniform) distribution;
                     uniform.min.parse(field1.getText(), Double::parseDouble);
                     uniform.max.parse(field2.getText(), Double::parseDouble);
+                    if (uniform.min.value() > uniform.max.value()) {
+                        MiscUtility.showError("Minimum cannot exceed maximum");
+                        return;
+                    }
                 }
                 dispose();
             } catch (IllegalArgumentException e) {

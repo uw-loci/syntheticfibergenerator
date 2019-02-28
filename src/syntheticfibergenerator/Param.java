@@ -10,8 +10,6 @@
 
 package syntheticfibergenerator;
 
-import java.lang.reflect.Method;
-
 
 /**
  * A wrapper around a parameter which defines the behavior for parsing from a string and verifying that the value is in
@@ -140,7 +138,7 @@ class Param<T extends Comparable<T>> {
         try {
             verifier.verify(value, bound);
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Value of " + name() + " " + e.getMessage() + " " + bound);
+            throw new IllegalArgumentException("Value of \"" + name() + "\" " + e.getMessage() + " " + bound);
         }
     }
 
