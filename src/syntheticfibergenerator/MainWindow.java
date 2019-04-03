@@ -10,17 +10,11 @@
 
 package syntheticfibergenerator;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -28,14 +22,13 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 /**
  * The main GUI which displays on startup.
  */
-public class MainWindow extends JFrame {
+class MainWindow extends JFrame {
 
     // Can be modified via the "Output location" button, therefore not final
     private String outFolder = "output" + File.separator;
 
-    // Save serializer and deserializer so we don't have to re-construct them
-    private Gson serializer;
-    private Gson deserializer;
+    // Used for reading/writing parameters
+    private IOManager IOManager;
 
     // Current parameters
     private ImageCollection.Params params;
@@ -107,48 +100,21 @@ public class MainWindow extends JFrame {
     // Where to look for the defaults file
     private static final String DEFAULTS_FILE = "defaults.json";
 
-    // Starting portion of name for data files
-    private static final String DATA_PREFIX = "data";
-
-    // Starting portion of name for image files
-    private static final String IMAGE_PREFIX = "image";
-
-    // Image filename extension
-    private static final String IMAGE_EXT = "png";
-
-
-    /**
-     * Starts the main window.
-     */
-    public static void main(String[] args) {
-        new MainWindow();
-    }
 
     /**
      * Reads parameters from the defaults file and initializes the GUI.
      */
-    private MainWindow() {
+    MainWindow() {
         super("Fiber Generator");
-        initParams();
+        IOManager = new IOManager();
+        try {
+            params = IOManager.readParamsFile(DEFAULTS_FILE);
+        } catch (Exception e) {
+            MiscUtility.showError(e.getMessage());
+        }
         initGUI();
         displayParams();
         setVisible(true);
-    }
-
-    /**
-     * Sets up the JSON serializer/deserializer and attempts to read parameters from the defaults file.
-     */
-    private void initParams() {
-        serializer = new GsonBuilder()
-                .setPrettyPrinting()
-                .serializeSpecialFloatingPointValues()
-                .registerTypeAdapter(Distribution.class, new Distribution.Serializer())
-                .create();
-        deserializer = new GsonBuilder()
-                .registerTypeAdapter(Distribution.class, new Distribution.Deserializer())
-                .create();
-
-        readParamsFile(DEFAULTS_FILE);
     }
 
     /**
@@ -369,108 +335,6 @@ public class MainWindow extends JFrame {
     }
 
     /**
-     * Checks that all parsed parameters have valid values.
-     *
-     * @throws IllegalArgumentException If verification fails for any parameters
-     */
-    private void verifyParams() throws IllegalArgumentException {
-        params.nImages.verify(0, Param::greater);
-
-        params.nFibers.verify(0, Param::greater);
-        params.segmentLength.verify(0.0, Param::greater);
-        params.widthChange.verify(0.0, Param::greaterEq);
-        params.alignment.verify(0.0, Param::greaterEq);
-        params.alignment.verify(1.0, Param::lessEq);
-        params.meanAngle.verify(0.0, Param::greaterEq);
-        params.meanAngle.verify(180.0, Param::lessEq);
-
-        params.imageWidth.verify(0, Param::greater);
-        params.imageHeight.verify(0, Param::greater);
-        params.imageBuffer.verify(0, Param::greater);
-
-        params.scale.verify(0.0, Param::greater);
-        params.downSample.verify(0.0, Param::greater);
-        params.blur.verify(0.0, Param::greater);
-        params.noise.verify(0.0, Param::greater);
-        params.distance.verify(0.0, Param::greater);
-
-        params.bubble.verify(0, Param::greater);
-        params.swap.verify(0, Param::greater);
-        params.spline.verify(0, Param::greater);
-    }
-
-    /**
-     * Attempts to read and deserialize a JSON file into the {@code params} member. Shows an error dialog on failure.
-     *
-     * @param filename The path of the JSON file to deserialize
-     */
-    private void readParamsFile(String filename) {
-        try {
-            FileReader reader = new FileReader(filename);
-            params = deserializer.fromJson(reader, ImageCollection.Params.class);
-            reader.close();
-        } catch (FileNotFoundException e) {
-            MiscUtility.showError("File \"" + filename + "\" not found");
-        } catch (IOException e) {
-            MiscUtility.showError("Error when reading \"" + filename + '\"');
-        } catch (JsonParseException e) {
-            MiscUtility.showError("Malformed parameters file \"" + filename + '\"');
-        }
-        params.length.setBounds(0, Double.POSITIVE_INFINITY);
-        params.straightness.setBounds(0, 1);
-        params.width.setBounds(0, Double.POSITIVE_INFINITY);
-        params.setNames();
-        params.setHints();
-    }
-
-    /**
-     * Writes an image and JSON data file for each {@code FiberImage} in the stack. Also records the current set of
-     * {@code ImageCollection.Params} in JSON file.
-     */
-    private void writeResults() {
-        writeStringFile(outFolder + "params.json", serializer.toJson(params, ImageCollection.Params.class));
-        for (int i = 0; i < collection.size(); i++) {
-            String imagePrefix = outFolder + IMAGE_PREFIX + i;
-            writeImageFile(imagePrefix, collection.getImage(i));
-            String dataFilename = outFolder + DATA_PREFIX + i + ".json";
-            writeStringFile(dataFilename, serializer.toJson(collection.get(i), FiberImage.class));
-        }
-    }
-
-    /**
-     * Writes a string to a file. Shows an error dialog on failure.
-     *
-     * @param filename The name of the file to write
-     * @param contents The contents of the file
-     */
-    private void writeStringFile(String filename, String contents) {
-        try {
-            FileWriter writer = new FileWriter(filename);
-            writer.write(contents);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            MiscUtility.showError("Error while writing \"" + filename + '\"');
-        }
-    }
-
-    /**
-     * Writes a {@code BufferedImage} to a file. The image format is given by {@code IMAGE_EXT}. Shows an error dialog
-     * on failure.
-     *
-     * @param prefix The filename up to, but not including the extension
-     * @param image  The {@code BufferedImage} to write
-     */
-    private void writeImageFile(String prefix, BufferedImage image) {
-        String filename = prefix + '.' + IMAGE_EXT;
-        try {
-            ImageIO.write(image, IMAGE_EXT, new File(filename));
-        } catch (IOException e) {
-            MiscUtility.showError("Error while writing \"" + filename + '\"');
-        }
-    }
-
-    /**
      * Displays the input image to the fixed-size element {@code imageDisplay}.
      *
      * @param image The image to display
@@ -506,19 +370,18 @@ public class MainWindow extends JFrame {
     private void generatePressed() {
         try {
             parseParams();
-            verifyParams();
-        } catch (Exception e) {
+            collection = new ImageCollection(params);
+            collection.generateImages();
+            IOManager.writeResults(params, collection, outFolder);
+        } catch (IllegalArgumentException e) {
             MiscUtility.showError(e.getMessage());
             return;
-        }
-        collection = new ImageCollection(params);
-        try {
-            collection.generateImages();
         } catch (ArithmeticException e) {
             MiscUtility.showError("Unable to construct fibers - change parameters and try again");
             return;
+        } catch (IOException e) {
+            MiscUtility.showError(e.getMessage());
         }
-        writeResults();
         displayIndex = 0;
         displayImage(collection.getImage(displayIndex));
     }
@@ -554,7 +417,11 @@ public class MainWindow extends JFrame {
         chooser.setFileFilter(new FileNameExtensionFilter("JSON files", "json"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-            readParamsFile(chooser.getSelectedFile().getAbsolutePath());
+            try {
+                params = IOManager.readParamsFile(chooser.getSelectedFile().getAbsolutePath());
+            } catch (IOException e) {
+                MiscUtility.showError(e.getMessage());
+            }
         }
         displayParams();
     }

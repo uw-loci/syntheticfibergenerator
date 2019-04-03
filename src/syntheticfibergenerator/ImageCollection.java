@@ -47,6 +47,16 @@ class ImageCollection {
             nImages.setHint("The number of images to generate");
             seed.setHint("Check to fix the random seed; value is the seed");
         }
+
+        /**
+         * Verifies that all parameters are within the correct bounds.
+         *
+         * @throws IllegalArgumentException If any parameters are out of bounds
+         */
+        void verify() throws IllegalArgumentException {
+            super.verify();
+            nImages.verify(0, Param::greater);
+        }
     }
 
 
@@ -61,7 +71,8 @@ class ImageCollection {
      * Note that this doesn't generate images, it just instantiates the underlying data structures. {@code
      * ImageCollection.generateImages()} should be called after this.
      */
-    ImageCollection(Params params) {
+    ImageCollection(Params params) throws IllegalArgumentException {
+        params.verify();
         imageStack = new ArrayList<>();
         this.params = params;
     }

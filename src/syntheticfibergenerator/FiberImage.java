@@ -109,6 +109,35 @@ class FiberImage implements Iterable<Fiber> {
             swap.setHint("Check to apply \"swap smoothing\"; number of swaps is this value times number of segments");
             spline.setHint("Check to enable spline smoothing; value is the number of interpolated points per segment");
         }
+
+        /**
+         * Verifies that all parameters are within the correct bounds.
+         *
+         * @throws IllegalArgumentException If any parameters are out of bounds
+         */
+        void verify() throws IllegalArgumentException {
+            nFibers.verify(0, Param::greater);
+            segmentLength.verify(0.0, Param::greater);
+            widthChange.verify(0.0, Param::greaterEq);
+            alignment.verify(0.0, Param::greaterEq);
+            alignment.verify(1.0, Param::lessEq);
+            meanAngle.verify(0.0, Param::greaterEq);
+            meanAngle.verify(180.0, Param::lessEq);
+
+            imageWidth.verify(0, Param::greater);
+            imageHeight.verify(0, Param::greater);
+            imageBuffer.verify(0, Param::greater);
+
+            scale.verify(0.0, Param::greater);
+            downSample.verify(0.0, Param::greater);
+            blur.verify(0.0, Param::greater);
+            noise.verify(0.0, Param::greater);
+            distance.verify(0.0, Param::greater);
+
+            bubble.verify(0, Param::greater);
+            swap.verify(0, Param::greater);
+            spline.verify(0, Param::greater);
+        }
     }
 
 
