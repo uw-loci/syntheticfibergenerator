@@ -182,6 +182,12 @@ class DistributionDialog extends JDialog {
                     if (uniform.min.value() > uniform.max.value()) {
                         MiscUtility.showError("Minimum cannot exceed maximum");
                         return;
+                    } else if (uniform.min.value() > uniform.upperBound) {
+                        MiscUtility.showError("Minimum cannot exceed upper bound");
+                        return;
+                    } else if (uniform.max.value() < uniform.lowerBound) {
+                        MiscUtility.showError("Maximum cannot be less than lower bound");
+                        return;
                     }
                 }
                 dispose();
