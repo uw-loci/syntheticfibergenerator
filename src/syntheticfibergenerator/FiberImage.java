@@ -50,6 +50,8 @@ class FiberImage implements Iterable<Fiber> {
         Optional<Double> blur = new Optional<>();
         Optional<Double> noise = new Optional<>();
         Optional<Double> distance = new Optional<>();
+        Optional<Integer> cap = new Optional<>();
+        Optional<Integer> normalize = new Optional<>();
         Optional<Integer> bubble = new Optional<>();
         Optional<Integer> swap = new Optional<>();
         Optional<Integer> spline = new Optional<>();
@@ -78,6 +80,8 @@ class FiberImage implements Iterable<Fiber> {
             blur.setName("blur");
             noise.setName("noise");
             distance.setName("distance");
+            cap.setName("cap");
+            normalize.setName("normalize");
             bubble.setName("bubble");
             swap.setName("swap");
             spline.setName("spline");
@@ -105,6 +109,8 @@ class FiberImage implements Iterable<Fiber> {
             blur.setHint("Check to enable Gaussian blurring; value is the radius of the blur in pixels");
             noise.setHint("Check to add Poisson noise; value is the Poisson mean on a scale of 0 (black) to 255 (white)");
             distance.setHint("Check to apply a distance filter; value controls the sharpness of the intensity falloff");
+            cap.setHint("Check to cap the intensity; value is the inclusive maximum on a scale of 0-255");
+            normalize.setHint("Check to normalize the intensity; value is the inclusive maximum on a scale of 0-255");
             bubble.setHint("Check to apply \"bubble smoothing\"; value is the number of passes");
             swap.setHint("Check to apply \"swap smoothing\"; number of swaps is this value times number of segments");
             spline.setHint("Check to enable spline smoothing; value is the number of interpolated points per segment");
@@ -133,7 +139,10 @@ class FiberImage implements Iterable<Fiber> {
             blur.verify(0.0, Param::greater);
             noise.verify(0.0, Param::greater);
             distance.verify(0.0, Param::greater);
-
+            cap.verify(0, Param::greaterEq);
+            cap.verify(255, Param::lessEq);
+            normalize.verify(0, Param::greaterEq);
+            normalize.verify(255, Param::lessEq);
             bubble.verify(0, Param::greater);
             swap.verify(0, Param::greater);
             spline.verify(0, Param::greater);
@@ -262,6 +271,12 @@ class FiberImage implements Iterable<Fiber> {
         }
         if (params.downSample.use) {
             image = ImageUtility.scale(image, params.downSample.value(), AffineTransformOp.TYPE_BILINEAR);
+        }
+        if (params.cap.use) {
+            image = ImageUtility.cap(image, params.cap.value());
+        }
+        if (params.normalize.use) {
+            image = ImageUtility.normalize(image, params.normalize.value());
         }
     }
 

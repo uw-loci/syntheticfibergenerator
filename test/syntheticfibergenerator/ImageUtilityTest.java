@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.awt.*;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,5 +64,44 @@ class ImageUtilityTest {
             assertEquals(image.getHeight() * scale, output.getHeight(), 1.0);
             assertEquals(image.getType(), output.getType());
         }
+    }
+
+    @Test
+    void testCap() {
+        int max = 50;
+        BufferedImage capped = ImageUtility.cap(image, max);
+        Raster oldRaster = image.getRaster();
+        Raster newRaster = capped.getRaster();
+        for (int y = 0; y < capped.getHeight(); y++) {
+            for (int x = 0; x < capped.getWidth(); x++) {
+                int iOld = getPixel(oldRaster, x, y);
+                int iNew = getPixel(newRaster, x, y);
+                if (iOld > max) {
+                    assertEquals(max, iNew);
+                } else {
+                    assertEquals(iOld, iNew);
+                }
+            }
+        }
+    }
+
+    @Test
+    void testNormalize() {
+        int max = 75;
+        BufferedImage normalized = ImageUtility.normalize(image, max);
+        Raster raster = normalized.getRaster();
+        int actualMax = 0;
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                actualMax = Math.max(actualMax, getPixel(raster, x, y));
+            }
+        }
+        assertEquals(max, actualMax);
+    }
+
+    private static int getPixel(Raster raster, int x, int y) {
+        int[] pixel = new int[1];
+        raster.getPixel(x, y, pixel);
+        return pixel[0];
     }
 }

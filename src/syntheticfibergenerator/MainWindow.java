@@ -85,6 +85,10 @@ class MainWindow extends JFrame {
     private JTextField noiseField;
     private JCheckBox distanceCheck;
     private JTextField distanceField;
+    private JCheckBox capCheck;
+    private JTextField capField;
+    private JCheckBox normalizeCheck;
+    private JTextField normalizeField;
 
     // Elements of the "Smoothing" panel
     private JCheckBox bubbleCheck;
@@ -243,6 +247,10 @@ class MainWindow extends JFrame {
         noiseField = optional.addField();
         distanceCheck = optional.addCheckBox(params.distance);
         distanceField = optional.addField();
+        capCheck = optional.addCheckBox(params.cap);
+        capField = optional.addField();
+        normalizeCheck = optional.addCheckBox(params.normalize);
+        normalizeField = optional.addField();
 
         bubbleCheck = smooth.addCheckBox(params.bubble);
         bubbleField = smooth.addField();
@@ -295,6 +303,10 @@ class MainWindow extends JFrame {
         noiseField.setText(params.noise.string());
         distanceCheck.setSelected(params.distance.use);
         distanceField.setText(params.distance.string());
+        capCheck.setSelected(params.cap.use);
+        capField.setText(params.cap.string());
+        normalizeCheck.setSelected(params.normalize.use);
+        normalizeField.setText(params.normalize.string());
 
         bubbleCheck.setSelected(params.bubble.use);
         bubbleField.setText(params.bubble.string());
@@ -328,6 +340,8 @@ class MainWindow extends JFrame {
         params.blur.parse(blurCheck.isSelected(), blurField.getText(), Double::parseDouble);
         params.noise.parse(noiseCheck.isSelected(), noiseField.getText(), Double::parseDouble);
         params.distance.parse(distanceCheck.isSelected(), distanceField.getText(), Double::parseDouble);
+        params.cap.parse(capCheck.isSelected(), capField.getText(), Integer::parseInt);
+        params.normalize.parse(normalizeCheck.isSelected(), normalizeField.getText(), Integer::parseInt);
 
         params.bubble.parse(bubbleCheck.isSelected(), bubbleField.getText(), Integer::parseInt);
         params.swap.parse(swapCheck.isSelected(), swapField.getText(), Integer::parseInt);

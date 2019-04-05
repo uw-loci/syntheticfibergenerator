@@ -90,6 +90,58 @@ class ImageUtility {
     }
 
     /**
+     * Caps the intensity of the input image by a certain value.
+     *
+     * @param image An 8-bit grey scale image
+     * @param max   The maximum intensity, inclusive, on a scale 0-255
+     * @return An intensity-capped copy of the input image
+     */
+    static BufferedImage cap(BufferedImage image, int max) {
+        if (image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+            throw new IllegalArgumentException("Image must be TYPE_BYTE_GRAY");
+        }
+        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        Raster inRaster = image.getRaster();
+        WritableRaster outRaster = output.getRaster();
+        for (int y = 0; y < output.getHeight(); y++) {
+            for (int x = 0; x < output.getWidth(); x++) {
+                int value = getPixel(inRaster, x, y);
+                setPixel(outRaster, x, y, value > max ? max : value);
+            }
+        }
+        return output;
+    }
+
+    /**
+     * Normalizes the intensity of the input image with a given max.
+     *
+     * @param image An 8-bit grey scale image
+     * @param max   The maximum intensity, inclusive, on a scale 0-255
+     * @return A normalized copy of the input image
+     */
+    static BufferedImage normalize(BufferedImage image, int max) {
+        if (image.getType() != BufferedImage.TYPE_BYTE_GRAY) {
+            throw new IllegalArgumentException("Image must be TYPE_BYTE_GRAY");
+        }
+        int currentMax = 0;
+        Raster inRaster = image.getRaster();
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                currentMax = Math.max(currentMax, getPixel(inRaster, x, y));
+            }
+        }
+        BufferedImage output = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        WritableRaster outRaster = output.getRaster();
+        for (int y = 0; y < output.getHeight(); y++) {
+            for (int x = 0; x < output.getWidth(); x++) {
+                int value = getPixel(inRaster, x, y);
+                setPixel(outRaster, x, y, value * max / currentMax);
+            }
+        }
+        return output;
+    }
+
+    /**
      * A helper for {@code distanceFunction}.
      *
      * @param raster A {@code Raster} obtained from the source image
