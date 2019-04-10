@@ -13,6 +13,7 @@ package syntheticfibergenerator;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 
 /**
@@ -24,19 +25,22 @@ abstract class Distribution {
     /**
      * Determines the context for the JSON deserialization of a {@code Distribution} based on the {@code "type"} field.
      */
-    static class Deserializer implements JsonDeserializer<Distribution>  {
+    static class Deserializer implements JsonDeserializer<Distribution> {
 
         @Override
         public Distribution deserialize(JsonElement element, Type type, JsonDeserializationContext context)
                 throws JsonParseException {
             JsonObject object = element.getAsJsonObject();
             String className = object.get("type").getAsString();
-            if (className.equals(Gaussian.typename)) {
-                return context.deserialize(element, Gaussian.class);
-            } else if (className.equals(Uniform.typename)) {
-                return context.deserialize(element, Uniform.class);
-            } else {
-                throw new JsonParseException("Unknown distribution typename: " + className);
+            switch (className) {
+                case Gaussian.typename:
+                    return context.deserialize(element, Gaussian.class);
+                case Uniform.typename:
+                    return context.deserialize(element, Uniform.class);
+                case PiecewiseLinear.typename:
+                    return context.deserialize(element, PiecewiseLinear.class);
+                default:
+                    throw new JsonParseException("Unknown distribution typename: " + className);
             }
         }
     }
@@ -263,5 +267,208 @@ class Uniform extends Distribution {
     void setHints() {
         min.setHint("Minimum of the uniform distribution (inclusive)");
         max.setHint("Maximum of the uniform distribution (inclusive)");
+    }
+}
+
+/**
+ * A piecewise linear distribution defined by a set of x, y points. A histogram can be represented as a piecewise linear
+ * distribution by only changing either x or y between adjacent pairs of points. The probability before the first
+ * x-coordinate and after the last x-coordinate is zero.
+ */
+class PiecewiseLinear extends Distribution {
+
+    // The x, y points comprising the distribution (not normalized to have unit integral)
+    private ArrayList<double[]> distribution = new ArrayList<>();
+
+    // To see whether a distribution is PiecewiseLinear use distribution.getType().equals(PiecewiseLinear.typename)
+    transient static final String typename = "Piecewise Linear";
+
+
+    /**
+     * @param lowerBound The lower bound for this distribution
+     * @param upperBound The upper bound for this distribution
+     */
+    PiecewiseLinear(double lowerBound, double upperBound) {
+        this.lowerBound = lowerBound;
+        this.upperBound = upperBound;
+        setNames();
+        setHints();
+    }
+
+    /**
+     * @return A deep copy of this object
+     */
+    public Object clone() {
+        PiecewiseLinear clone = new PiecewiseLinear(this.lowerBound, this.upperBound);
+        clone.distribution = new ArrayList<>(this.distribution);
+        return clone;
+    }
+
+    /**
+     * @return "Piecewise Linear"
+     */
+    public String getType() {
+        return typename;
+    }
+
+    /**
+     * @return "Piecewise Linear" (this may be changed at a later point to include more specific information)
+     */
+    public String getString() {
+        return "Piecewise linear";
+    }
+
+    /**
+     * @return A value sampled from the piecewise linear distribution. The tails (beyond the minimum and maximum
+     * specified x values) have zero probability density.
+     */
+    public double sample() {
+        double integral = 0.0;
+        for (int i = 0; i < distribution.size() - 1; i++) {
+            double[] p1 = distribution.get(i);
+            double[] p2 = distribution.get(i + 1);
+            integral += 0.5 * (p1[1] + p2[1]) * (p2[0] - p1[0]);
+        }
+        ArrayList<double[]> normalized = new ArrayList<>();
+        for (double[] point : distribution) {
+            normalized.add(new double[]{point[0], point[1] / integral});
+        }
+
+        // Corresponds to the index of the x-value we've last integrated to
+        int i = 0;
+        double cdf = 0.0;
+        double rand = RngUtility.rng.nextDouble();
+        double cdfPrev = 0.0;
+        for (; i < normalized.size() - 1 && cdf < rand; i++) {
+            cdfPrev = cdf;
+
+            // Add the area under this section of the curve
+            double[] p1 = normalized.get(i);
+            double[] p2 = normalized.get(i + 1);
+            cdf += 0.5 * (p1[1] + p2[1]) * (p2[0] - p1[0]);
+        }
+
+        // This is the integral of the distribution from i to our output x
+        double cdfRemain = rand - cdfPrev;
+
+        if (i == 0) {
+            return normalized.get(0)[0];
+        } else if (i == normalized.size()) {
+            return normalized.get(normalized.size() - 1)[0];
+        }
+
+        double[] p1 = normalized.get(i - 1);
+        double[] p2 = normalized.get(i);
+        double x1 = p1[0];
+        double y1 = p1[1];
+        double x2 = p2[0];
+        double y2 = p2[1];
+
+        double m = (y2 - y1) / (x2 - x1);
+        double a = 0.5 * m;
+        double b = y1 - m * x1;
+        double c = 0.5 * m * x1 * x1 - y1 * x1 - cdfRemain;
+
+        // Solve quadratic
+        double b4ac = b * b - 4 * a * c;
+        if (b4ac < 0) {
+            throw new ArithmeticException("Sampling failure (no real quadratic roots)");
+        } else {
+            double root0 = (-b + Math.sqrt(b4ac)) / (2 * a);
+            double root1 = (-b - Math.sqrt(b4ac)) / (2 * a);
+            if (root0 >= x1 && root1 <= x2) {
+                return x1;
+            } else {
+                return x2;
+            }
+        }
+    }
+
+    /**
+     * This is empty since the {@code distribution} member doesn't correspond directly to a GUI field.
+     */
+    void setNames() {
+    }
+
+    /**
+     * This is empty since the {@code distribution} member doesn't correspond directly to a GUI field.
+     */
+    void setHints() {
+    }
+
+    /**
+     * @return A string containing comma-separated x values for this distribution
+     */
+    String getXString() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < distribution.size(); i++) {
+            builder.append(distribution.get(i)[0]);
+            if (i < distribution.size() - 1) {
+                builder.append(',');
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * @return A string containing comma-separated y values for this distribution
+     */
+    String getYString() {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < distribution.size(); i++) {
+            builder.append(distribution.get(i)[1]);
+            if (i < distribution.size() - 1) {
+                builder.append(',');
+            }
+        }
+        return builder.toString();
+    }
+
+    /**
+     * Takes two strings from the GUI and parses them into the {@code distribution} member.
+     *
+     * @param xString A string of comma-separated x-values (e.g. "1.0, 2.0, 5.5")
+     * @param yString A string of comma-separated y-values (e.g. "0.6, 0.3, 0.3")
+     * @throws IllegalArgumentException If the strings can't be parsed to a valid, in-bounds distribution
+     */
+    void parseXYValues(String xString, String yString) throws IllegalArgumentException {
+        String[] xTokens = xString.split(",");
+        String[] yTokens = yString.split(",");
+        if (xTokens.length != yTokens.length) {
+            throw new IllegalArgumentException("Number of x points and y points must be equal");
+        }
+        if (xTokens.length == 0) {
+            throw new IllegalArgumentException("Must have a nonzero number of points in distribution");
+        }
+        distribution = new ArrayList<>();
+        for (int i = 0; i < xTokens.length; i++) {
+            double[] point = new double[2];
+            try {
+                point[0] = Double.parseDouble(xTokens[i]);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid x-coordinate \"" + xTokens[i] + "\"");
+            }
+            try {
+                point[1] = Double.parseDouble(yTokens[i]);
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Invalid y-coordinate \"" + yTokens[i] + "\"");
+            }
+            distribution.add(point);
+        }
+        double lastX = Double.NEGATIVE_INFINITY;
+        for (double[] point : distribution) {
+            if (point[0] < lastX) {
+                throw new IllegalArgumentException("X-coordinates out of order (" + lastX + ", " + point[0] + ")");
+            }
+            if (point[1] < 0) {
+                throw new IllegalArgumentException("Negative probability (" + point[1] + ")");
+            }
+        }
+        if (distribution.get(0)[0] < lowerBound) {
+            throw new IllegalArgumentException("Distribution extends below lower bound of " + lowerBound);
+        }
+        if (distribution.get(distribution.size() - 1)[0] > upperBound) {
+            throw new IllegalArgumentException("Distribution extends above upper bound of " + upperBound);
+        }
     }
 }

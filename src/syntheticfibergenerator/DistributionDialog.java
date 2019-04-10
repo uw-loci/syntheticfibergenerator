@@ -62,7 +62,7 @@ class DistributionDialog extends JDialog {
 
         GridBagConstraints gbc = MiscUtility.newGBC();
 
-        String[] options = {Gaussian.typename, Uniform.typename};
+        String[] options = {Gaussian.typename, Uniform.typename, PiecewiseLinear.typename};
         comboBox = new JComboBox<>(options);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridwidth = 2;
@@ -126,6 +126,14 @@ class DistributionDialog extends JDialog {
             label2.setText(MiscUtility.guiName(uniform.max));
             label2.setToolTipText(uniform.max.hint());
             field2.setText(uniform.max.string());
+        } else if (distribution instanceof PiecewiseLinear) {
+            PiecewiseLinear piecewiseLinear = (PiecewiseLinear) distribution;
+            label1.setText("X values:");
+            label1.setToolTipText("X values of points in the piecewise linear distribution");
+            field1.setText(piecewiseLinear.getXString());
+            label2.setText("Y values:");
+            label2.setToolTipText("Y values of points in the piecewise linear distribution");
+            field2.setText(piecewiseLinear.getYString());
         }
     }
 
@@ -151,10 +159,16 @@ class DistributionDialog extends JDialog {
         if (comboBox.getSelectedItem() != null) {
             String selection = comboBox.getSelectedItem().toString();
             if (!selection.equals(distribution.getType())) {
-                if (selection.equals(Gaussian.typename)) {
-                    distribution = new Gaussian(distribution.lowerBound, distribution.upperBound);
-                } else if (selection.equals(Uniform.typename)) {
-                    distribution = new Uniform(distribution.lowerBound, distribution.upperBound);
+                switch (selection) {
+                    case Gaussian.typename:
+                        distribution = new Gaussian(distribution.lowerBound, distribution.upperBound);
+                        break;
+                    case Uniform.typename:
+                        distribution = new Uniform(distribution.lowerBound, distribution.upperBound);
+                        break;
+                    case PiecewiseLinear.typename:
+                        distribution = new PiecewiseLinear(distribution.lowerBound, distribution.upperBound);
+                        break;
                 }
             }
             displayDistribution();
@@ -171,24 +185,30 @@ class DistributionDialog extends JDialog {
         } else {
             String selection = comboBox.getSelectedItem().toString();
             try {
-                if (selection.equals(Gaussian.typename)) {
-                    Gaussian gaussian = (Gaussian) distribution;
-                    gaussian.mean.parse(field1.getText(), Double::parseDouble);
-                    gaussian.sigma.parse(field2.getText(), Double::parseDouble);
-                } else if (selection.equals(Uniform.typename)) {
-                    Uniform uniform = (Uniform) distribution;
-                    uniform.min.parse(field1.getText(), Double::parseDouble);
-                    uniform.max.parse(field2.getText(), Double::parseDouble);
-                    if (uniform.min.value() > uniform.max.value()) {
-                        MiscUtility.showError("Minimum cannot exceed maximum");
-                        return;
-                    } else if (uniform.min.value() > uniform.upperBound) {
-                        MiscUtility.showError("Minimum cannot exceed upper bound");
-                        return;
-                    } else if (uniform.max.value() < uniform.lowerBound) {
-                        MiscUtility.showError("Maximum cannot be less than lower bound");
-                        return;
-                    }
+                switch (selection) {
+                    case Gaussian.typename:
+                        Gaussian gaussian = (Gaussian) distribution;
+                        gaussian.mean.parse(field1.getText(), Double::parseDouble);
+                        gaussian.sigma.parse(field2.getText(), Double::parseDouble);
+                        break;
+                    case Uniform.typename:
+                        Uniform uniform = (Uniform) distribution;
+                        uniform.min.parse(field1.getText(), Double::parseDouble);
+                        uniform.max.parse(field2.getText(), Double::parseDouble);
+                        if (uniform.min.value() > uniform.max.value()) {
+                            MiscUtility.showError("Minimum cannot exceed maximum");
+                            return;
+                        } else if (uniform.min.value() > uniform.upperBound) {
+                            MiscUtility.showError("Minimum cannot exceed upper bound");
+                            return;
+                        } else if (uniform.max.value() < uniform.lowerBound) {
+                            MiscUtility.showError("Maximum cannot be less than lower bound");
+                            return;
+                        }
+                        break;
+                    case PiecewiseLinear.typename:
+                        PiecewiseLinear piecewiseLinear = (PiecewiseLinear) distribution;
+                        piecewiseLinear.parseXYValues(field1.getText(), field2.getText());
                 }
                 dispose();
             } catch (IllegalArgumentException e) {
