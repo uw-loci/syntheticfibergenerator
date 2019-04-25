@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class MiscUtilityTest {
+public class MiscUtilityTest {
 
     private static final double DELTA = 1e-6;
 
@@ -20,33 +20,33 @@ class MiscUtilityTest {
      * Fix the random seed so we get consistent tests.
      */
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         RngUtility.rng.setSeed(1);
     }
 
     @Test
-    void testGuiName() {
+    public void testGuiName() {
         Param<Integer> testParam = new Param<>();
         testParam.setName("ordinary name");
         assertEquals("Ordinary name:", MiscUtility.guiName(testParam));
     }
 
     @Test
-    void testEmptyGuiName() {
+    public void testEmptyGuiName() {
         Param<Integer> testParam = new Param<>();
         testParam.setName("");
         assertEquals(":", MiscUtility.guiName(testParam));
     }
 
     @Test
-    void testNonAlphaGuiName() {
+    public void testNonAlphaGuiName() {
         Param<Integer> testParam = new Param<>();
         testParam.setName("$other name");
         assertEquals("$other name:", MiscUtility.guiName(testParam));
     }
 
     @Test
-    void testToFromDeltas() {
+    public void testToFromDeltas() {
         ArrayList<Vector> points = new ArrayList<>();
         int nPoints = 100;
         for (int i = 0; i < nPoints; i++) {
@@ -57,14 +57,14 @@ class MiscUtilityTest {
     }
 
     @Test
-    void testEmptyToDeltas() {
+    public void testEmptyToDeltas() {
         ArrayList<Vector> points = new ArrayList<>();
         ArrayList<Vector> deltas = MiscUtility.toDeltas(points);
         assertTrue(deltas.isEmpty());
     }
 
     @Test
-    void testEmptyFromDeltas() {
+    public void testEmptyFromDeltas() {
         ArrayList<Vector> deltas = new ArrayList<>();
         Vector start = new Vector(-1.0, 2.0);
         ArrayList<Vector> points = MiscUtility.fromDeltas(deltas, start);
