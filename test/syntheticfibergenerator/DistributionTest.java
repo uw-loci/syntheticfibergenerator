@@ -8,18 +8,18 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-class DistributionTest {
+public class DistributionTest {
 
     /**
      * Fix the random seed so we get consistent tests.
      */
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         RngUtility.rng = new Random(1);
     }
 
     @Test
-    void testGaussianSample() {
+    public void testGaussianSample() {
         Gaussian gaussian = new Gaussian(1.0, 5.0);
         try {
             gaussian.mean.parse("2.0", Double::parseDouble);
@@ -34,7 +34,7 @@ class DistributionTest {
     }
 
     @Test
-    void testGaussianInvalidMean() {
+    public void testGaussianInvalidMean() {
         Gaussian gaussian = new Gaussian(1.0, 5.0);
         try {
             gaussian.mean.parse("-1.0", Double::parseDouble);
@@ -49,7 +49,7 @@ class DistributionTest {
     }
 
     @Test
-    void testUniformSample() {
+    public void testUniformSample() {
         Uniform uniform = new Uniform(-10.0, 17.0);
         try {
             uniform.min.parse("-8.0", Double::parseDouble);
@@ -64,7 +64,7 @@ class DistributionTest {
     }
 
     @Test
-    void testUniformTrim() {
+    public void testUniformTrim() {
         Uniform uniform = new Uniform(-10.0, 17.0);
         try {
             uniform.min.parse("-15.0", Double::parseDouble);
