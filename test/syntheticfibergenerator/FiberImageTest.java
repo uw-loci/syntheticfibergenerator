@@ -9,7 +9,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class FiberImageTest {
+class FiberImageTest {
 
     private static final int N_LOOPS = 20;
     private static final double DELTA = 1e-6;
@@ -19,12 +19,12 @@ public class FiberImageTest {
      * Fix the random seed so we get consistent tests.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RngUtility.rng = new Random(1);
     }
 
     @Test
-    public void testAlignment() {
+    void testAlignment() {
         for (int i = 0; i < N_LOOPS; i++) {
             FiberImage.Params params = randomParams();
             FiberImage image = new FiberImage(params);
@@ -34,7 +34,7 @@ public class FiberImageTest {
     }
 
     @Test
-    public void testMeanAngle() {
+    void testMeanAngle() {
         for (int i = 0; i < N_LOOPS; i++) {
             FiberImage.Params params = randomParams();
             FiberImage image = new FiberImage(params);
@@ -44,7 +44,7 @@ public class FiberImageTest {
     }
 
     @Test
-    public void testImageProperties() {
+    void testImageProperties() {
         for (int i = 0; i < N_LOOPS; i++) {
             FiberImage.Params params = randomParams();
             FiberImage image = new FiberImage(params);
@@ -57,7 +57,7 @@ public class FiberImageTest {
 
 
     @Test
-    public void testDownSample() {
+    void testDownSample() {
         for (int i = 0; i < N_LOOPS; i++) {
             FiberImage.Params params = randomParams();
             FiberImage image = new FiberImage(params);

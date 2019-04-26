@@ -10,7 +10,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class FiberTest {
+class FiberTest {
 
     private static final int N_LOOPS = 50;
     private static final double DELTA = 1e-6;
@@ -23,12 +23,12 @@ public class FiberTest {
      * Fix the random seed so we get consistent tests.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RngUtility.rng = new Random(1);
     }
 
     @Test
-    public void testIterator() {
+    void testIterator() {
         Fiber.Params params = randomParams();
         Fiber fiber = new Fiber(params);
         fiber.generate();
@@ -41,7 +41,7 @@ public class FiberTest {
     }
 
     @Test
-    public void testPointGeneration() {
+    void testPointGeneration() {
         for (int i = 0; i < N_LOOPS; i++) {
             Fiber.Params params = randomParams();
             Fiber fiber = new Fiber(params);
@@ -57,7 +57,7 @@ public class FiberTest {
     }
 
     @Test
-    public void testWidthGeneration() {
+    void testWidthGeneration() {
         for (int i = 0; i < N_LOOPS; i++) {
             Fiber.Params params = randomParams();
             Fiber fiber = new Fiber(params);
@@ -75,7 +75,7 @@ public class FiberTest {
     }
 
     @Test
-    public void testBubbleSmooth() {
+    void testBubbleSmooth() {
         for (int i = 0; i < N_LOOPS; i++) {
             Fiber fiber = new Fiber(randomParams());
             fiber.generate();
@@ -90,7 +90,7 @@ public class FiberTest {
     }
 
     @Test
-    public void testSwapSmooth() {
+    void testSwapSmooth() {
         for (int i = 0; i < N_LOOPS; i++) {
             Fiber fiber = new Fiber(randomParams());
             fiber.generate();
@@ -105,7 +105,7 @@ public class FiberTest {
     }
 
     @Test
-    public void testSplineSmooth() {
+    void testSplineSmooth() {
         for (int i = 0; i < N_LOOPS; i++) {
             int smoothRatio = 1 + RngUtility.rng.nextInt(MAX_SPLINE);
             Fiber fiber = new Fiber(randomParams());

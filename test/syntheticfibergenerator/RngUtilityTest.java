@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class RngUtilityTest {
+class RngUtilityTest {
 
     private static final int N_LOOPS = 100;
     private static final double DELTA = 1e-6;
@@ -18,12 +18,12 @@ public class RngUtilityTest {
      * Fix the random seed so we get consistent tests.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RngUtility.rng.setSeed(1);
     }
 
     @Test
-    public void testRandomPoint() {
+    void testRandomPoint() {
         double xMin = -10.0;
         double xMax = 356.2;
         double yMin = 500.3;
@@ -36,7 +36,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomPointInverted() {
+    void testRandomPointInverted() {
         double xMin = 356.2;
         double xMax = -10.0;
         double yMin = 500.3;
@@ -46,7 +46,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomPointZeroHeight() {
+    void testRandomPointZeroHeight() {
         double xMin = -10.0;
         double xMax = 356.2;
         double y = 500.3;
@@ -58,7 +58,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomPointZeroVolume() {
+    void testRandomPointZeroVolume() {
         double x = -10.0;
         double y = 500.3;
         for (int i = 0; i < N_LOOPS; i++) {
@@ -69,7 +69,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomDouble() {
+    void testRandomDouble() {
         double min = 3.14;
         double max = 18.2;
         for (int i = 0; i < N_LOOPS; i++) {
@@ -79,7 +79,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomDoubleInverted() {
+    void testRandomDoubleInverted() {
         double min = 18.2;
         double max = 3.14;
         assertThrows(IllegalArgumentException.class, () ->
@@ -87,7 +87,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomDoubleZeroWidth() {
+    void testRandomDoubleZeroWidth() {
         double val = 18.2;
         for (int i = 0; i < 100; i++) {
             assertEquals(val, RngUtility.nextDouble(val, val));
@@ -95,7 +95,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomInt() {
+    void testRandomInt() {
         int min = 17;
         int max = 312;
         for (int i = 0; i < N_LOOPS; i++) {
@@ -105,7 +105,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomIntInverted() {
+    void testRandomIntInverted() {
         int min = 312;
         int max = 17;
         assertThrows(IllegalArgumentException.class, () ->
@@ -113,14 +113,14 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomIntZeroWidth() {
+    void testRandomIntZeroWidth() {
         int val = 312;
         assertThrows(IllegalArgumentException.class, () ->
                 RngUtility.nextInt(val, val));
     }
 
     @Test
-    public void testRandomChain() {
+    void testRandomChain() {
         int nSteps = 23;
         double stepSize = 7.0;
         Vector start = new Vector(0.0, 0.0);
@@ -137,7 +137,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomChainExceptions() {
+    void testRandomChainExceptions() {
         int nSteps = 23;
         double stepSize = 7.0;
         Vector start = new Vector(0.0, 0.0);
@@ -153,7 +153,7 @@ public class RngUtilityTest {
     }
 
     @Test
-    public void testRandomChainNonexistent() {
+    void testRandomChainNonexistent() {
         int nSteps = 23;
         double stepSize = 7.0;
         Vector start = new Vector(0.0, 0.0);

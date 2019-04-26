@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class ParamTest {
+class ParamTest {
 
     @Test
-    public void testNullValueString() {
+    void testNullValueString() {
         Param<Integer> param = new Param<>();
         assertEquals("", param.string());
     }
 
     @Test
-    public void testParseEmpty() {
+    void testParseEmpty() {
         Param<Integer> param = new Param<>();
         assertThrows(IllegalArgumentException.class, () ->
                 param.parse("", Integer::parseInt));
@@ -23,7 +23,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testParseInteger() {
+    void testParseInteger() {
         Param<Integer> param = new Param<>();
         try {
             param.parse("7", Integer::parseInt);
@@ -36,7 +36,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testParseDouble() {
+    void testParseDouble() {
         Param<Double> param = new Param<>();
         try {
             param.parse("7.23", Double::parseDouble);
@@ -49,7 +49,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testVerifyLess() {
+    void testVerifyLess() {
         Param<Double> param = new Param<>();
         try {
             param.parse("-12.7", Double::parseDouble);
@@ -62,7 +62,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testVerifyGreater() {
+    void testVerifyGreater() {
         Param<Double> param = new Param<>();
         try {
             param.parse("100.33", Double::parseDouble);
@@ -75,7 +75,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testVerifyLessEq() {
+    void testVerifyLessEq() {
         Param<Double> param = new Param<>();
         try {
             param.parse("0.0", Double::parseDouble);
@@ -89,7 +89,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testVerifyGreaterEq() {
+    void testVerifyGreaterEq() {
         Param<Double> param = new Param<>();
         try {
             param.parse("37.45", Double::parseDouble);
@@ -103,7 +103,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testParseOptional() {
+    void testParseOptional() {
         Optional<Integer> optional = new Optional<>();
         optional.use = false;
         optional.parse("word", Integer::parseInt);
@@ -111,7 +111,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testVerifyOptional() {
+    void testVerifyOptional() {
         Optional<Double> optional = new Optional<>();
         optional.use = true;
         optional.parse("10.7", Double::parseDouble);

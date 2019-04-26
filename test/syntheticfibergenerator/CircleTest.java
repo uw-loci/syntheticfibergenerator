@@ -8,7 +8,7 @@ import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class CircleTest {
+class CircleTest {
 
     private static final double DELTA = 1e-6;
 
@@ -22,14 +22,14 @@ public class CircleTest {
     }
 
     @Test
-    public void testContains() {
+    void testContains() {
         Circle circle = new Circle(new Vector(1, 2), 0.5);
         assertTrue(circle.contains(new Vector(1, 1.75)));
         assertFalse(circle.contains(new Vector(0.5, 1.5)));
     }
 
     @Test
-    public void testEquals() {
+    void testEquals() {
         Circle circle1 = new Circle(new Vector(0, 1.23), 4.56);
         Circle circle2 = new Circle(new Vector(0, 1.23), 4.56);
         Circle circle3 = new Circle(new Vector(0, 1.22), 4.56);
@@ -38,7 +38,7 @@ public class CircleTest {
     }
 
     @Test
-    public void testCircleCircleIntersect() {
+    void testCircleCircleIntersect() {
         Circle circle1 = new Circle(new Vector(0.0, 0.0), 10.0);
         Circle circle2 = new Circle(new Vector(0.0, 14.0), 8.0);
         Vector[] intersects = Circle.circleCircleIntersect(circle1, circle2);
@@ -49,7 +49,7 @@ public class CircleTest {
     }
 
     @Test
-    public void testNoCircleIntersect() {
+    void testNoCircleIntersect() {
         Circle circle1 = new Circle(new Vector(0.0, 0.0), 10.0);
         Circle circle2 = new Circle(new Vector(0.0, 19.0), 8.0);
         assertThrows(ArithmeticException.class, () ->
@@ -57,7 +57,7 @@ public class CircleTest {
     }
 
     @Test
-    public void testDiskCircleIntersect() {
+    void testDiskCircleIntersect() {
         Circle disk = new Circle(new Vector(0.0, 0.0), 10.0);
         Circle circle = new Circle(new Vector(0.0, 14.0), 8.0);
         for (int i = 0; i < 100; i++) {
@@ -68,7 +68,7 @@ public class CircleTest {
     }
 
     @Test
-    public void testDiskDiskIntersect() {
+    void testDiskDiskIntersect() {
         Circle disk1 = new Circle(new Vector(0.0, 0.0), 10.0);
         Circle disk2 = new Circle(new Vector(0.0, 14.0), 8.0);
         for (int i = 0; i < 100; i++) {

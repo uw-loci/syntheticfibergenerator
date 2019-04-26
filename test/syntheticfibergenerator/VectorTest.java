@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class VectorTest {
+class VectorTest {
 
     private static final int N_LOOPS = 100;
     private static final double DELTA = 1e-6;
@@ -23,12 +23,12 @@ public class VectorTest {
      * Fix the random seed so we get consistent tests.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         RngUtility.rng.setSeed(1);
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         for (int i = 0; i < N_LOOPS; i++) {
             Vector vec = TestUtility.fromAngle(RngUtility.nextDouble(0.0, 2.0 * Math.PI));
             vec = vec.scalarMultiply(RngUtility.nextDouble(MIN_NORM, MAX_NORM));
@@ -37,13 +37,13 @@ public class VectorTest {
     }
 
     @Test
-    public void testNormalizeZero() {
+    void testNormalizeZero() {
         assertThrows(MathArithmeticException.class, () ->
                 new Vector(0.0, 0.0).normalize());
     }
 
     @Test
-    public void testScalarMultiply() {
+    void testScalarMultiply() {
         for (int i = 0; i < N_LOOPS; i++) {
             Vector vec = TestUtility.fromAngle(RngUtility.nextDouble(0.0, 2.0 * Math.PI));
             double norm = RngUtility.nextDouble(MIN_NORM, MAX_NORM);
@@ -53,7 +53,7 @@ public class VectorTest {
     }
 
     @Test
-    public void testAdd() {
+    void testAdd() {
         for (int i = 0; i < N_LOOPS; i++) {
             Vector vec1 = RngUtility.nextPoint(MIN_VAL, MAX_VAL, MIN_VAL, MAX_VAL);
             Vector vec2 = RngUtility.nextPoint(MIN_VAL, MAX_VAL, MIN_VAL, MAX_VAL);
@@ -64,7 +64,7 @@ public class VectorTest {
     }
 
     @Test
-    public void testSubtract() {
+    void testSubtract() {
         for (int i = 0; i < N_LOOPS; i++) {
             Vector vec1 = RngUtility.nextPoint(MIN_VAL, MAX_VAL, MIN_VAL, MAX_VAL);
             Vector vec2 = RngUtility.nextPoint(MIN_VAL, MAX_VAL, MIN_VAL, MAX_VAL);
@@ -75,7 +75,7 @@ public class VectorTest {
     }
 
     @Test
-    public void testTheta() {
+    void testTheta() {
         for (int i = 0; i < N_LOOPS; i++) {
             double angle = RngUtility.nextDouble(-Math.PI, Math.PI);
             double norm = RngUtility.nextDouble(MIN_NORM, MAX_NORM);
@@ -85,7 +85,7 @@ public class VectorTest {
     }
 
     @Test
-    public void testAngleWith() {
+    void testAngleWith() {
         for (int i = 0; i < N_LOOPS; i++) {
             double angle1 = RngUtility.nextDouble(0, Math.PI);
             double angle2 = RngUtility.nextDouble(0, Math.PI);
@@ -96,21 +96,21 @@ public class VectorTest {
     }
 
     @Test
-    public void testAngleWithZero() {
+    void testAngleWithZero() {
         Vector vec = new Vector(1.0, 0.0);
         assertThrows(ArithmeticException.class, () ->
                 vec.angleWith(new Vector(0.0, 0.0)));
     }
 
     @Test
-    public void testRotate() {
+    void testRotate() {
         Vector vec = new Vector(1, 0);
         vec = vec.unRotate(new Vector(0, 1));
         assertEquals(new Vector(0, 1), vec);
     }
 
     @Test
-    public void testRotateZeroAxis() {
+    void testRotateZeroAxis() {
         Vector vec = new Vector(1.0, 0.0);
         assertThrows(ArithmeticException.class, () ->
                 vec.unRotate(new Vector(0.0, 0.0)));

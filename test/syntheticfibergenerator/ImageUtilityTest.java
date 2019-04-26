@@ -11,7 +11,7 @@ import java.awt.image.Raster;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class ImageUtilityTest {
+class ImageUtilityTest {
 
     private BufferedImage image;
 
@@ -22,7 +22,7 @@ public class ImageUtilityTest {
      * Creates a non-empty image by drawing some text and shapes.
      */
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         image = new BufferedImage(1024, 1024, BufferedImage.TYPE_BYTE_GRAY);
         Graphics graphics = image.getGraphics();
         graphics.drawString("Hello, world!", 100, 100);
@@ -31,7 +31,7 @@ public class ImageUtilityTest {
     }
 
     @Test
-    public void testDistanceFunction() {
+    void testDistanceFunction() {
         assertTrue(TestUtility.sizeTypeMatch(ImageUtility.distanceFunction(image, FALLOFF), image));
     }
 
@@ -40,24 +40,24 @@ public class ImageUtilityTest {
      * pixels to 0 and all others to 255.
      */
     @Test
-    public void testHighFalloff() {
+    void testHighFalloff() {
         assertTrue(TestUtility.pixelWiseEqual(image, ImageUtility.distanceFunction(image, 1000)));
     }
 
     @Test
-    public void testInvalidImage() {
+    void testInvalidImage() {
         BufferedImage badImage = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
         assertThrows(IllegalArgumentException.class, () ->
                 ImageUtility.distanceFunction(badImage, FALLOFF));
     }
 
     @Test
-    public void testGaussianBlur() {
+    void testGaussianBlur() {
         assertTrue(TestUtility.sizeTypeMatch(image, ImageUtility.gaussianBlur(image, 8)));
     }
 
     @Test
-    public void testScale() {
+    void testScale() {
         for (double scale = 0.01; scale <= 20.0; scale *= 2) {
             BufferedImage output = ImageUtility.scale(image, scale, AffineTransformOp.TYPE_BILINEAR);
             assertEquals(image.getWidth() * scale, output.getWidth(), 1.0);
@@ -67,7 +67,7 @@ public class ImageUtilityTest {
     }
 
     @Test
-    public void testCap() {
+    void testCap() {
         int max = 50;
         BufferedImage capped = ImageUtility.cap(image, max);
         Raster oldRaster = image.getRaster();
@@ -86,7 +86,7 @@ public class ImageUtilityTest {
     }
 
     @Test
-    public void testNormalize() {
+    void testNormalize() {
         int max = 75;
         BufferedImage normalized = ImageUtility.normalize(image, max);
         Raster raster = normalized.getRaster();
