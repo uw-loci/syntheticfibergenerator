@@ -26,7 +26,7 @@ The source is available from the Releases page or the project repository. It has
 
 ``` xml
 <dependency>
-   <groupId>com.google.code.gson</groupId>   
+   <groupId>com.google.code.gson</groupId>
    <artifactId>gson</artifactId>
    <version>2.8.5</version>
 </dependency>
@@ -36,7 +36,7 @@ The source is available from the Releases page or the project repository. It has
 
 ``` xml
 <dependency>
-   <groupId>org.apache.commons</groupId>   
+   <groupId>org.apache.commons</groupId>
    <artifactId>commons-math3</artifactId>
    <version>3.6.1</version>
 </dependency>
@@ -46,7 +46,7 @@ The source is available from the Releases page or the project repository. It has
 
 ``` xml
 <dependency>
-   <groupId>org.junit.jupiter</groupId>   
+   <groupId>org.junit.jupiter</groupId>
    <artifactId>junit-jupiter-api</artifactId>
    <version>5.3.1</version>
 </dependency>
@@ -92,23 +92,15 @@ By default, image and data files are written to `output/` in the working directo
   - Width change: The maximum amount (in pixels) by which a fiber’s width can change between two adjacent segments. The actual change is sampled from a uniform distribution between `-widthChange` and `+widthChange`. If the current segment’s width is less than `widthChange`, then the sampling is instead from `-segment.width` to `+segment.width`.
   - Alignment: Let there be ![n](https://latex.codecogs.com/svg.latex?n "n") fibers in an image with each having angle ![\\theta\_i](https://latex.codecogs.com/svg.latex?%5Ctheta_i "\\theta_i"). The alignment of the image is given by:   
     ![
-    \\text{mag}\\left(
-      \\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i}
-    \\right)
-    ](https://latex.codecogs.com/svg.latex?%0A%5Ctext%7Bmag%7D%5Cleft%28%0A%20%20%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%7D%0A%5Cright%29%0A "
-    \\text{mag}\\left(
-      \\sum_{i = 0}^n e^{2i \\cdot \\theta_i}
-    \\right)
+      \\text{mag}\\left(\\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i} \\right)
+    ](https://latex.codecogs.com/svg.latex?%0A%20%20%5Ctext%7Bmag%7D%5Cleft%28%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%7D%20%5Cright%29%0A "
+      \\text{mag}\\left(\\sum_{i = 0}^n e^{2i \\cdot \\theta_i} \\right)
     ")  
   - Mean angle: Again let there be ![n](https://latex.codecogs.com/svg.latex?n "n") fibers with angles ![\\theta\_i](https://latex.codecogs.com/svg.latex?%5Ctheta_i "\\theta_i"). The mean angle of the image is given by:   
     ![
-    \\text{arg}\\left(
-      \\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i}
-    \\right)
-    ](https://latex.codecogs.com/svg.latex?%0A%5Ctext%7Barg%7D%5Cleft%28%0A%20%20%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%7D%0A%5Cright%29%0A "
-    \\text{arg}\\left(
-      \\sum_{i = 0}^n e^{2i \\cdot \\theta_i}
-    \\right)
+      \\text{arg}\\left(\\sum\_{i = 0}^n e^{2i \\cdot \\theta\_i} \\right)
+    ](https://latex.codecogs.com/svg.latex?%0A%20%20%5Ctext%7Barg%7D%5Cleft%28%5Csum_%7Bi%20%3D%200%7D%5En%20e%5E%7B2i%20%5Ccdot%20%5Ctheta_i%7D%20%5Cright%29%0A "
+      \\text{arg}\\left(\\sum_{i = 0}^n e^{2i \\cdot \\theta_i} \\right)
     ")  
      For two or more fibers it’s always possible to choose a set of fiber directions satisfying a given alignment and mean angle.
 
@@ -127,8 +119,7 @@ By default, image and data files are written to `output/` in the working directo
   - Scale: Check to show a scale bar in the lower-left corner of the image. The parameter value gives the number of pixels per micron.
   - Down sample: Check to scale the image by the specified factor. A bilinear interpolation is used. Note that this option can be used to scale the image both down and up.
   - Blur: Check to apply a Gaussian blur to the image. The parameter value gives the height and width of the blurring kernel in pixels.
-  - Noise: Check to add Poisson noise. The parameter value gives the Poisson mean. Each pixel has a brightness from 0 to
-    255. The value sampled from the Poisson distribution is added to this (capping the pixel brightness at 255). Therefore noise rates in the range 0-255 are typical.
+  - Noise: Check to add Poisson noise. The parameter value gives the Poisson mean. Each pixel has a brightness from 0 to 255. The value sampled from the Poisson distribution is added to this (capping the pixel brightness at 255). Therefore noise rates in the range 0-255 are typical.
   - Distance: Check to apply a distance filter. Let `falloff` be the parameter value. The intensity (0-255) of each pixel in the output image is equal to `falloff` times the distance to the nearest black background pixel.
 
 ![Optional panel](readme_assets/OptionalPanel.png)
