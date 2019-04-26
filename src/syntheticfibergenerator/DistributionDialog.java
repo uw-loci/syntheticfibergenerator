@@ -195,21 +195,13 @@ class DistributionDialog extends JDialog {
                         Uniform uniform = (Uniform) distribution;
                         uniform.min.parse(field1.getText(), Double::parseDouble);
                         uniform.max.parse(field2.getText(), Double::parseDouble);
-                        if (uniform.min.value() > uniform.max.value()) {
-                            MiscUtility.showError("Minimum cannot exceed maximum");
-                            return;
-                        } else if (uniform.min.value() > uniform.upperBound) {
-                            MiscUtility.showError("Minimum cannot exceed upper bound");
-                            return;
-                        } else if (uniform.max.value() < uniform.lowerBound) {
-                            MiscUtility.showError("Maximum cannot be less than lower bound");
-                            return;
-                        }
                         break;
                     case PiecewiseLinear.typename:
                         PiecewiseLinear piecewiseLinear = (PiecewiseLinear) distribution;
                         piecewiseLinear.parseXYValues(field1.getText(), field2.getText());
+                        break;
                 }
+                distribution.verify();
                 dispose();
             } catch (IllegalArgumentException e) {
                 MiscUtility.showError(e.getMessage());

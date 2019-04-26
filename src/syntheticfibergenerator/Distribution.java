@@ -108,6 +108,13 @@ abstract class Distribution {
      * Not part of the constructor for the same reason as setNames().
      */
     abstract void setHints();
+
+    /**
+     * Verify that this distribution is valid and doesn't violate the lower/upper bounds (if applicable).
+     *
+     * @throws IllegalArgumentException If the verification fails
+     */
+    abstract void verify() throws IllegalArgumentException;
 }
 
 /**
@@ -191,6 +198,15 @@ class Gaussian extends Distribution {
         mean.setHint("Mean of the Gaussian");
         sigma.setHint("Standard deviation of the Gaussian");
     }
+
+    /**
+     * See notes for {@code Distribution.verify()}.
+     */
+    void verify() {
+        if (sigma.value() <= 0) {
+            throw new IllegalArgumentException("Standard deviation " + sigma + " is not positive");
+        }
+    }
 }
 
 /**
@@ -267,6 +283,22 @@ class Uniform extends Distribution {
     void setHints() {
         min.setHint("Minimum of the uniform distribution (inclusive)");
         max.setHint("Maximum of the uniform distribution (inclusive)");
+    }
+
+    /**
+     * See notes for {@code Distribution.verify()}.
+     */
+    void verify() {
+        if (min.value() > max.value()) {
+            throw new IllegalArgumentException(
+                    "Uniform distribution minimum " + min.value() + " exceeds maximum " + max.value());
+        } else if (min.value() > upperBound) {
+            throw new IllegalArgumentException(
+                    "Uniform distribution minimum " + min.value() + " exceeds upper bound " + upperBound);
+        } else if (max.value() < lowerBound) {
+            throw new IllegalArgumentException(
+                    "Uniform distribution maximum" + max.value() + " is less than lower bound " + lowerBound);
+        }
     }
 }
 
@@ -397,6 +429,30 @@ class PiecewiseLinear extends Distribution {
     }
 
     /**
+     * See notes for {@code Distribution.verify()}.
+     */
+    void verify() {
+        double lastX = Double.NEGATIVE_INFINITY;
+        for (double[] point : distribution) {
+            if (point[0] < lastX) {
+                throw new IllegalArgumentException("Piecewise linear x-coordinates out of order (" + lastX + ", " + point[0] + ")");
+            }
+            lastX = point[0];
+            if (point[1] < 0) {
+                throw new IllegalArgumentException("Negative piecewise linear probability " + point[1]);
+            }
+        }
+        if (distribution.get(0)[0] < lowerBound) {
+            throw new IllegalArgumentException(
+                    "Piecewise linear distribution extends below lower bound of " + lowerBound);
+        }
+        if (distribution.get(distribution.size() - 1)[0] > upperBound) {
+            throw new IllegalArgumentException(
+                    "Piecewise linear distribution extends above upper bound of " + upperBound);
+        }
+    }
+
+    /**
      * @return A string containing comma-separated x values for this distribution
      */
     String getXString() {
@@ -454,21 +510,6 @@ class PiecewiseLinear extends Distribution {
                 throw new IllegalArgumentException("Invalid y-coordinate \"" + yTokens[i] + "\"");
             }
             distribution.add(point);
-        }
-        double lastX = Double.NEGATIVE_INFINITY;
-        for (double[] point : distribution) {
-            if (point[0] < lastX) {
-                throw new IllegalArgumentException("X-coordinates out of order (" + lastX + ", " + point[0] + ")");
-            }
-            if (point[1] < 0) {
-                throw new IllegalArgumentException("Negative probability (" + point[1] + ")");
-            }
-        }
-        if (distribution.get(0)[0] < lowerBound) {
-            throw new IllegalArgumentException("Distribution extends below lower bound of " + lowerBound);
-        }
-        if (distribution.get(distribution.size() - 1)[0] > upperBound) {
-            throw new IllegalArgumentException("Distribution extends above upper bound of " + upperBound);
         }
     }
 }

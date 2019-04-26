@@ -32,7 +32,7 @@ public class EntryPoint {
                 collection.generateImages();
                 IOManager.writeResults(params, collection, "output" + File.separator);
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println("Error: " + e.getMessage());
             }
         } else {
             new MainWindow();

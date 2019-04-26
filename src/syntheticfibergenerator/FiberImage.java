@@ -134,6 +134,10 @@ class FiberImage implements Iterable<Fiber> {
             imageHeight.verify(0, Param::greater);
             imageBuffer.verify(0, Param::greater);
 
+            length.verify();
+            straightness.verify();
+            width.verify();
+
             scale.verify(0.0, Param::greater);
             downSample.verify(0.0, Param::greater);
             blur.verify(0.0, Param::greater);
