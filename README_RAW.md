@@ -69,6 +69,8 @@ available from Maven Central.
 
 ## Basic Operation
 
+### GUI Operation
+
 On startup, the following window will display:
 
 ![Starting window](readme_assets/StartingWindow.png)
@@ -90,6 +92,13 @@ can be used to restore a previous session.
 By default, image and data files are written to `output/` in the working directory. To change this
 location, press the "Open" button to the right of the "Output Location" label and select the desired
 directory.
+
+### Command-Line Only Mode
+
+The generator can be run in a non-interactive, command-line only mode by typing
+`java -jar syn_fiber.jar <param_file>`, where `<param_file>` is the path to a valid parameter JSON
+file. Results are sent to `output/`. If an exception occurs (an invalid parameter, nonexistent
+`output/` directory) an error message is printed and the program stops.
 
 ## Explanation of Options
 
@@ -167,6 +176,13 @@ directory.
 * Distance: Check to apply a distance filter. Let `falloff` be the parameter value. The intensity
   (0-255) of each pixel in the output image is equal to `falloff` times the distance to the nearest
   black background pixel.
+* Cap: Check to cap all intensities at a certain value (in the range 0 to 255). Let `cap` be the
+  given value. Then the intensity of pixel `x, y` is updated as
+  `intensity[x, y] = min(intensity[x, y], cap)`.
+* Normalize: Check to scale all intensities such that the maximum intensity is the given value (in
+  the range 0 to 255). Let `max_a` be the actual maximum intensity and `max_d` be the desired
+  maximum intensity. Then the intensity of pixel `x, y` is updated as
+  `intensity[x, y] = intensity[x, y] * max_d / max_a`.
 
 ![Optional panel](readme_assets/OptionalPanel.png)
 
@@ -180,3 +196,31 @@ directory.
   ratio of the number of points after smoothing to the number of points before smoothing.
 
 ![Smoothing panel](readme_assets/SmoothingPanel.png)
+
+## Distribution Types
+
+Pressing the "modify" button in the "Distributions" panel creates a dialog box which allows the user
+to modify the type and parameters of the distribution. All distributions have a lower and upper
+bound which cannot be modified and represent the range of valid values.
+
+### Gaussian
+
+Gaussian distributions have two parameters: "Mean" and "Sigma." The only hard restriction is that
+sigma must be positive. It's fine for the mean to be outside the range [lower bound, upper bound];
+this just results in sampling exclusively from one side of the distribution and may be slower.
+
+### Uniform
+
+Uniform distributions have two parameters: "Minimum and "Maximum." The min must be less than the
+max, the min cannot exceed the upper bound, and the max cannot be less than the lower bound. This
+ensures that the range [lower bound, upper bound] has at least some overlap with [minimum,
+maximum]).
+
+### Piecewise Linear
+
+This represents an arbitrary, piecewise linear distribution. It has two compound parameters: "X
+values" and "Y values." Each should be a comma-separated string of values. The x values must be in
+ascending order, and all y values must be positive. If the integral of the distribution is not one
+the y values are correctly scaled before sampling. All x values must be in the range [lower bound,
+upper bound]. The probability density is zero below the minimum and above the maximum x values in
+the list.
