@@ -1,10 +1,10 @@
 /.classpath
 /.project
 /.settings/
-/target/
+/.vscode
 /output/data*
 /output/image*
 /output/params.json
+/target/
 *.class
 .DS_Store
-.vscode
