@@ -6,3 +6,5 @@
 /output/image*
 /output/params.json
 *.class
+.DS_Store
+.vscode
