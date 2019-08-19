@@ -7,4 +7,5 @@
 /output/params.json
 /target/
 *.class
+*.jar
 .DS_Store

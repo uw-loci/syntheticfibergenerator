@@ -2,6 +2,7 @@
 
 import json
 import math
+import statistics
 import sys
 
 
@@ -19,12 +20,12 @@ def create_csv(json_filename, csv_filename):
             dx = params["end"]["x"] - params["start"]["x"]
             dy = params["end"]["y"] - params["start"]["y"]
             angle = math.degrees(-math.atan2(dy, dx))
+            if (angle < 0):
+                angle += 180
 
             length = params["nSegments"] * params["segmentLength"]
 
-            meanWidth = 0.0
-            for width in fiber["widths"]:
-                meanWidth += width / len(fiber["widths"])
+            meanWidth = statistics.mean(fiber["widths"])
 
             straightness = params["straightness"]
 
